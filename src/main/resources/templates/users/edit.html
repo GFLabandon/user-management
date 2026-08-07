@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head(title='Edit user')}"></head>
+<body>
+<div th:replace="~{layout :: header}"></div>
+
+<main class="page-shell form-page">
+    <a class="back-link" th:href="@{/users/list}">← Back to directory</a>
+    <section class="page-heading compact">
+        <div>
+            <p class="eyebrow">Profile settings</p>
+            <h1>Edit team member</h1>
+            <p class="muted">Update profile details and role assignments.</p>
+        </div>
+    </section>
+
+    <form class="card profile-form" th:action="@{/users/edit}" th:object="${user}"
+          method="post" enctype="multipart/form-data">
+        <input type="hidden" th:field="*{id}">
+        <div class="alert alert-error" role="alert" th:if="${error}" th:text="${error}"></div>
+
+        <div class="form-grid">
+            <label class="field field-wide" for="username">
+                <span>Full name</span>
+                <input id="username" type="text" th:field="*{username}" required>
+                <small class="field-error" th:errors="*{username}"></small>
+            </label>
+
+            <label class="field field-wide" for="note">
+                <span>Note</span>
+                <textarea id="note" th:field="*{note}" rows="3" required></textarea>
+                <small class="field-error" th:errors="*{note}"></small>
+            </label>
+
+            <label class="field" for="deptId">
+                <span>Department</span>
+                <select id="deptId" th:field="*{deptId}" required>
+                    <option value="">Choose a department</option>
+                    <option th:each="department : ${departments}" th:value="${department.id}"
+                            th:text="${department.name}"></option>
+                </select>
+                <small class="field-error" th:errors="*{deptId}"></small>
+            </label>
+
+            <label class="field" for="photo">
+                <span>Replace profile image</span>
+                <input id="photo" type="file" name="photo" accept="image/png,image/jpeg">
+                <small th:if="${user.photoPath}">Leave empty to keep the current image.</small>
+                <small th:unless="${user.photoPath}">PNG or JPG, up to 5 MB.</small>
+            </label>
+
+            <fieldset class="field field-wide">
+                <legend>Roles</legend>
+                <div class="checkbox-grid">
+                    <label class="check-card" th:each="role : ${availableRoles}">
+                        <input type="checkbox" th:field="*{roleIds}" th:value="${role.id}">
+                        <span th:text="${role.name}">Editor</span>
+                    </label>
+                </div>
+            </fieldset>
+        </div>
+
+        <div class="form-actions">
+            <a class="button button-ghost" th:href="@{/users/list}">Cancel</a>
+            <button class="button button-primary" type="submit">Save changes</button>
+        </div>
+    </form>
+</main>
+
+<div th:replace="~{layout :: footer}"></div>
+</body>
+</html>

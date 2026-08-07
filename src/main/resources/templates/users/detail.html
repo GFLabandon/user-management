@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head(title='User profile')}"></head>
+<body>
+<div th:replace="~{layout :: header}"></div>
+
+<main class="page-shell profile-page">
+    <a class="back-link" th:href="@{/users/list}">← Back to directory</a>
+
+    <section class="card profile-card">
+        <div class="profile-hero">
+            <img class="avatar avatar-large" th:if="${user.photoPath}" th:src="${user.photoPath}" alt="">
+            <span class="avatar avatar-fallback avatar-large" th:unless="${user.photoPath}"
+                  th:text="${#strings.substring(user.username, 0, 1)}">A</span>
+            <div>
+                <p class="eyebrow" th:text="${'User #' + user.id}">User #1</p>
+                <h1 th:text="${user.username}">Alex Chen</h1>
+                <p class="muted" th:text="${user.note}">Backend engineer</p>
+            </div>
+            <a class="button button-primary profile-edit" th:href="@{/users/edit/{id}(id=${user.id})}">Edit profile</a>
+        </div>
+
+        <dl class="detail-grid">
+            <div>
+                <dt>Department</dt>
+                <dd th:text="${user.department != null ? user.department.name : 'Not assigned'}">Engineering</dd>
+            </div>
+            <div>
+                <dt>Roles</dt>
+                <dd>
+                    <span class="tag" th:each="role : ${user.roles}" th:text="${role.name}">Editor</span>
+                    <span th:if="${user.roles.isEmpty()}">No roles assigned</span>
+                </dd>
+            </div>
+            <div>
+                <dt>Profile image</dt>
+                <dd th:text="${user.photoPath != null ? 'Uploaded image' : 'No image'}">No image</dd>
+            </div>
+        </dl>
+    </section>
+</main>
+
+<div th:replace="~{layout :: footer}"></div>
+</body>
+</html>

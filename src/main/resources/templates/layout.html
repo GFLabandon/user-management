@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="head(title)">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A Spring Boot and MyBatis user administration demo">
+    <title th:text="${title + ' · Userbase'}">Userbase</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<header class="site-header" th:fragment="header">
+    <div class="nav-shell">
+        <a class="brand" th:href="@{/}">
+            <span class="brand-mark">U</span>
+            <span>
+                <strong>Userbase</strong>
+                <small>Team directory</small>
+            </span>
+        </a>
+        <nav th:if="${session.user != null}" aria-label="Primary navigation">
+            <a th:href="@{/users/list}">Directory</a>
+            <a class="button button-primary button-small" th:href="@{/users/add}">Add user</a>
+            <form class="logout-form" th:action="@{/logout}" method="post">
+                <button class="button button-ghost button-small" type="submit">Sign out</button>
+            </form>
+        </nav>
+    </div>
+</header>
+
+<footer class="site-footer" th:fragment="footer">
+    <p>Spring Boot · MyBatis · Thymeleaf · H2 / MySQL</p>
+</footer>
+</body>
+</html>

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head(title='Directory')}"></head>
+<body>
+<div th:replace="~{layout :: header}"></div>
+
+<main class="page-shell">
+    <section class="page-heading">
+        <div>
+            <p class="eyebrow">People and access</p>
+            <h1>Team directory</h1>
+            <p class="muted">Manage profiles, department ownership and role assignments.</p>
+        </div>
+        <a class="button button-primary" th:href="@{/users/add}">Add new user</a>
+    </section>
+
+    <div class="alert alert-success" role="status" th:if="${success}" th:text="${success}"></div>
+    <div class="alert alert-error" role="alert" th:if="${error}" th:text="${error}"></div>
+
+    <section class="card directory-card">
+        <div class="directory-toolbar">
+            <form class="search-form" th:action="@{/users/list}" method="get">
+                <label class="sr-only" for="keyword">Search users</label>
+                <input id="keyword" type="search" name="keyword" th:value="${keyword}"
+                       placeholder="Search name or note">
+                <button class="button button-secondary" type="submit">Search</button>
+                <a class="button button-ghost" th:if="${!#strings.isEmpty(keyword)}" th:href="@{/users/list}">Clear</a>
+            </form>
+            <span class="count-pill" th:text="${userCount + (userCount == 1 ? ' user' : ' users')}">3 users</span>
+        </div>
+
+        <div class="table-scroll" th:if="${!users.isEmpty()}">
+            <table>
+                <thead>
+                <tr>
+                    <th>Person</th>
+                    <th>Department</th>
+                    <th>Roles</th>
+                    <th>Note</th>
+                    <th class="actions-heading">Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="user : ${users}">
+                    <td>
+                        <div class="person-cell">
+                            <img class="avatar" th:if="${user.photoPath}" th:src="${user.photoPath}" alt="">
+                            <span class="avatar avatar-fallback" th:unless="${user.photoPath}"
+                                  th:text="${#strings.substring(user.username, 0, 1)}">A</span>
+                            <div>
+                                <strong th:text="${user.username}">Alex Chen</strong>
+                                <small th:text="${'ID #' + user.id}">ID #1</small>
+                            </div>
+                        </div>
+                    </td>
+                    <td th:text="${user.department != null ? user.department.name : '—'}">Engineering</td>
+                    <td>
+                        <div class="tag-list" th:if="${!user.roles.isEmpty()}">
+                            <span class="tag" th:each="role : ${user.roles}" th:text="${role.name}">Editor</span>
+                        </div>
+                        <span class="muted" th:if="${user.roles.isEmpty()}">No role</span>
+                    </td>
+                    <td class="note-cell" th:text="${user.note}">Backend engineer</td>
+                    <td>
+                        <div class="row-actions">
+                            <a th:href="@{/users/detail/{id}(id=${user.id})}">View</a>
+                            <a th:href="@{/users/edit/{id}(id=${user.id})}">Edit</a>
+                            <form th:action="@{/users/delete/{id}(id=${user.id})}" method="post"
+                                  onsubmit="return confirm('Delete this user?');">
+                                <button class="text-button danger" type="submit">Delete</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="empty-state" th:if="${users.isEmpty()}">
+            <span class="empty-icon">⌕</span>
+            <h2>No matching users</h2>
+            <p>Try a different search term or add a new profile.</p>
+        </div>
+    </section>
+</main>
+
+<div th:replace="~{layout :: footer}"></div>
+</body>
+</html>
