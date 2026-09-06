@@ -46,7 +46,7 @@ java -jar target/campus-counselor-management-0.1.0-SNAPSHOT.jar \
   --app.upload-dir=/private/tmp/counselor-foundation-uploads
 ```
 
-验收只操作独立进程的 H2 内存示例数据与临时上传目录。新增验收记录已删除，图片清理已确认。新版截图为 `docs/images/login.png` 和 `directory.png`；原 `.jpg` 留作历史记录。MySQL 本轮未重新验收，历史结果见 [2026-08-07 记录](mysql-acceptance.md)。
+验收只操作独立进程的 H2 内存示例数据与临时上传目录。新增验收记录已删除，图片清理已确认。新版截图为 `docs/images/archive/phase-1/login.png` 和 `directory.png`；原 `.jpg` 留作历史记录。MySQL 本轮未重新验收，历史结果见 [2026-08-07 记录](2026-08-07-mysql.md)。
 
 ## 下一阶段
 

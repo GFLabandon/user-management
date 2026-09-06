@@ -11,7 +11,7 @@ Campus Counselor Management
 
 > 当前完成档案业务及账号权限阶段。档案与登录账号分开，采用 Spring Security 表单登录、管理员／只读授权与 CSRF 防护。仍是本地开发原型，没有真实学校交付或生产运行记录。
 
-![辅导员档案列表](docs/images/counselors.png)
+![辅导员档案列表](docs/images/archive/phase-2/counselors.png)
 
 ## 当前功能
 
@@ -67,7 +67,7 @@ export UPLOAD_DIR='./uploads'
 
 `mysql` 配置不会加载演示资料或演示账号。空账号库首次启动必须提供 `APP_BOOTSTRAP_USERNAME` 和 `APP_BOOTSTRAP_PASSWORD`，密码为 12–64 个字符且 UTF-8 不超过 72 字节，否则启动失败。首次建立管理员后移除初始化凭据，重启不会重设已有密码。先新增院系，再建立档案。连接参数没有 root 或默认数据库回退。以上参数适用于本机验收，正式环境另行配置。项目不自动加载 `.env` 文件，变量说明见 [.env.example](.env.example)。
 
-**已有旧版数据时，不要直接按空库流程运行。** 先备份数据库与上传目录，按[迁移与恢复说明](docs/counselor-migration.md)在副本中演练。自动 baseline 默认关闭；缺少工号映射会停止迁移。旧初始化 SQL 已移到 `docs/legacy/`，不再参与运行时初始化；`DB_INIT_MODE` 已移除。
+**已有旧版数据时，不要直接按空库流程运行。** 先备份数据库与上传目录，按[迁移与恢复说明](docs/guides/counselor-migration.md)在副本中演练。自动 baseline 默认关闭；缺少工号映射会停止迁移。旧初始化 SQL 已移到 `docs/legacy/`，不再参与运行时初始化；`DB_INIT_MODE` 已移除。
 
 ## 数据与请求链路
 
@@ -93,35 +93,43 @@ flowchart LR
 
 2026-09-06：37 项自动化测试通过，0 失败、0 错误、0 跳过。覆盖业务、分页 SQL 次数、事务回滚、迁移、文件清理，以及数据库账号、CSRF、权限拒绝、旧会话撤销、私有头像和内容解码。测试数量是当前验证记录，不代表生产质量或性能指标。
 
-独立 MySQL 9.0.1 的历史迁移与恢复结果见[第二阶段记录](docs/counselor-records-acceptance.md)。本阶段另验证 V3→V4、空库无凭据拒绝启动，以及真实登录／multipart 上传／权限流程，见[第三阶段记录](docs/account-security-acceptance.md)。CI 使用 JDK 17 执行测试，真实 MySQL 验收为独立本地记录。
+独立 MySQL 9.0.1 的历史迁移与恢复结果见[第二阶段记录](docs/acceptance/phase-2-counselor-records.md)。本阶段另验证 V3→V4、空库无凭据拒绝启动，以及真实登录／multipart 上传／权限流程，见[第三阶段记录](docs/acceptance/phase-3-account-security.md)。CI 使用 JDK 17 执行测试，真实 MySQL 验收为独立本地记录。
 
 ## 页面预览
 
 | 账号管理（当前） | 档案详情（第二阶段） |
 | --- | --- |
-| ![账号管理](docs/images/accounts.png) | ![档案详情](docs/images/counselor-detail.png) |
+| ![账号管理](docs/images/current/accounts.png) | ![档案详情](docs/images/archive/phase-2/counselor-detail.png) |
 
 截图仅含虚构验收资料。除 `accounts.png`、`account-form-mobile.png` 外，其余截图为早期阶段，登录信息以本文为准。
 
 ## 项目结构
+
+完整索引见[文档导航](docs/README.md)，后续开发顺序见[优化方案](docs/plans/next-optimization-plan-2026-09-06.md)。
 
 ```text
 src/main/java/
 ├── db/migration/                         # V3 旧资料映射迁移
 └── io/github/gflabandon/counselor/
     ├── CounselorManagementApplication.java
-    ├── config/                          # Mapper 扫描、路由保护、头像资源
-    ├── controller/                      # 登录、档案、院系页面
-    ├── entity/                          # Counselor、Department、StatusHistory
+    ├── config/                          # Mapper 扫描、密码编码、Security 配置
+    ├── controller/                      # 登录、档案、院系、账号、审计、头像
+    ├── entity/                          # 档案、院系、账号、状态及操作记录
     ├── mapper/                          # SQL 与结果映射
     ├── service/                         # 事务、业务规则、图片存储
+    ├── security/                        # 数据库认证与账号会话检查
     └── web/                             # 专用表单和分页结果
 src/main/resources/
 ├── db/migration/                        # 版本化结构迁移
 ├── db/demo/                             # 仅 demo 配置启用的虚构资料
 └── templates/                           # Thymeleaf 页面
 src/test/java/                           # 自动化回归测试
-docs/legacy/                             # 原版 SQL，供迁移副本与恢复核对
+docs/
+├── guides/                             # 迁移等操作指南
+├── acceptance/                         # 各阶段验收记录
+├── plans/                              # 后续优化方案
+├── images/                             # current 当前截图、archive 历史截图
+└── legacy/                             # 原版 SQL，供迁移副本与恢复核对
 ```
 
 ## 当前边界

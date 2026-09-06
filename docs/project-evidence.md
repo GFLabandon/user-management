@@ -1,6 +1,6 @@
 # 项目证据与表述边界
 
-核验日期：2026-09-06，第三阶段工作树（基于第二阶段提交 `1adc0da`）。产品名称：高校辅导员信息管理系统（Campus Counselor Management）。仓库目录仍为 `user-management`。
+核验日期：2026-09-06，第三阶段提交 `c193486`（已整合至本地 `main`）。产品名称：高校辅导员信息管理系统（Campus Counselor Management）。仓库目录仍为 `user-management`。
 
 ## 当前实现
 
@@ -39,4 +39,4 @@ Java 代码位于 `src/main/java/io/github/gflabandon/counselor/`，Java 迁移�
 
 ## 历史与材料同步
 
-第一阶段记录见 `refactoring-foundation.md`，2026-08-07 的 MySQL 报告见 `mysql-acceptance.md`。历史测试数字与旧路由只描述当时状态，不代替当前证据。本轮未修改 CareerWorkspace 或简历；后续同步需按实际开发日期和当前验收结果更新。
+第一阶段记录见[基础重构验收](acceptance/phase-1-foundation.md)，2026-08-07 的 MySQL 报告见[历史验收](acceptance/2026-08-07-mysql.md)。历史测试数字与旧路由只描述当时状态，不代替当前证据。本轮未修改 CareerWorkspace 或简历；后续同步需按实际开发日期和当前验收结果更新。

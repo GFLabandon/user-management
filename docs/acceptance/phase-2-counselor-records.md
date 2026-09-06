@@ -60,4 +60,4 @@ Flyway 11.7.2 对本机 MySQL 9.0 发出“高于已测试版本”的兼容性�
 
 正式账号与授权仍待下一阶段。当前没有 Spring Security、密码哈希、CSRF、头像读取权限或完整操作审计，也没有生产部署证据。已实现的状态历史只覆盖建档及任职状态变化。
 
-详细模型、迁移步骤和回退规则见[迁移说明](counselor-migration.md)。第一阶段历史记录仍保留在 [refactoring-foundation.md](refactoring-foundation.md)。
+详细模型、迁移步骤和回退规则见[迁移说明](../guides/counselor-migration.md)。第一阶段历史记录仍保留在 [refactoring-foundation.md](phase-1-foundation.md)。
