@@ -1,30 +1,29 @@
 package io.github.gflabandon.counselor.entity;
 
+
 public class Department {
+
     private int id;
+
+
     private String name;
 
-    public Department() {
-    }
 
-    public Department(int id, String name) {
-        this.id = id;
-        this.name = name;
-    }
+    private boolean active;
 
-    public int getId() {
-        return id;
-    }
 
-    public void setId(int id) {
-        this.id = id;
-    }
+    private int version;
 
-    public String getName() {
-        return name;
-    }
+    public int getId() { return id; }
+    public void setId(int id) { this.id = id; }
 
-    public void setName(String name) {
-        this.name = name;
-    }
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+
+    public boolean getActive() { return active; }
+    public void setActive(boolean active) { this.active = active; }
+
+    public int getVersion() { return version; }
+    public void setVersion(int version) { this.version = version; }
+
 }

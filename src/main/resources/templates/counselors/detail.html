@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head(title='档案详情')}"></head>
+<body><div th:replace="~{layout :: header}"></div>
+<main class="page-shell profile-page"><a class="back-link" th:href="@{/counselors}">← 返回档案列表</a>
+<div class="alert alert-success" role="status" th:if="${success}" th:text="${success}"></div>
+<div class="alert alert-error" role="alert" th:if="${error}" th:text="${error}"></div>
+<section class="card profile-card"><div class="profile-hero">
+<img class="avatar avatar-large" th:if="${counselor.photoPath}" th:src="${counselor.photoPath}" alt="头像">
+<div><p class="eyebrow" th:text="${counselor.employeeNo}"></p><h1 th:text="${counselor.name}"></h1><p class="muted" th:text="${counselor.departmentName}"></p></div>
+<a class="button button-primary profile-edit" th:href="@{/counselors/{id}/edit(id=${counselor.id})}">编辑档案</a></div>
+<dl class="detail-grid"><div><dt>任职状态</dt><dd th:text="${counselor.employmentStatus.label}"></dd></div>
+<div><dt>建立时间</dt><dd th:text="${#temporals.format(counselor.createdAt,'yyyy-MM-dd HH:mm:ss')}"></dd></div>
+<div><dt>更新时间</dt><dd th:text="${#temporals.format(counselor.updatedAt,'yyyy-MM-dd HH:mm:ss')}"></dd></div></dl>
+<div class="record-note"><h2>备注</h2><p th:text="${#strings.isEmpty(counselor.remark) ? '暂无备注' : counselor.remark}"></p>
+<form th:if="${counselor.employmentStatus.name() == 'ACTIVE'}" th:action="@{/counselors/{id}/deactivate(id=${counselor.id})}" method="post">
+<input type="hidden" name="version" th:value="${counselor.version}"><button class="button button-ghost" type="submit">停用档案</button><small>保留档案与状态记录，可在编辑页恢复在职。</small></form></div></section>
+<section class="card history-card"><h2>状态记录</h2><div class="table-scroll"><table><thead><tr><th>时间</th><th>变化</th><th>操作者</th></tr></thead><tbody>
+<tr th:each="h : ${history}"><td th:text="${#temporals.format(h.changedAt,'yyyy-MM-dd HH:mm:ss')}"></td><td th:text="${(h.fromStatus == null ? '建档' : h.fromStatus.label) + ' → ' + h.toStatus.label}"></td><td th:text="${h.actor}"></td></tr>
+</tbody></table></div></section></main><div th:replace="~{layout :: footer}"></div></body></html>

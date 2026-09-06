@@ -3,7 +3,7 @@
 <head th:fragment="head(title)">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="高校辅导员信息管理系统：人员资料管理原型">
+    <meta name="description" content="高校辅导员信息管理系统：辅导员档案管理原型">
     <title th:text="${title + ' · 高校辅导员信息管理系统'}">高校辅导员信息管理系统</title>
     <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
@@ -18,8 +18,9 @@
             </span>
         </a>
         <nav th:if="${session.user != null}" aria-label="主导航">
-            <a th:href="@{/users/list}">人员目录</a>
-            <a class="button button-primary button-small" th:href="@{/users/add}">新增资料</a>
+            <a th:href="@{/counselors}">辅导员档案</a>
+            <a th:href="@{/departments}">院系管理</a>
+            <a class="button button-primary button-small" th:href="@{/counselors/new}">新增档案</a>
             <form class="logout-form" th:action="@{/logout}" method="post">
                 <button class="button button-ghost button-small" type="submit">退出登录</button>
             </form>

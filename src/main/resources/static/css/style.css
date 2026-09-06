@@ -787,3 +787,24 @@ input[type="file"] {
         padding: 25px;
     }
 }
+
+.filter-form {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 12px;
+    padding: 22px;
+    border-bottom: 1px solid var(--slate-200);
+}
+.filter-form .field { flex: 1; min-width: 140px; }
+.pagination { display: flex; flex-wrap: wrap; gap: 12px; padding: 20px 22px; }
+.record-note { padding: 24px 28px; overflow-wrap: anywhere; }
+.record-note p { white-space: pre-wrap; }
+.record-note small { display: block; margin-top: 10px; color: var(--slate-600); }
+.history-card { margin-top: 24px; overflow: hidden; }
+.history-card h2 { padding: 24px 28px 0; }
+@media (max-width: 680px) {
+    nav > a:not(.button) { display: inline; }
+    nav { flex-wrap: wrap; }
+    .filter-form .field { flex-basis: 100%; }
+}

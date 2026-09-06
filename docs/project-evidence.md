@@ -1,61 +1,41 @@
-# 项目证据与简历口径
+# 项目证据与表述边界
 
-最后核验：2026-09-06，阶段一重构工作树。MySQL 验收日期仍为 2026-08-07。
+核验日期：2026-09-06，第二阶段工作树。产品名称：高校辅导员信息管理系统（Campus Counselor Management）。仓库目录仍为 `user-management`。
 
-产品名为“高校辅导员信息管理系统”（Campus Counselor Management），应用标识为 `campus-counselor-management`，仓库目录暂保留 `user-management`。本轮只统一工程与展示名称，人员资料尚未迁移为完整辅导员档案。
+## 当前实现
 
-本文档是 CareerWorkspace 或其他简历材料引用 `user-management` 时的事实入口。实现证据以本仓库源码、测试和可运行页面为准。
-
-## 已实现事实
-
-| 能力 | 当前证据 |
+| 能力 | 实现位置／验证 |
 | --- | --- |
-| Spring Boot 应用与标准 Maven 目录 | `pom.xml`、`src/main/java/io/github/gflabandon/counselor/CounselorManagementApplication.java` |
-| MVC 分层 | `controller/UserController.java`、`service/UserService.java`、`service/impl/UserServiceImpl.java` |
-| MyBatis 数据访问 | `mapper/UserMapper.java`，使用 `#{}` 参数绑定、关联结果映射和模糊搜索 |
-| 关系模型 | `db/*/schema.sql`，包含 users、departments、roles、user_roles 四张表 |
-| 用户功能 | 新增、列表、详情、编辑、删除、姓名/备注模糊搜索 |
-| 角色维护 | 表单角色勾选，Service 事务内替换 user_roles 关系 |
-| 登录检查 | `LoginController` 写入 Session，`LoginInterceptor` 统一保护 `/users/**` |
-| 参数校验 | `User` Bean Validation + Controller `BindingResult` |
-| 图片处理 | JPG/PNG 扩展名和 Content-Type 白名单、UUID 重命名、独立目录与删除清理 |
-| 环境配置 | 默认 H2 零配置启动；`mysql` profile 从环境变量读取连接信息 |
-| 自动化验证 | `./mvnw test`：11 项通过，覆盖 Web、Service/MyBatis、文件存储和上下文启动 |
-| 真实 MySQL 验收 | `docs/mysql-acceptance.md`（2026-08-07 历史记录，本轮未复验）：MySQL Community Server 9.0.1 + Connector/J 完整 CRUD/关系/上传流程 |
-| 页面展示 | Thymeleaf 响应式登录、目录、新增、编辑和详情页；截图位于 `docs/images/` |
+| Java 17、Spring Boot、MyBatis、Thymeleaf | pom.xml；标准 Maven 目录 |
+| 档案对象 | entity/Counselor.java：工号、姓名、院系、任职状态、照片、备注、时间戳、版本 |
+| 分层与输入边界 | CounselorController、CounselorForm、CounselorService、CounselorMapper；显式字段白名单 |
+| 检索与分页 | 工号／姓名、院系／状态筛选，COUNT + JOIN 分页，参数化 SQL |
+| 并发修改保护 | UPDATE 的 id + version 条件，受影响行数检查；旧表单不能覆盖新修改 |
+| 状态历史 | 建档、停用、恢复在职记录，与档案写入同一事务；保存操作者和时间 |
+| 院系维护 | 新增、编辑、停用；有新档案或旧资料引用时禁止删除 |
+| 图片 | JPG/PNG 类型检查、UUID 存储、失败新图清理、提交后旧图清理、失败日志 |
+| 登录 | 配置账号与 Session；拦截 counselors、departments 和兼容 users 路由 |
+| 数据库 | H2 演示；MySQL 持久化；Flyway V1–V3 和显式旧数据工号映射 |
+| 测试 | 26 项通过：Web、SQL 次数、业务、事务、迁移、文件存储 |
+| MySQL 验收 | 独立 MySQL 9.0.1 迁移、重启和备份恢复；详见 counselor-records-acceptance.md |
 
-## 推荐简历表述
+Java 代码位于 `src/main/java/io/github/gflabandon/counselor/`，Java 迁移位于 `src/main/java/db/migration/`。自动化报告位于本地 `target/surefire-reports/`，不提交构建产物。
 
-可根据版面选择 2—3 条，不需要全部堆入简历：
+## 可解释的项目描述
 
-- 基于 Java 17、Spring Boot、Spring MVC、MyBatis 与 MySQL/H2 实现服务端渲染用户管理项目，按 Controller、Service、Mapper 分层完成用户增删改查、详情与姓名/备注模糊搜索。
-- 设计用户、部门、角色及用户—角色多对多表关系，在事务内同步角色分配；通过 MyBatis 参数绑定和关联结果映射返回部门、角色信息。
-- 使用 Session + Interceptor 统一保护管理页面，结合 Bean Validation、PRG 反馈和 JPG/PNG 白名单、UUID 重命名实现表单与头像上传处理。
-- 将默认运行环境改为内存 H2、MySQL 连接改为环境变量，并补充 Maven Wrapper、GitHub Actions 与 11 项自动化测试；另使用真实 MySQL 9.0.1 验收建表、CRUD、关系更新与上传清理链路。
+用于演示高校辅导员档案维护的 Java Web 项目，支持工号与姓名检索、院系归属、任职状态、头像上传和状态记录。按 Controller、Service、Mapper 分层实现，采用 Flyway 管理数据库变化，以版本号检查避免过期编辑覆盖。
 
-## 面试口径
-
-一句话版本：
-
-> 这是我用于练习 Java Web 后端工程基础的完整可运行项目，我按 Controller、Service、Mapper 分层实现用户 CRUD、条件查询、部门/角色关系、Session 拦截和图片上传，并补了 H2/MySQL 双环境与自动化测试。
-
-如果被问“是不是 RBAC 权限系统”：
-
-> 项目实现了用户、角色、部门和用户—角色关系建模，也能维护角色分配；目前登录保护仍是配置化演示账号加 Session 拦截，没有做基于角色的接口授权，所以更准确地说是人员资料与角色关系维护，不是接口授权系统。
-
-当前对外名称可使用“高校辅导员信息管理系统（开发原型）”；下列条目描述的是原有实现，不代表本轮新增业务能力。
+本次是在旧通用用户管理原型上进行业务重构，不是从真实学校需求推导出的已交付系统。新能力的开发和验收日期为 2026-09-06，不能倒填为过去已完成的功能。
 
 ## 不应声称
 
-- 不写已完成工号、任职状态、院系权限、分页、乐观锁或独立系统账号；这些属于后续阶段。
+- 档案不是系统账号，旧角色关系不参与接口授权。尚无完整 RBAC、Spring Security、密码哈希、JWT 或 OAuth2。
+- 尚无 CSRF 防护、头像独立授权和生产级文件安全检查；不能宣称已满足公网部署要求。
+- 状态历史不是覆盖全部字段和院系操作的完整审计。
+- 26 项测试及固定两条列表 SQL 不代表高并发、性能指标或完整质量保障。
+- 没有真实高校交付、真实用户规模、学生／班级管理、审批、Excel 导入导出或 AI 功能证据。
+- 新数据库结构不能仅通过切回旧 Git 提交回退；须恢复对应数据库与上传目录备份。
 
-- 不写“生产级”“企业级”“高并发”“已上线”或真实用户量。
-- 不写 Spring Security、JWT、OAuth2、密码哈希、细粒度鉴权；当前未实现。
-- 不写 CSRF 防护或公网安全部署；当前演示登录不应直接暴露到公网。
-- 不把 Thymeleaf 页面称为 Vue/React 前端或 REST API。
-- 不声称对象存储、病毒扫描、图片内容识别；当前只有扩展名与 Content-Type 白名单。
-- 不把 11 项测试扩大成完整质量保障或性能测试。
+## 历史与材料同步
 
-## CareerWorkspace 同步提示
-
-旧资料若仍引用嵌套的 `user-management/src/...`，需要改成当前独立仓库的根目录相对路径 `src/...`。旧的 `src/main/resources/schema.sql` 已拆分为 `src/main/resources/db/h2/schema.sql` 与 `src/main/resources/db/mysql/schema.sql`。
+第一阶段记录见 `refactoring-foundation.md`，2026-08-07 的 MySQL 报告见 `mysql-acceptance.md`。历史测试数字与旧路由只描述当时状态，不代替当前证据。本轮未修改 CareerWorkspace 或简历；后续同步需按实际开发日期和当前验收结果更新。

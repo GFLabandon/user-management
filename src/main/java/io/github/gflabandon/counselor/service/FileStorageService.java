@@ -9,6 +9,8 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.UUID;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -16,6 +18,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class FileStorageService {
+
+    private static final Logger log = LoggerFactory.getLogger(FileStorageService.class);
 
     private static final Set<String> ALLOWED_EXTENSIONS = Set.of("jpg", "jpeg", "png");
     private static final Set<String> ALLOWED_CONTENT_TYPES = Set.of("image/jpeg", "image/png");
@@ -49,6 +53,14 @@ public class FileStorageService {
 
         try (InputStream inputStream = file.getInputStream()) {
             Files.copy(inputStream, destination, StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException failure) {
+            try {
+                Files.deleteIfExists(destination);
+            } catch (IOException cleanupFailure) {
+                failure.addSuppressed(cleanupFailure);
+                log.warn("Unable to clean partial upload {}", storedName, cleanupFailure);
+            }
+            throw failure;
         }
         return "/uploads/" + storedName;
     }
@@ -65,8 +77,8 @@ public class FileStorageService {
 
         try {
             Files.deleteIfExists(uploadDirectory.resolve(fileName).normalize());
-        } catch (IOException ignored) {
-            // Database state is authoritative; a stale image can be cleaned up separately.
+        } catch (IOException failure) {
+            log.warn("Unable to delete stored image {}", fileName, failure);
         }
     }
 

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head(title='维护档案')}"></head>
+<body><div th:replace="~{layout :: header}"></div>
+<main class="page-shell form-page"><a class="back-link" th:href="@{/counselors}">← 返回档案列表</a>
+<section class="page-heading compact"><div><p class="eyebrow">档案维护</p><h1 th:text="${recordId == null ? '新增辅导员档案' : '编辑辅导员档案'}"></h1>
+<p class="muted">工号唯一，姓名允许重复；建立档案不会开通登录账号。</p></div></section>
+<form class="card profile-form" th:action="${recordId == null} ? @{/counselors} : @{/counselors/{id}(id=${recordId})}" th:object="${counselorForm}" method="post" enctype="multipart/form-data">
+<input type="hidden" th:field="*{version}">
+<div class="alert alert-success" role="status" th:if="${success}" th:text="${success}"></div>
+<div class="alert alert-error" role="alert" th:if="${error}" th:text="${error}"></div>
+<p th:if="${conflict}"><a th:href="@{/counselors/{id}/edit(id=${recordId})}">重新打开最新档案</a>（当前输入仍保留在本页，可先复制需要保留的内容。）</p>
+<div class="form-grid">
+<label class="field"><span>工号</span><input th:field="*{employeeNo}" maxlength="32" required placeholder="例如：C2026001"><small>2–32 位字母、数字、下划线或短横线，字母统一保存为大写。</small><small class="field-error" th:errors="*{employeeNo}"></small></label>
+<label class="field"><span>姓名</span><input th:field="*{name}" maxlength="50" required><small class="field-error" th:errors="*{name}"></small></label>
+<label class="field"><span>院系</span><select th:field="*{departmentId}" required><option value="">请选择院系</option>
+<option th:each="d : ${departments}" th:if="${d.active or (existing != null and existing.departmentId == d.id)}" th:value="${d.id}" th:text="${d.name + (d.active ? '' : '（已停用，保留原关联）')}"></option>
+</select><small class="field-error" th:errors="*{departmentId}"></small></label>
+<label class="field"><span>任职状态</span><select th:field="*{employmentStatus}" required><option th:each="s : ${statuses}" th:value="${s}" th:text="${s.label}"></option></select><small class="field-error" th:errors="*{employmentStatus}"></small></label>
+<label class="field field-wide"><span>备注</span><textarea th:field="*{remark}" rows="3" maxlength="255"></textarea><small class="field-error" th:errors="*{remark}"></small></label>
+<label class="field field-wide"><span>头像</span><input name="photo" type="file" accept="image/png,image/jpeg"><small>支持 JPG/PNG，最大 5 MB；不选择则保留原头像。</small></label>
+<div th:if="${existing != null and existing.photoPath != null}"><img class="avatar avatar-large" th:src="${existing.photoPath}" alt="当前头像"></div>
+<small class="field-error" th:errors="*{version}"></small>
+</div><div class="form-actions"><a class="button button-ghost" th:href="@{/counselors}">取消</a><button class="button button-primary" type="submit">保存档案</button></div>
+</form></main><div th:replace="~{layout :: footer}"></div></body></html>

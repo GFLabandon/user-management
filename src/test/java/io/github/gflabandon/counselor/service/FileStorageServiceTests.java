@@ -49,4 +49,22 @@ class FileStorageServiceTests {
 
         assertThat(stored).doesNotExist();
     }
+    @Test
+    void failedStreamCopyRemovesPartialUpload() throws Exception {
+        FileStorageService service = new FileStorageService(temporaryDirectory.toString());
+        MockMultipartFile broken = new MockMultipartFile("photo", "broken.png", "image/png", new byte[]{1}) {
+            @Override public java.io.InputStream getInputStream() {
+                return new java.io.InputStream() {
+                    private int reads;
+                    @Override public int read() throws java.io.IOException {
+                        if (reads++ < 10) return 1;
+                        throw new java.io.IOException("simulated interrupted upload");
+                    }
+                };
+            }
+        };
+        assertThatThrownBy(() -> service.storeImage(broken)).isInstanceOf(java.io.IOException.class);
+        try (var files = Files.list(temporaryDirectory)) { assertThat(files.toList()).isEmpty(); }
+    }
+
 }

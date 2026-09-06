@@ -25,7 +25,7 @@ public class LoginController {
     @GetMapping("/login")
     public String login(HttpSession session) {
         if (session.getAttribute(SESSION_USER_KEY) != null) {
-            return "redirect:/users/list";
+            return "redirect:/counselors";
         }
         return "login";
     }
@@ -37,7 +37,7 @@ public class LoginController {
                                HttpSession session) {
         if (adminUsername.equals(username) && adminPassword.equals(password)) {
             session.setAttribute(SESSION_USER_KEY, username);
-            return "redirect:/users/list";
+            return "redirect:/counselors";
         }
 
         model.addAttribute("error", "账号或密码不正确。");

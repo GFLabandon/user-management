@@ -1,0 +1,142 @@
+package io.github.gflabandon.counselor.controller;
+
+import java.io.IOException;
+import java.util.List;
+import io.github.gflabandon.counselor.entity.*;
+import io.github.gflabandon.counselor.service.*;
+import io.github.gflabandon.counselor.web.CounselorForm;
+import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
+import org.springframework.beans.propertyeditors.StringTrimmerEditor;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.WebDataBinder;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+@Controller
+@RequestMapping("/counselors")
+public class CounselorController {
+    private final CounselorService service;
+    private final DepartmentService departments;
+    private final FileStorageService storage;
+    public CounselorController(CounselorService service, DepartmentService departments, FileStorageService storage) {
+        this.service = service; this.departments = departments; this.storage = storage;
+    }
+
+    @InitBinder("counselorForm")
+    void bindForm(WebDataBinder binder) {
+        binder.setAllowedFields("employeeNo", "name", "departmentId", "employmentStatus", "remark", "version");
+        binder.registerCustomEditor(String.class, new StringTrimmerEditor(false));
+    }
+    @ModelAttribute("departments")
+    List<Department> departments() { return departments.all(); }
+    @ModelAttribute("statuses")
+    EmploymentStatus[] statuses() { return EmploymentStatus.values(); }
+
+    @GetMapping
+    public String list(@RequestParam(defaultValue = "") String keyword,
+                       @RequestParam(required = false) Integer departmentId,
+                       @RequestParam(required = false) EmploymentStatus status,
+                       @RequestParam(defaultValue = "1") int page,
+                       @RequestParam(defaultValue = "10") int size, Model model) {
+        model.addAttribute("result", service.search(keyword, departmentId, status, page, size));
+        model.addAttribute("keyword", keyword.trim());
+        model.addAttribute("departmentId", departmentId);
+        model.addAttribute("status", status);
+        return "counselors/list";
+    }
+
+    @GetMapping("/new")
+    public String createForm(Model model) {
+        model.addAttribute("counselorForm", new CounselorForm());
+        return form(model, null);
+    }
+
+    @GetMapping("/{id}/edit")
+    public String editForm(@PathVariable int id, Model model) {
+        Counselor counselor = service.get(id);
+        CounselorForm form = new CounselorForm();
+        form.setEmployeeNo(counselor.getEmployeeNo()); form.setName(counselor.getName());
+        form.setDepartmentId(counselor.getDepartmentId()); form.setEmploymentStatus(counselor.getEmploymentStatus());
+        form.setRemark(counselor.getRemark()); form.setVersion(counselor.getVersion());
+        model.addAttribute("counselorForm", form);
+        return form(model, id);
+    }
+
+    @GetMapping("/{id}")
+    public String detail(@PathVariable int id, Model model) {
+        model.addAttribute("counselor", service.get(id));
+        model.addAttribute("history", service.history(id));
+        return "counselors/detail";
+    }
+
+    @PostMapping
+    public String create(@Valid @ModelAttribute CounselorForm counselorForm, BindingResult errors,
+                         @RequestParam(required = false) MultipartFile photo, HttpSession session,
+                         Model model, RedirectAttributes redirect) {
+        return save(null, counselorForm, errors, photo, session, model, redirect);
+    }
+
+    @PostMapping("/{id}")
+    public String update(@PathVariable int id, @RequestParam int version, @Valid @ModelAttribute CounselorForm counselorForm, BindingResult errors,
+                         @RequestParam(required = false) MultipartFile photo, HttpSession session,
+                         Model model, RedirectAttributes redirect) {
+        return save(id, counselorForm, errors, photo, session, model, redirect);
+    }
+
+    private String save(Integer id, CounselorForm input, BindingResult errors, MultipartFile photo,
+                        HttpSession session, Model model, RedirectAttributes redirect) {
+        if (id != null) service.get(id);
+        if (errors.hasErrors()) return form(model, id);
+        String newImage = null;
+        int savedId;
+        String oldImage = null;
+        try {
+            if (photo != null && !photo.isEmpty()) newImage = storage.storeImage(photo);
+            String actor = (String) session.getAttribute(LoginController.SESSION_USER_KEY);
+            if (id == null) savedId = service.create(input, newImage, actor);
+            else { oldImage = service.update(id, input, newImage, actor); savedId = id; }
+        } catch (IOException | BusinessException | DataIntegrityViolationException exception) {
+            storage.delete(newImage);
+            model.addAttribute("error", exception instanceof DataIntegrityViolationException
+                    ? "工号已存在或关联数据无效，请检查后重试。" : exception.getMessage());
+            if (exception instanceof EditConflictException) model.addAttribute("conflict", true);
+            return form(model, id);
+        } catch (RuntimeException exception) {
+            storage.delete(newImage);
+            throw exception;
+        }
+        // Service transaction has committed. A stale request never deletes the winning update's image.
+        storage.delete(oldImage);
+        redirect.addFlashAttribute("success", id == null ? "辅导员档案已建立。" : "辅导员档案已更新。");
+        return "redirect:/counselors/" + savedId;
+    }
+
+    @PostMapping("/{id}/deactivate")
+    public String deactivate(@PathVariable int id, @RequestParam int version, HttpSession session,
+                             RedirectAttributes redirect) {
+        try {
+            service.deactivate(id, version, (String) session.getAttribute(LoginController.SESSION_USER_KEY));
+            redirect.addFlashAttribute("success", "档案已停用，原有资料和状态记录保留。");
+        } catch (BusinessException exception) { redirect.addFlashAttribute("error", exception.getMessage()); }
+        return "redirect:/counselors/" + id;
+    }
+
+    private String form(Model model, Integer id) {
+        model.addAttribute("recordId", id);
+        if (id != null) model.addAttribute("existing", service.get(id));
+        return "counselors/form";
+    }
+
+    @ExceptionHandler(BusinessException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public String businessError(BusinessException exception, Model model) {
+        model.addAttribute("error", exception.getMessage());
+        return "error/business";
+    }
+}

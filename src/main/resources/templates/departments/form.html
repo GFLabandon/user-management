@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head(title='维护院系')}"></head>
+<body><div th:replace="~{layout :: header}"></div>
+<main class="page-shell form-page"><a class="back-link" th:href="@{/departments}">← 返回院系列表</a><section class="page-heading compact"><h1 th:text="${recordId == null ? '新增院系' : '编辑院系'}"></h1></section>
+<form class="card profile-form" th:action="${recordId == null} ? @{/departments} : @{/departments/{id}(id=${recordId})}" method="post" th:object="${departmentForm}"><input type="hidden" th:field="*{version}">
+<div class="alert alert-success" role="status" th:if="${success}" th:text="${success}"></div>
+<div class="alert alert-error" role="alert" th:if="${error}" th:text="${error}"></div>
+<div class="form-grid"><label class="field field-wide"><span>院系名称</span><input th:field="*{name}" maxlength="100" required><small class="field-error" th:errors="*{name}"></small></label>
+<label class="field"><span>状态</span><select th:field="*{active}"><option value="true">启用</option><option value="false">停用</option></select><small>停用后不接受新增关联，原有档案归属保留。</small></label>
+<small class="field-error" th:errors="*{version}"></small></div><div class="form-actions"><a class="button button-ghost" th:href="@{/departments}">取消</a><button class="button button-primary" type="submit">保存院系</button></div></form></main><div th:replace="~{layout :: footer}"></div></body></html>

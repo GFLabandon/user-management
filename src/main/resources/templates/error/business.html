@@ -1,0 +1,5 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head(title='请求未完成')}"></head>
+<body><div th:replace="~{layout :: header}"></div>
+<main class="page-shell"><section class="card record-note"><h1>请求未完成</h1><p role="alert" th:text="${error}"></p><a th:href="@{/counselors}">返回档案列表</a></section></main><div th:replace="~{layout :: footer}"></div></body></html>

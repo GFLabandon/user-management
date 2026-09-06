@@ -1,0 +1,75 @@
+package io.github.gflabandon.counselor.controller;
+
+import io.github.gflabandon.counselor.entity.Department;
+import io.github.gflabandon.counselor.service.*;
+import io.github.gflabandon.counselor.web.DepartmentForm;
+import jakarta.validation.Valid;
+import org.springframework.beans.propertyeditors.StringTrimmerEditor;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.WebDataBinder;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+@Controller
+@RequestMapping("/departments")
+public class DepartmentController {
+    private final DepartmentService service;
+    public DepartmentController(DepartmentService service) { this.service = service; }
+    @InitBinder("departmentForm")
+    void bindForm(WebDataBinder binder) {
+        binder.setAllowedFields("name", "active", "version");
+        binder.registerCustomEditor(String.class, new StringTrimmerEditor(false));
+    }
+    @GetMapping
+    public String list(Model model) { model.addAttribute("departments", service.all()); return "departments/list"; }
+    @GetMapping("/new")
+    public String createForm(Model model) {
+        model.addAttribute("departmentForm", new DepartmentForm()); return "departments/form";
+    }
+    @GetMapping("/{id}/edit")
+    public String editForm(@PathVariable int id, Model model) {
+        Department department = service.get(id);
+        DepartmentForm form = new DepartmentForm();
+        form.setName(department.getName()); form.setActive(department.getActive()); form.setVersion(department.getVersion());
+        model.addAttribute("departmentForm", form); model.addAttribute("recordId", id);
+        return "departments/form";
+    }
+    @PostMapping
+    public String create(@Valid @ModelAttribute DepartmentForm departmentForm, BindingResult errors,
+                         Model model, RedirectAttributes redirect) {
+        return save(null, departmentForm, errors, model, redirect);
+    }
+    @PostMapping("/{id}")
+    public String update(@PathVariable int id, @RequestParam int version, @Valid @ModelAttribute DepartmentForm departmentForm, BindingResult errors,
+                         Model model, RedirectAttributes redirect) {
+        return save(id, departmentForm, errors, model, redirect);
+    }
+    private String save(Integer id, DepartmentForm form, BindingResult errors, Model model, RedirectAttributes redirect) {
+        model.addAttribute("recordId", id);
+        if (errors.hasErrors()) return "departments/form";
+        try { service.save(id, form); }
+        catch (BusinessException | DataIntegrityViolationException exception) {
+            model.addAttribute("error", exception instanceof DataIntegrityViolationException ? "院系名称已存在。" : exception.getMessage());
+            return "departments/form";
+        }
+        redirect.addFlashAttribute("success", "院系已保存。"); return "redirect:/departments";
+    }
+    @PostMapping("/{id}/delete")
+    public String delete(@PathVariable int id, @RequestParam int version, RedirectAttributes redirect) {
+        try { service.delete(id, version); redirect.addFlashAttribute("success", "院系已删除。"); }
+        catch (BusinessException | DataIntegrityViolationException exception) {
+            redirect.addFlashAttribute("error", exception instanceof DataIntegrityViolationException
+                    ? "院系已被引用，请使用停用功能。" : exception.getMessage());
+        }
+        return "redirect:/departments";
+    }
+    @ExceptionHandler(BusinessException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public String businessError(BusinessException exception, Model model) {
+        model.addAttribute("error", exception.getMessage()); return "error/business";
+    }
+}

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head(title='辅导员档案')}"></head>
+<body><div th:replace="~{layout :: header}"></div>
+<main class="page-shell">
+<section class="page-heading"><div><p class="eyebrow">档案管理</p><h1>辅导员档案</h1>
+<p class="muted">按工号、姓名、院系与任职状态查找档案。</p></div>
+<a class="button button-primary" th:href="@{/counselors/new}">新增档案</a></section>
+<div class="alert alert-success" role="status" th:if="${success}" th:text="${success}"></div>
+<div class="alert alert-error" role="alert" th:if="${error}" th:text="${error}"></div>
+<section class="card directory-card">
+<form class="filter-form" th:action="@{/counselors}" method="get">
+<label class="field"><span>工号或姓名</span><input name="keyword" th:value="${keyword}" maxlength="100" placeholder="输入工号或姓名"></label>
+<label class="field"><span>院系</span><select name="departmentId"><option value="">全部院系</option>
+<option th:each="d : ${departments}" th:value="${d.id}" th:selected="${departmentId == d.id}" th:text="${d.name + (d.active ? '' : '（已停用）')}"></option></select></label>
+<label class="field"><span>任职状态</span><select name="status"><option value="">全部状态</option>
+<option th:each="s : ${statuses}" th:value="${s}" th:selected="${status == s}" th:text="${s.label}"></option></select></label>
+<label class="field"><span>每页条数</span><select name="size"><option th:each="n : ${ {10,20,50,100} }" th:value="${n}" th:selected="${result.size == n}" th:text="${n}"></option></select></label>
+<button class="button button-primary" type="submit">查询</button><a class="button button-ghost" th:href="@{/counselors}">重置</a>
+</form>
+<div class="table-scroll" th:unless="${result.items.isEmpty()}"><table><thead><tr><th>辅导员</th><th>工号</th><th>院系</th><th>状态</th><th>操作</th></tr></thead><tbody>
+<tr th:each="c : ${result.items}"><td><div class="person-cell">
+<img class="avatar" th:if="${c.photoPath}" th:src="${c.photoPath}" alt="">
+<span class="avatar avatar-fallback" th:unless="${c.photoPath}" th:text="${#strings.substring(c.name,0,1)}"></span>
+<strong th:text="${c.name}"></strong></div></td><td th:text="${c.employeeNo}"></td><td th:text="${c.departmentName}"></td>
+<td><span class="tag" th:text="${c.employmentStatus.label}"></span></td>
+<td><div class="row-actions"><a th:href="@{/counselors/{id}(id=${c.id})}">详情</a><a th:href="@{/counselors/{id}/edit(id=${c.id})}">编辑</a></div></td></tr>
+</tbody></table></div>
+<div class="empty-state" th:if="${result.items.isEmpty()}"><h2>没有匹配的档案</h2><p>请调整筛选条件，或新增辅导员档案。</p></div>
+<nav class="pagination" aria-label="分页"><span th:text="${'共 ' + result.total + ' 条 · 第 ' + result.page + ' / ' + result.totalPages + ' 页'}"></span>
+<a class="button button-ghost" th:if="${result.hasPrevious()}" th:href="@{/counselors(keyword=${keyword},departmentId=${departmentId},status=${status},size=${result.size},page=${result.page - 1})}">上一页</a>
+<a class="button button-ghost" th:if="${result.hasNext()}" th:href="@{/counselors(keyword=${keyword},departmentId=${departmentId},status=${status},size=${result.size},page=${result.page + 1})}">下一页</a></nav>
+</section></main><div th:replace="~{layout :: footer}"></div></body></html>
