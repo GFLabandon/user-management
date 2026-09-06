@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head th:replace="~{layout :: head(title='维护档案')}"></head>
 <body><div th:replace="~{layout :: header}"></div>
 <main class="page-shell form-page"><a class="back-link" th:href="@{/counselors}">← 返回档案列表</a>
@@ -9,7 +9,7 @@
 <input type="hidden" th:field="*{version}">
 <div class="alert alert-success" role="status" th:if="${success}" th:text="${success}"></div>
 <div class="alert alert-error" role="alert" th:if="${error}" th:text="${error}"></div>
-<p th:if="${conflict}"><a th:href="@{/counselors/{id}/edit(id=${recordId})}">重新打开最新档案</a>（当前输入仍保留在本页，可先复制需要保留的内容。）</p>
+<p th:if="${conflict}"><a sec:authorize="hasRole('ADMIN')" th:href="@{/counselors/{id}/edit(id=${recordId})}">重新打开最新档案</a>（当前输入仍保留在本页，可先复制需要保留的内容。）</p>
 <div class="form-grid">
 <label class="field"><span>工号</span><input th:field="*{employeeNo}" maxlength="32" required placeholder="例如：C2026001"><small>2–32 位字母、数字、下划线或短横线，字母统一保存为大写。</small><small class="field-error" th:errors="*{employeeNo}"></small></label>
 <label class="field"><span>姓名</span><input th:field="*{name}" maxlength="50" required><small class="field-error" th:errors="*{name}"></small></label>

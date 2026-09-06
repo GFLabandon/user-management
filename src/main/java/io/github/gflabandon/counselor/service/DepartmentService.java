@@ -14,7 +14,8 @@ import jakarta.validation.Valid;
 @Transactional(readOnly = true)
 public class DepartmentService {
     private final DepartmentMapper mapper;
-    public DepartmentService(DepartmentMapper mapper) { this.mapper = mapper; }
+    private final AuditService audit;
+    public DepartmentService(DepartmentMapper mapper, AuditService audit) { this.mapper = mapper; this.audit = audit; }
     public List<Department> all() { return mapper.findAll(); }
     public Department get(int id) {
         Department department = mapper.findById(id);
@@ -34,6 +35,7 @@ public class DepartmentService {
             department.setId(id);
             if (mapper.update(department) != 1) throw new EditConflictException();
         }
+        audit.success(AuditService.actor(), id == null ? "DEPARTMENT_CREATE" : "DEPARTMENT_UPDATE", "DEPARTMENT", department.getId());
         return department.getId();
     }
 
@@ -44,5 +46,6 @@ public class DepartmentService {
         if (department.getVersion() != version) throw new EditConflictException();
         if (mapper.references(id) != 0) throw new BusinessException("该院系已被档案或旧资料引用，请使用停用功能。");
         if (mapper.delete(id, version) != 1) throw new EditConflictException();
+        audit.success(AuditService.actor(), "DEPARTMENT_DELETE", "DEPARTMENT", id);
     }
 }

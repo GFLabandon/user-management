@@ -1,0 +1,6 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head(title='操作记录')}"></head>
+<body><header th:replace="~{layout :: header}"></header><main class="page-shell">
+<section class="page-heading"><div><p class="eyebrow">操作追溯</p><h1>操作记录</h1><p class="muted">最近 100 条账号、档案、院系及访问记录。</p></div></section>
+<div class="card table-scroll"><table><thead><tr><th>时间</th><th>操作人</th><th>操作</th><th>对象</th><th>结果</th><th>原因</th></tr></thead><tbody><tr th:each="e : ${events}"><td th:text="${#temporals.format(e.occurredAt, 'yyyy-MM-dd HH:mm:ss')}"></td><td th:text="${e.actor}"></td><td th:text="${e.action}"></td><td th:text="${e.targetType + (e.targetId == null ? '' : ' #' + e.targetId)}"></td><td th:text="${e.outcome}"></td><td th:text="${e.reason}"></td></tr></tbody></table></div></main><footer th:replace="~{layout :: footer}"></footer></body></html>

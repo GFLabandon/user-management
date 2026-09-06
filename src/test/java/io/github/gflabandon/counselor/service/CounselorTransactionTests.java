@@ -29,4 +29,15 @@ class CounselorTransactionTests {
         assertThat(after.getEmploymentStatus()).isEqualTo(before.getEmploymentStatus());
         assertThat(service.history(before.getId())).hasSize(count);
     }
+
+    @Test void auditFailureRollsBackOrdinaryEditWithoutStatusChange() {
+        Counselor before = service.search("DEMO-001", null, null, 1, 10).items().get(0);
+        CounselorForm form = new CounselorForm(); form.setEmployeeNo(before.getEmployeeNo()); form.setName("不能提交的修改");
+        form.setDepartmentId(before.getDepartmentId()); form.setVersion(before.getVersion());
+        form.setEmploymentStatus(before.getEmploymentStatus());
+        assertThatThrownBy(() -> service.update(before.getId(), form, null, null))
+                .isInstanceOf(org.springframework.dao.DataIntegrityViolationException.class);
+        assertThat(service.get(before.getId()).getName()).isEqualTo(before.getName());
+        assertThat(service.get(before.getId()).getVersion()).isEqualTo(before.getVersion());
+    }
 }

@@ -18,10 +18,11 @@ import jakarta.validation.Valid;
 public class CounselorService {
     private final CounselorMapper mapper;
     private final DepartmentMapper departments;
+    private final AuditService audit;
 
-    public CounselorService(CounselorMapper mapper, DepartmentMapper departments) {
+    public CounselorService(CounselorMapper mapper, DepartmentMapper departments, AuditService audit) {
         this.mapper = mapper;
-        this.departments = departments;
+        this.departments = departments; this.audit = audit;
     }
 
     public PageResult<Counselor> search(String keyword, Integer departmentId, EmploymentStatus status, int page, int size) {
@@ -50,6 +51,7 @@ public class CounselorService {
         counselor.setPhotoPath(photoPath);
         mapper.insert(counselor);
         mapper.insertHistory(counselor.getId(), null, counselor.getEmploymentStatus(), actor);
+        audit.success(actor, "COUNSELOR_CREATE", "COUNSELOR", counselor.getId());
         return counselor.getId();
     }
 
@@ -66,6 +68,7 @@ public class CounselorService {
         if (existing.getEmploymentStatus() != counselor.getEmploymentStatus()) {
             mapper.insertHistory(id, existing.getEmploymentStatus(), counselor.getEmploymentStatus(), actor);
         }
+        audit.success(actor, "COUNSELOR_UPDATE", "COUNSELOR", id);
         return newPhotoPath == null ? null : existing.getPhotoPath();
     }
 
@@ -76,6 +79,7 @@ public class CounselorService {
         if (existing.getEmploymentStatus() == EmploymentStatus.INACTIVE) throw new BusinessException("该档案已经停用。");
         if (mapper.deactivate(id, version) != 1) throw new EditConflictException();
         mapper.insertHistory(id, existing.getEmploymentStatus(), EmploymentStatus.INACTIVE, actor);
+        audit.success(actor, "COUNSELOR_DEACTIVATE", "COUNSELOR", id);
     }
 
     private void requireDepartment(int id, Integer previousId) {

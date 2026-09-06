@@ -18,7 +18,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @RequestMapping("/departments")
 public class DepartmentController {
     private final DepartmentService service;
-    public DepartmentController(DepartmentService service) { this.service = service; }
+    private final AuditService audit;
+    public DepartmentController(DepartmentService service, AuditService audit) { this.service = service; this.audit = audit; }
     @InitBinder("departmentForm")
     void bindForm(WebDataBinder binder) {
         binder.setAllowedFields("name", "active", "version");
@@ -50,9 +51,10 @@ public class DepartmentController {
     }
     private String save(Integer id, DepartmentForm form, BindingResult errors, Model model, RedirectAttributes redirect) {
         model.addAttribute("recordId", id);
-        if (errors.hasErrors()) return "departments/form";
+        if (errors.hasErrors()) { failure(id, "VALIDATION"); return "departments/form"; }
         try { service.save(id, form); }
         catch (BusinessException | DataIntegrityViolationException exception) {
+            failure(id, "WRITE_FAILED");
             model.addAttribute("error", exception instanceof DataIntegrityViolationException ? "院系名称已存在。" : exception.getMessage());
             return "departments/form";
         }
@@ -62,11 +64,16 @@ public class DepartmentController {
     public String delete(@PathVariable int id, @RequestParam int version, RedirectAttributes redirect) {
         try { service.delete(id, version); redirect.addFlashAttribute("success", "院系已删除。"); }
         catch (BusinessException | DataIntegrityViolationException exception) {
+            failure(id, "WRITE_FAILED");
             redirect.addFlashAttribute("error", exception instanceof DataIntegrityViolationException
                     ? "院系已被引用，请使用停用功能。" : exception.getMessage());
         }
         return "redirect:/departments";
     }
+    private void failure(Integer id, String reason) {
+        audit.event(AuditService.actor(), "DEPARTMENT_WRITE", "DEPARTMENT", id, "FAILURE", reason);
+    }
+
     @ExceptionHandler(BusinessException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public String businessError(BusinessException exception, Model model) {

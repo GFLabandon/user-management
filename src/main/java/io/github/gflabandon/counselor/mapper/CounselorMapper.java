@@ -6,6 +6,9 @@ import org.apache.ibatis.annotations.*;
 
 @Mapper
 public interface CounselorMapper {
+    @org.apache.ibatis.annotations.Select("SELECT COUNT(*) FROM counselors WHERE photo_path = #{path}")
+    int photoReferences(String path);
+
     String FILTER = """
             <where>
               <if test="keyword != null and keyword != ''">

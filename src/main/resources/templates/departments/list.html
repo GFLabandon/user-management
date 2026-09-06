@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head th:replace="~{layout :: head(title='院系管理')}"></head>
 <body><div th:replace="~{layout :: header}"></div>
-<main class="page-shell"><section class="page-heading"><div><p class="eyebrow">组织信息</p><h1>院系管理</h1><p class="muted">被档案引用的院系可停用，不能直接删除。</p></div><a class="button button-primary" th:href="@{/departments/new}">新增院系</a></section>
+<main class="page-shell"><section class="page-heading"><div><p class="eyebrow">组织信息</p><h1>院系管理</h1><p class="muted">被档案引用的院系可停用，不能直接删除。</p></div><a sec:authorize="hasRole('ADMIN')" class="button button-primary" th:href="@{/departments/new}">新增院系</a></section>
 <div class="alert alert-success" role="status" th:if="${success}" th:text="${success}"></div>
 <div class="alert alert-error" role="alert" th:if="${error}" th:text="${error}"></div>
 <section class="card table-scroll"><table><thead><tr><th>院系</th><th>状态</th><th>操作</th></tr></thead><tbody>
-<tr th:each="d : ${departments}"><td th:text="${d.name}"></td><td th:text="${d.active ? '启用' : '停用'}"></td><td><div class="row-actions"><a th:href="@{/departments/{id}/edit(id=${d.id})}">编辑</a><form th:action="@{/departments/{id}/delete(id=${d.id})}" method="post" onsubmit="return confirm('确认删除这个未被引用的院系？');"><input type="hidden" name="version" th:value="${d.version}"><button class="text-button danger" type="submit">删除</button></form></div></td></tr>
+<tr th:each="d : ${departments}"><td th:text="${d.name}"></td><td th:text="${d.active ? '启用' : '停用'}"></td><td><div class="row-actions"><a sec:authorize="hasRole('ADMIN')" th:href="@{/departments/{id}/edit(id=${d.id})}">编辑</a><form sec:authorize="hasRole('ADMIN')" th:action="@{/departments/{id}/delete(id=${d.id})}" method="post" onsubmit="return confirm('确认删除这个未被引用的院系？');"><input type="hidden" name="version" th:value="${d.version}"><button class="text-button danger" type="submit">删除</button></form></div></td></tr>
 </tbody></table><p class="record-note" th:if="${departments.isEmpty()}">尚无院系，请先新增院系再建立档案。</p></section></main><div th:replace="~{layout :: footer}"></div></body></html>

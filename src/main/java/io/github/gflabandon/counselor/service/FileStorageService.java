@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.util.Locale;
 import java.util.Set;
 import java.util.UUID;
@@ -31,38 +30,54 @@ public class FileStorageService {
     }
 
     public String storeImage(MultipartFile file) throws IOException {
-        if (file == null || file.isEmpty()) {
-            throw new IOException("The selected image is empty.");
-        }
-
-        String originalName = StringUtils.cleanPath(
-                file.getOriginalFilename() == null ? "" : file.getOriginalFilename());
+        final int maxBytes = 5 * 1024 * 1024;
+        if (file == null || file.isEmpty() || file.getSize() > maxBytes) throw new IOException("图片不能为空，且不能超过 5 MB。");
+        String originalName = file.getOriginalFilename() == null ? "" : file.getOriginalFilename();
         String extension = extensionOf(originalName);
-        if (originalName.contains("..")
-                || !ALLOWED_EXTENSIONS.contains(extension)
-                || !ALLOWED_CONTENT_TYPES.contains(file.getContentType())) {
-            throw new IOException("Only JPG and PNG images are accepted.");
-        }
-
-        Files.createDirectories(uploadDirectory);
-        String storedName = UUID.randomUUID() + "." + extension;
-        Path destination = uploadDirectory.resolve(storedName).normalize();
-        if (!destination.startsWith(uploadDirectory)) {
-            throw new IOException("Invalid destination path.");
-        }
-
-        try (InputStream inputStream = file.getInputStream()) {
-            Files.copy(inputStream, destination, StandardCopyOption.REPLACE_EXISTING);
-        } catch (IOException failure) {
+        if (originalName.contains("..") || !ALLOWED_EXTENSIONS.contains(extension) || file.getContentType() == null
+                || !ALLOWED_CONTENT_TYPES.contains(file.getContentType())) throw new IOException("Only JPG and PNG images are accepted.");
+        byte[] bytes;
+        try (InputStream input = file.getInputStream()) { bytes = input.readNBytes(maxBytes + 1); }
+        if (bytes.length > maxBytes) throw new IOException("图片不能超过 5 MB。");
+        java.awt.image.BufferedImage decoded;
+        String format;
+        try (var input = new javax.imageio.stream.MemoryCacheImageInputStream(new java.io.ByteArrayInputStream(bytes))) {
+            var readers = javax.imageio.ImageIO.getImageReaders(input);
+            if (!readers.hasNext()) throw new IOException("图片内容无法解码。");
+            var reader = readers.next();
             try {
-                Files.deleteIfExists(destination);
-            } catch (IOException cleanupFailure) {
-                failure.addSuppressed(cleanupFailure);
-                log.warn("Unable to clean partial upload {}", storedName, cleanupFailure);
+                reader.setInput(input);
+                format = reader.getFormatName().toLowerCase(Locale.ROOT);
+                String expected = extension.equals("png") ? "png" : "jpeg";
+                if (!format.equals(expected) || !file.getContentType().equals("image/" + expected))
+                    throw new IOException("图片内容与扩展名或类型不一致。");
+                int width = reader.getWidth(0), height = reader.getHeight(0);
+                if (width < 1 || height < 1 || width > 2048 || height > 2048 || (long) width * height > 4_000_000)
+                    throw new IOException("图片边长不能超过 2048 像素，总像素不能超过 400 万。");
+                decoded = reader.read(0);
+                if (decoded == null) throw new IOException("图片内容无法解码。");
+            } finally { reader.dispose(); }
+        }
+        Files.createDirectories(uploadDirectory);
+        String storedName = UUID.randomUUID() + (format.equals("png") ? ".png" : ".jpg");
+        Path destination = uploadDirectory.resolve(storedName);
+        try (var output = Files.newOutputStream(destination, java.nio.file.StandardOpenOption.CREATE_NEW)) {
+            if (!javax.imageio.ImageIO.write(decoded, format, output)) throw new IOException("图片无法重新编码。");
+        } catch (IOException failure) {
+            try { Files.deleteIfExists(destination); }
+            catch (IOException cleanup) {
+                failure.addSuppressed(cleanup);
+                log.warn("Unable to clean partial upload {}", storedName, cleanup);
             }
             throw failure;
         }
         return "/uploads/" + storedName;
+    }
+
+    public Path resolveImage(String name) {
+        if (!name.matches("[A-Za-z0-9_-]+\\.(?:png|jpg|jpeg)")) return null;
+        Path candidate = uploadDirectory.resolve(name);
+        return Files.isRegularFile(candidate, java.nio.file.LinkOption.NOFOLLOW_LINKS) ? candidate : null;
     }
 
     public void delete(String storedPath) {

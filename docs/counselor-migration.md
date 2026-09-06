@@ -10,8 +10,8 @@ flowchart LR
     Counselor --> History[StatusHistory 任职状态记录]
     Legacy[users / roles / user_roles 旧资料] --> Mapping[人工确认工号映射]
     Mapping --> Counselor
-    Config[配置登录账号] --> Session[Session 登录]
-    Future[SystemAccount 后续阶段] -. 可选关联，尚未实现 .-> Counselor
+    Account[SystemAccount 独立账号] --> Session[Spring Security Session]
+    Account -. 可选关联 .-> Counselor
 ```
 
 档案不是登录账号；旧角色不自动转为账号权限。旧姓名允许原样复制，但不得据此生成真实工号。旧资料没有创建时间和任职状态：迁移记录以迁移时间记载，初始状态设为在职，操作者标识为 `legacy-migration`。正式数据迁移前需人工确认这一默认状态是否适用。
@@ -23,13 +23,16 @@ flowchart LR
 | V1 | 建立原版 departments、roles、users、user_roles；仅供空库完整迁移 |
 | V2 | 为院系新增 active、version；创建 counselors、状态记录和工号映射表 |
 | V3 | 检查所有旧资料都有合法且唯一的大写工号，再复制旧资料并写入建档记录 |
+| V4 | 创建独立账号、管理锁和操作记录表；不转换旧角色、不在迁移 SQL 中写入密码 |
 | demo repeatable | 仅 demo 配置创建带 DEMO 工号的虚构资料 |
 
 `spring.sql.init.mode=never`，Flyway 是唯一运行时结构初始化入口。`spring.flyway.baseline-on-migrate=false`，不会自动接管未知非空数据库；`clean-disabled=true`。MySQL 配置不加载 demo 数据。旧 SQL 位于 `docs/legacy/`，供比对与演练，不会自动执行。
 
 ## 空库
 
-按 README 提供 MySQL 连接变量启动即可完成 V1–V3。没有隐式演示账号表或业务资料，需先新增院系。应用登录仍使用配置中的演示账号。
+按 README 提供 MySQL 连接和首次管理员初始化变量，启动后完成 V1–V4；没有演示资料。账号初始化只在 Web 应用启动且账号库为空时执行，数据库仅存密码哈希。成功后移除初始化凭据，已有账号不会被重置。
+
+已经使用 V3 的第二阶段数据库：先备份数据库和上传目录，再在副本运行 V4。档案表和旧表不改写；首次 Web 启动需初始化管理员。以下 `web-application-type=none` 命令仅执行迁移，不建立账号。
 
 ## 旧库迁移副本
 
@@ -69,7 +72,7 @@ java -jar target/campus-counselor-management-0.1.0-SNAPSHOT.jar \
   --spring.main.web-application-type=none
 ```
 
-6. 对比迁移前后行数、ID、姓名、院系、照片路径、备注；检查状态历史、头像读取和新建档案自增 ID。启动应用，验证编辑、分页、停用、版本冲突和重启持久化。完成核对后才考虑切换正式连接。
+6. 对比迁移前后行数、ID、姓名、院系、照片路径、备注；检查状态历史、头像读取和新建档案自增 ID。按 README 提供首次管理员凭据启动应用，验证编辑、分页、停用、版本冲突和重启持久化。完成核对后才考虑切换正式连接。
 
 ```sql
 SELECT COUNT(*) AS legacy_count FROM users;

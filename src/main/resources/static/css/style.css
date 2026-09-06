@@ -808,3 +808,7 @@ input[type="file"] {
     nav { flex-wrap: wrap; }
     .filter-form .field { flex-basis: 100%; }
 }
+
+.account-form { display: grid; gap: 20px; }
+.nav-shell { flex-wrap: wrap; gap: 18px; }
+nav { flex-wrap: wrap; }

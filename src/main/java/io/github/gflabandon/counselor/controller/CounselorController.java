@@ -5,7 +5,7 @@ import java.util.List;
 import io.github.gflabandon.counselor.entity.*;
 import io.github.gflabandon.counselor.service.*;
 import io.github.gflabandon.counselor.web.CounselorForm;
-import jakarta.servlet.http.HttpSession;
+import java.security.Principal;
 import jakarta.validation.Valid;
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -22,10 +22,11 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @RequestMapping("/counselors")
 public class CounselorController {
     private final CounselorService service;
+    private final AuditService audit;
     private final DepartmentService departments;
     private final FileStorageService storage;
-    public CounselorController(CounselorService service, DepartmentService departments, FileStorageService storage) {
-        this.service = service; this.departments = departments; this.storage = storage;
+    public CounselorController(CounselorService service, DepartmentService departments, FileStorageService storage, AuditService audit) {
+        this.service = service; this.departments = departments; this.storage = storage; this.audit = audit;
     }
 
     @InitBinder("counselorForm")
@@ -77,38 +78,40 @@ public class CounselorController {
 
     @PostMapping
     public String create(@Valid @ModelAttribute CounselorForm counselorForm, BindingResult errors,
-                         @RequestParam(required = false) MultipartFile photo, HttpSession session,
+                         @RequestParam(required = false) MultipartFile photo, Principal principal,
                          Model model, RedirectAttributes redirect) {
-        return save(null, counselorForm, errors, photo, session, model, redirect);
+        return save(null, counselorForm, errors, photo, principal, model, redirect);
     }
 
     @PostMapping("/{id}")
     public String update(@PathVariable int id, @RequestParam int version, @Valid @ModelAttribute CounselorForm counselorForm, BindingResult errors,
-                         @RequestParam(required = false) MultipartFile photo, HttpSession session,
+                         @RequestParam(required = false) MultipartFile photo, Principal principal,
                          Model model, RedirectAttributes redirect) {
-        return save(id, counselorForm, errors, photo, session, model, redirect);
+        return save(id, counselorForm, errors, photo, principal, model, redirect);
     }
 
     private String save(Integer id, CounselorForm input, BindingResult errors, MultipartFile photo,
-                        HttpSession session, Model model, RedirectAttributes redirect) {
+                        Principal principal, Model model, RedirectAttributes redirect) {
         if (id != null) service.get(id);
-        if (errors.hasErrors()) return form(model, id);
+        if (errors.hasErrors()) { failure(id, "VALIDATION"); return form(model, id); }
         String newImage = null;
         int savedId;
         String oldImage = null;
         try {
             if (photo != null && !photo.isEmpty()) newImage = storage.storeImage(photo);
-            String actor = (String) session.getAttribute(LoginController.SESSION_USER_KEY);
+            String actor = principal.getName();
             if (id == null) savedId = service.create(input, newImage, actor);
             else { oldImage = service.update(id, input, newImage, actor); savedId = id; }
         } catch (IOException | BusinessException | DataIntegrityViolationException exception) {
             storage.delete(newImage);
+            failure(id, "SAVE_FAILED");
             model.addAttribute("error", exception instanceof DataIntegrityViolationException
                     ? "工号已存在或关联数据无效，请检查后重试。" : exception.getMessage());
             if (exception instanceof EditConflictException) model.addAttribute("conflict", true);
             return form(model, id);
         } catch (RuntimeException exception) {
             storage.delete(newImage);
+            failure(id, "SAVE_FAILED");
             throw exception;
         }
         // Service transaction has committed. A stale request never deletes the winning update's image.
@@ -118,12 +121,12 @@ public class CounselorController {
     }
 
     @PostMapping("/{id}/deactivate")
-    public String deactivate(@PathVariable int id, @RequestParam int version, HttpSession session,
+    public String deactivate(@PathVariable int id, @RequestParam int version, Principal principal,
                              RedirectAttributes redirect) {
         try {
-            service.deactivate(id, version, (String) session.getAttribute(LoginController.SESSION_USER_KEY));
+            service.deactivate(id, version, principal.getName());
             redirect.addFlashAttribute("success", "档案已停用，原有资料和状态记录保留。");
-        } catch (BusinessException exception) { redirect.addFlashAttribute("error", exception.getMessage()); }
+        } catch (BusinessException exception) { failure(id, "DEACTIVATE_FAILED"); redirect.addFlashAttribute("error", exception.getMessage()); }
         return "redirect:/counselors/" + id;
     }
 
@@ -131,6 +134,10 @@ public class CounselorController {
         model.addAttribute("recordId", id);
         if (id != null) model.addAttribute("existing", service.get(id));
         return "counselors/form";
+    }
+
+    private void failure(Integer id, String reason) {
+        audit.event(AuditService.actor(), "COUNSELOR_WRITE", "COUNSELOR", id, "FAILURE", reason);
     }
 
     @ExceptionHandler(BusinessException.class)

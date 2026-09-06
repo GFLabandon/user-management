@@ -3,6 +3,7 @@ package io.github.gflabandon.counselor;
 import static org.assertj.core.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.*;
 import static org.hamcrest.Matchers.containsString;
 
 import java.nio.file.Files;
@@ -31,6 +32,8 @@ class CounselorManagementWebTests {
         registry.add("app.upload-dir", () -> uploads.toString());
     }
     @Autowired MockMvc mvc;
+    @Autowired io.github.gflabandon.counselor.security.DatabaseUserDetailsService users;
+    private org.springframework.test.web.servlet.request.RequestPostProcessor admin() { return user(users.loadUserByUsername("admin")); }
     @Autowired CounselorService service;
     @Autowired DepartmentService departments;
 
@@ -42,32 +45,32 @@ class CounselorManagementWebTests {
 
     @Test void allNewRoutesAndLegacyRoutesRequireLogin() throws Exception {
         for (String route : new String[]{"/counselors", "/counselors/new", "/counselors/1/edit", "/departments", "/departments/new", "/users/list"}) {
-            mvc.perform(get(route)).andExpect(status().is3xxRedirection()).andExpect(redirectedUrl("/login"));
+            mvc.perform(get(route)).andExpect(status().is3xxRedirection()).andExpect(redirectedUrl("http://localhost/login"));
         }
-        mvc.perform(post("/counselors")).andExpect(redirectedUrl("/login"));
-        mvc.perform(post("/departments/1/delete")).andExpect(redirectedUrl("/login"));
+        mvc.perform(post("/counselors")).andExpect(status().isForbidden());
+        mvc.perform(post("/departments/1/delete")).andExpect(status().isForbidden());
     }
 
     @Test void loginLogoutAndLegacyDirectoryRedirect() throws Exception {
-        MockHttpSession session = (MockHttpSession) mvc.perform(post("/login").param("username", "admin").param("password", "demo-pass"))
+        MockHttpSession session = (MockHttpSession) mvc.perform(post("/login").with(csrf()).param("username", "admin").param("password", "demo-admin-pass"))
                 .andExpect(redirectedUrl("/counselors")).andReturn().getRequest().getSession(false);
-        assertThat(session.getAttribute("user")).isEqualTo("admin");
+        assertThat(session.getAttribute("SPRING_SECURITY_CONTEXT")).isNotNull();
         mvc.perform(get("/users/list").session(session)).andExpect(redirectedUrl("/counselors"));
-        mvc.perform(post("/users/add").session(session)).andExpect(status().isNotFound());
-        mvc.perform(post("/logout").session(session)).andExpect(redirectedUrl("/login"));
+        mvc.perform(post("/users/add").session(session).with(csrf())).andExpect(status().isForbidden());
+        mvc.perform(post("/logout").session(session).with(csrf())).andExpect(redirectedUrl("/login?logout"));
         assertThat(session.isInvalid()).isTrue();
     }
 
     @Test void directoryAndFormsRenderBusinessFields() throws Exception {
-        mvc.perform(get("/counselors").sessionAttr("user", "admin"))
+        mvc.perform(get("/counselors").with(admin()).with(csrf()))
                 .andExpect(status().isOk()).andExpect(content().string(containsString("DEMO-001")))
                 .andExpect(content().string(containsString("任职状态")));
-        mvc.perform(get("/counselors/new").sessionAttr("user", "admin"))
+        mvc.perform(get("/counselors/new").with(admin()).with(csrf()))
                 .andExpect(status().isOk()).andExpect(content().string(containsString("姓名允许重复")));
-        mvc.perform(get("/counselors/1/edit").sessionAttr("user", "admin"))
+        mvc.perform(get("/counselors/1/edit").with(admin()).with(csrf()))
                 .andExpect(status().isOk()).andExpect(content().string(containsString("DEMO-001")));
-        mvc.perform(get("/departments").sessionAttr("user", "admin")).andExpect(status().isOk());
-        mvc.perform(get("/departments/new").sessionAttr("user", "admin")).andExpect(status().isOk());
+        mvc.perform(get("/departments").with(admin()).with(csrf())).andExpect(status().isOk());
+        mvc.perform(get("/departments/new").with(admin()).with(csrf())).andExpect(status().isOk());
     }
 
     @Test void sameNamesAllowedEmployeeNumbersNormalizedAndUnique() {
@@ -94,9 +97,9 @@ class CounselorManagementWebTests {
     }
 
     @Test void invalidFieldsReturnErrorsAndUnboundEntityFieldsCannotBeInjected() throws Exception {
-        mvc.perform(post("/counselors").sessionAttr("user", "admin").param("employeeNo", " ").param("name", " ").param("departmentId", ""))
+        mvc.perform(post("/counselors").with(admin()).with(csrf()).param("employeeNo", " ").param("name", " ").param("departmentId", ""))
                 .andExpect(status().isOk()).andExpect(model().attributeHasFieldErrors("counselorForm", "employeeNo", "name", "departmentId"));
-        mvc.perform(post("/counselors").sessionAttr("user", "admin").param("employeeNo", "SAFE-1").param("name", "正常姓名")
+        mvc.perform(post("/counselors").with(admin()).with(csrf()).param("employeeNo", "SAFE-1").param("name", "正常姓名")
                         .param("departmentId", String.valueOf(departmentId())).param("id", "1").param("photoPath", "/uploads/injected.png"))
                 .andExpect(status().is3xxRedirection());
         Counselor saved = service.search("SAFE-1", null, null, 1, 10).items().get(0);
@@ -105,7 +108,7 @@ class CounselorManagementWebTests {
     }
 
     @Test void malformedStatusIsRejectedWithoutWriting() throws Exception {
-        mvc.perform(post("/counselors").sessionAttr("user", "admin").param("employeeNo", "BAD-1").param("name", "老师")
+        mvc.perform(post("/counselors").with(admin()).with(csrf()).param("employeeNo", "BAD-1").param("name", "老师")
                         .param("departmentId", String.valueOf(departmentId())).param("employmentStatus", "UNKNOWN"))
                 .andExpect(status().isOk()).andExpect(model().attributeHasFieldErrors("counselorForm", "employmentStatus"));
         assertThat(service.search("BAD-1", null, null, 1, 10).total()).isZero();
@@ -160,8 +163,8 @@ class CounselorManagementWebTests {
         Path oldImage = uploads.resolve("existing.png"); Files.write(oldImage, new byte[]{1});
         int id = service.create(input("IMAGE-1", "原始姓名"), "/uploads/existing.png", "admin");
         service.update(id, input("IMAGE-1", "已更新姓名"), null, "admin");
-        mvc.perform(multipart("/counselors/" + id).file(new MockMultipartFile("photo", "new.png", "image/png", new byte[]{1,2,3}))
-                        .sessionAttr("user", "admin").param("employeeNo", "IMAGE-1").param("name", "过期修改")
+        mvc.perform(multipart("/counselors/" + id).file(new MockMultipartFile("photo", "new.png", "image/png", TestImages.png()))
+                        .with(admin()).with(csrf()).param("employeeNo", "IMAGE-1").param("name", "过期修改")
                         .param("departmentId", String.valueOf(departmentId())).param("version", "0"))
                 .andExpect(status().isOk()).andExpect(content().string(containsString("重新打开最新档案")))
                 .andExpect(model().attribute("conflict", true));
@@ -172,9 +175,9 @@ class CounselorManagementWebTests {
 
     @Test void detailShowsStatusHistoryAndDeactivatePostWorks() throws Exception {
         int id = service.create(input("WEB-1", "详情老师"), null, "admin");
-        mvc.perform(post("/counselors/" + id + "/deactivate").sessionAttr("user", "admin").param("version", "0"))
+        mvc.perform(post("/counselors/" + id + "/deactivate").with(admin()).with(csrf()).param("version", "0"))
                 .andExpect(redirectedUrl("/counselors/" + id));
-        mvc.perform(get("/counselors/" + id).sessionAttr("user", "admin"))
+        mvc.perform(get("/counselors/" + id).with(admin()).with(csrf()))
                 .andExpect(status().isOk()).andExpect(content().string(containsString("状态记录")))
                 .andExpect(content().string(containsString("在职 → 停用")));
     }
@@ -207,10 +210,10 @@ class CounselorManagementWebTests {
     }
 
     @Test void editRequiresAnExplicitVersion() throws Exception {
-        mvc.perform(post("/counselors/1").sessionAttr("user", "admin").param("employeeNo", "DEMO-001")
+        mvc.perform(post("/counselors/1").with(admin()).with(csrf()).param("employeeNo", "DEMO-001")
                         .param("name", "缺少版本").param("departmentId", String.valueOf(departmentId())))
                 .andExpect(status().isBadRequest());
-        mvc.perform(post("/departments/1").sessionAttr("user", "admin").param("name", "缺少版本"))
+        mvc.perform(post("/departments/1").with(admin()).with(csrf()).param("name", "缺少版本"))
                 .andExpect(status().isBadRequest());
     }
 

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head th:replace="~{layout :: head(title='登录')}"></head>
 <body class="login-page">
 <div class="login-shell">
@@ -21,22 +21,23 @@
             <div>
                 <p class="eyebrow">欢迎使用</p>
                 <h2>登录管理端</h2>
-                <p class="muted">使用本地演示账号登录。</p>
+                <p class="muted">使用管理员分配的账号登录。</p>
             </div>
 
-            <div class="alert alert-error" role="alert" th:if="${error}" th:text="${error}"></div>
+            <div class="alert alert-error" role="alert" th:if="${param.error}">账号或密码错误，或账号已停用。</div>
+            <p class="alert" th:if="${param.expired}">账号信息已变更，请重新登录。</p>
 
             <label class="field">
                 <span>登录账号</span>
-                <input name="username" type="text" value="admin" autocomplete="username" required autofocus>
+                <input name="username" type="text" autocomplete="username" required autofocus>
             </label>
             <label class="field">
                 <span>密码</span>
-                <input name="password" type="password" placeholder="demo-pass" autocomplete="current-password" required>
+                <input name="password" type="password"  autocomplete="current-password" required>
             </label>
             <button class="button button-primary button-block" type="submit">登录</button>
 
-            <p class="demo-note"><strong>默认演示账号：</strong> admin / demo-pass</p>
+            <p class="demo-note" th:if="${demo}">本地演示：管理员 admin / demo-admin-pass；只读 viewer / demo-viewer-pass</p>
         </form>
     </main>
 </div>

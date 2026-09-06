@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head th:replace="~{layout :: head(title='辅导员档案')}"></head>
 <body><div th:replace="~{layout :: header}"></div>
 <main class="page-shell">
 <section class="page-heading"><div><p class="eyebrow">档案管理</p><h1>辅导员档案</h1>
 <p class="muted">按工号、姓名、院系与任职状态查找档案。</p></div>
-<a class="button button-primary" th:href="@{/counselors/new}">新增档案</a></section>
+<a sec:authorize="hasRole('ADMIN')" class="button button-primary" th:href="@{/counselors/new}">新增档案</a></section>
 <div class="alert alert-success" role="status" th:if="${success}" th:text="${success}"></div>
 <div class="alert alert-error" role="alert" th:if="${error}" th:text="${error}"></div>
 <section class="card directory-card">
@@ -24,7 +24,7 @@
 <span class="avatar avatar-fallback" th:unless="${c.photoPath}" th:text="${#strings.substring(c.name,0,1)}"></span>
 <strong th:text="${c.name}"></strong></div></td><td th:text="${c.employeeNo}"></td><td th:text="${c.departmentName}"></td>
 <td><span class="tag" th:text="${c.employmentStatus.label}"></span></td>
-<td><div class="row-actions"><a th:href="@{/counselors/{id}(id=${c.id})}">详情</a><a th:href="@{/counselors/{id}/edit(id=${c.id})}">编辑</a></div></td></tr>
+<td><div class="row-actions"><a th:href="@{/counselors/{id}(id=${c.id})}">详情</a><a sec:authorize="hasRole('ADMIN')" th:href="@{/counselors/{id}/edit(id=${c.id})}">编辑</a></div></td></tr>
 </tbody></table></div>
 <div class="empty-state" th:if="${result.items.isEmpty()}"><h2>没有匹配的档案</h2><p>请调整筛选条件，或新增辅导员档案。</p></div>
 <nav class="pagination" aria-label="分页"><span th:text="${'共 ' + result.total + ' 条 · 第 ' + result.page + ' / ' + result.totalPages + ' 页'}"></span>

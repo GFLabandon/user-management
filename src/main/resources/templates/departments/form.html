@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head th:replace="~{layout :: head(title='维护院系')}"></head>
 <body><div th:replace="~{layout :: header}"></div>
 <main class="page-shell form-page"><a class="back-link" th:href="@{/departments}">← 返回院系列表</a><section class="page-heading compact"><h1 th:text="${recordId == null ? '新增院系' : '编辑院系'}"></h1></section>
