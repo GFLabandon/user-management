@@ -1,6 +1,8 @@
 # 项目证据与简历口径
 
-最后核验：2026-08-07，本仓库当前工作树。
+最后核验：2026-09-06，阶段一重构工作树。MySQL 验收日期仍为 2026-08-07。
+
+产品名为“高校辅导员信息管理系统”（Campus Counselor Management），应用标识为 `campus-counselor-management`，仓库目录暂保留 `user-management`。本轮只统一工程与展示名称，人员资料尚未迁移为完整辅导员档案。
 
 本文档是 CareerWorkspace 或其他简历材料引用 `user-management` 时的事实入口。实现证据以本仓库源码、测试和可运行页面为准。
 
@@ -8,7 +10,7 @@
 
 | 能力 | 当前证据 |
 | --- | --- |
-| Spring Boot 应用与标准 Maven 目录 | `pom.xml`、`src/main/java/.../UserManagementApplication.java` |
+| Spring Boot 应用与标准 Maven 目录 | `pom.xml`、`src/main/java/io/github/gflabandon/counselor/CounselorManagementApplication.java` |
 | MVC 分层 | `controller/UserController.java`、`service/UserService.java`、`service/impl/UserServiceImpl.java` |
 | MyBatis 数据访问 | `mapper/UserMapper.java`，使用 `#{}` 参数绑定、关联结果映射和模糊搜索 |
 | 关系模型 | `db/*/schema.sql`，包含 users、departments、roles、user_roles 四张表 |
@@ -19,7 +21,7 @@
 | 图片处理 | JPG/PNG 扩展名和 Content-Type 白名单、UUID 重命名、独立目录与删除清理 |
 | 环境配置 | 默认 H2 零配置启动；`mysql` profile 从环境变量读取连接信息 |
 | 自动化验证 | `./mvnw test`：11 项通过，覆盖 Web、Service/MyBatis、文件存储和上下文启动 |
-| 真实 MySQL 验收 | `docs/mysql-acceptance.md`：MySQL Community Server 9.0.1 + Connector/J 完整 CRUD/关系/上传流程 |
+| 真实 MySQL 验收 | `docs/mysql-acceptance.md`（2026-08-07 历史记录，本轮未复验）：MySQL Community Server 9.0.1 + Connector/J 完整 CRUD/关系/上传流程 |
 | 页面展示 | Thymeleaf 响应式登录、目录、新增、编辑和详情页；截图位于 `docs/images/` |
 
 ## 推荐简历表述
@@ -39,9 +41,13 @@
 
 如果被问“是不是 RBAC 权限系统”：
 
-> 项目实现了用户、角色、部门和用户—角色关系建模，也能维护角色分配；目前登录保护仍是配置化演示账号加 Session 拦截，没有做基于角色的接口授权，所以更准确地说是 RBAC 风格的数据模型，不是成熟权限平台。
+> 项目实现了用户、角色、部门和用户—角色关系建模，也能维护角色分配；目前登录保护仍是配置化演示账号加 Session 拦截，没有做基于角色的接口授权，所以更准确地说是人员资料与角色关系维护，不是接口授权系统。
+
+当前对外名称可使用“高校辅导员信息管理系统（开发原型）”；下列条目描述的是原有实现，不代表本轮新增业务能力。
 
 ## 不应声称
+
+- 不写已完成工号、任职状态、院系权限、分页、乐观锁或独立系统账号；这些属于后续阶段。
 
 - 不写“生产级”“企业级”“高并发”“已上线”或真实用户量。
 - 不写 Spring Security、JWT、OAuth2、密码哈希、细粒度鉴权；当前未实现。

@@ -1,42 +1,42 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{layout :: head(title='Sign in')}"></head>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head(title='登录')}"></head>
 <body class="login-page">
 <div class="login-shell">
     <section class="login-intro">
         <a class="brand brand-light" th:href="@{/}">
-            <span class="brand-mark">U</span>
-            <span><strong>Userbase</strong><small>Team directory</small></span>
+            <span class="brand-mark">C</span>
+            <span><strong>高校辅导员信息管理系统</strong><small>Campus Counselor Management</small></span>
         </a>
         <div>
-            <p class="eyebrow">Spring Boot administration demo</p>
-            <h1>Keep people, teams and roles in one clear view.</h1>
-            <p class="login-copy">A server-rendered CRUD application with session authentication, relational data and validated image uploads.</p>
+            <p class="eyebrow">人员资料管理</p>
+            <h1>集中维护人员资料与部门归属。</h1>
+            <p class="login-copy">支持资料检索、部门关联、角色关系维护和头像上传。</p>
         </div>
-        <p class="stack-line">Java 17 · Spring MVC · MyBatis · Thymeleaf</p>
+        <p class="stack-line">高校辅导员信息管理系统 · 开发原型</p>
     </section>
 
     <main class="login-panel">
         <form class="card login-card" th:action="@{/login}" method="post">
             <div>
-                <p class="eyebrow">Welcome back</p>
-                <h2>Sign in to Userbase</h2>
-                <p class="muted">Use the local demo credentials to explore the project.</p>
+                <p class="eyebrow">欢迎使用</p>
+                <h2>登录管理端</h2>
+                <p class="muted">使用本地演示账号登录。</p>
             </div>
 
             <div class="alert alert-error" role="alert" th:if="${error}" th:text="${error}"></div>
 
             <label class="field">
-                <span>Username</span>
+                <span>登录账号</span>
                 <input name="username" type="text" value="admin" autocomplete="username" required autofocus>
             </label>
             <label class="field">
-                <span>Password</span>
+                <span>密码</span>
                 <input name="password" type="password" placeholder="demo-pass" autocomplete="current-password" required>
             </label>
-            <button class="button button-primary button-block" type="submit">Sign in</button>
+            <button class="button button-primary button-block" type="submit">登录</button>
 
-            <p class="demo-note"><strong>Local demo:</strong> admin / demo-pass</p>
+            <p class="demo-note"><strong>默认演示账号：</strong> admin / demo-pass</p>
         </form>
     </main>
 </div>

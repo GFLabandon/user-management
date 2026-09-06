@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{layout :: head(title='User profile')}"></head>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head(title='资料详情')}"></head>
 <body>
 <div th:replace="~{layout :: header}"></div>
 
 <main class="page-shell profile-page">
-    <a class="back-link" th:href="@{/users/list}">← Back to directory</a>
+    <a class="back-link" th:href="@{/users/list}">← 返回人员目录</a>
 
     <section class="card profile-card">
         <div class="profile-hero">
@@ -13,28 +13,28 @@
             <span class="avatar avatar-fallback avatar-large" th:unless="${user.photoPath}"
                   th:text="${#strings.substring(user.username, 0, 1)}">A</span>
             <div>
-                <p class="eyebrow" th:text="${'User #' + user.id}">User #1</p>
+                <p class="eyebrow" th:text="${'资料编号 #' + user.id}">资料编号 #1</p>
                 <h1 th:text="${user.username}">Alex Chen</h1>
                 <p class="muted" th:text="${user.note}">Backend engineer</p>
             </div>
-            <a class="button button-primary profile-edit" th:href="@{/users/edit/{id}(id=${user.id})}">Edit profile</a>
+            <a class="button button-primary profile-edit" th:href="@{/users/edit/{id}(id=${user.id})}">编辑资料</a>
         </div>
 
         <dl class="detail-grid">
             <div>
-                <dt>Department</dt>
-                <dd th:text="${user.department != null ? user.department.name : 'Not assigned'}">Engineering</dd>
+                <dt>部门</dt>
+                <dd th:text="${user.department != null ? user.department.name : '未分配'}">Engineering</dd>
             </div>
             <div>
-                <dt>Roles</dt>
+                <dt>资料角色</dt>
                 <dd>
                     <span class="tag" th:each="role : ${user.roles}" th:text="${role.name}">Editor</span>
-                    <span th:if="${user.roles.isEmpty()}">No roles assigned</span>
+                    <span th:if="${user.roles.isEmpty()}">未分配角色</span>
                 </dd>
             </div>
             <div>
-                <dt>Profile image</dt>
-                <dd th:text="${user.photoPath != null ? 'Uploaded image' : 'No image'}">No image</dd>
+                <dt>头像</dt>
+                <dd th:text="${user.photoPath != null ? '已上传' : '未上传'}">未上传</dd>
             </div>
         </dl>
     </section>

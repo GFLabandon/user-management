@@ -1,16 +1,16 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{layout :: head(title='Add user')}"></head>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head(title='新增资料')}"></head>
 <body>
 <div th:replace="~{layout :: header}"></div>
 
 <main class="page-shell form-page">
-    <a class="back-link" th:href="@{/users/list}">← Back to directory</a>
+    <a class="back-link" th:href="@{/users/list}">← 返回人员目录</a>
     <section class="page-heading compact">
         <div>
-            <p class="eyebrow">New profile</p>
-            <h1>Add a team member</h1>
-            <p class="muted">Create a profile and assign its department and roles.</p>
+            <p class="eyebrow">资料建档</p>
+            <h1>新增人员资料</h1>
+            <p class="muted">填写人员资料，选择所属部门和资料角色。</p>
         </div>
     </section>
 
@@ -20,21 +20,22 @@
 
         <div class="form-grid">
             <label class="field field-wide" for="username">
-                <span>Full name</span>
-                <input id="username" type="text" th:field="*{username}" placeholder="e.g. Taylor Wang" required>
+                <span>姓名</span>
+                <small>当前版本姓名不可重复。</small>
+                <input id="username" type="text" th:field="*{username}" placeholder="例如：示例人员" required>
                 <small class="field-error" th:errors="*{username}"></small>
             </label>
 
             <label class="field field-wide" for="note">
-                <span>Note</span>
-                <textarea id="note" th:field="*{note}" rows="3" placeholder="Role, responsibility or context" required></textarea>
+                <span>备注</span>
+                <textarea id="note" th:field="*{note}" rows="3" placeholder="填写职责或其他说明" required></textarea>
                 <small class="field-error" th:errors="*{note}"></small>
             </label>
 
             <label class="field" for="deptId">
-                <span>Department</span>
+                <span>部门</span>
                 <select id="deptId" th:field="*{deptId}" required>
-                    <option value="">Choose a department</option>
+                    <option value="">请选择部门</option>
                     <option th:each="department : ${departments}" th:value="${department.id}"
                             th:text="${department.name}"></option>
                 </select>
@@ -42,13 +43,14 @@
             </label>
 
             <label class="field" for="photo">
-                <span>Profile image</span>
+                <span>头像</span>
                 <input id="photo" type="file" name="photo" accept="image/png,image/jpeg">
-                <small>PNG or JPG, up to 5 MB.</small>
+                <small>支持 PNG 或 JPG，最大 5 MB。</small>
             </label>
 
             <fieldset class="field field-wide">
-                <legend>Roles</legend>
+                <legend>资料角色</legend>
+                <small>用于资料分类，不授予登录账号的操作权限。</small>
                 <div class="checkbox-grid">
                     <label class="check-card" th:each="role : ${availableRoles}">
                         <input type="checkbox" th:field="*{roleIds}" th:value="${role.id}">
@@ -59,8 +61,8 @@
         </div>
 
         <div class="form-actions">
-            <a class="button button-ghost" th:href="@{/users/list}">Cancel</a>
-            <button class="button button-primary" type="submit">Create user</button>
+            <a class="button button-ghost" th:href="@{/users/list}">取消</a>
+            <button class="button button-primary" type="submit">保存资料</button>
         </div>
     </form>
 </main>

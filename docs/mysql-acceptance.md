@@ -2,6 +2,8 @@
 
 Date: 2026-08-07
 
+Historical acceptance of the user-management implementation before the Campus Counselor Management naming refactor. MySQL was not re-tested during the 2026-09-06 foundation refactor; database schemas, SQL, connection settings and routes remain unchanged.
+
 ## Environment
 
 - MySQL Community Server 9.0.1 for macOS arm64

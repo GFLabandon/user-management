@@ -1,19 +1,21 @@
-# Userbase · Spring Boot User Management
+# 高校辅导员信息管理系统
+
+Campus Counselor Management
 
 ![Java 17](https://img.shields.io/badge/Java-17-ED8B00?logo=openjdk&logoColor=white)
 ![Spring Boot 3.5](https://img.shields.io/badge/Spring_Boot-3.5-6DB33F?logo=springboot&logoColor=white)
 ![MyBatis](https://img.shields.io/badge/MyBatis-3-111827)
 ![Tests](https://img.shields.io/badge/tests-11_passed-177454)
 
-一个可直接运行的服务端渲染用户管理项目。使用 Spring Boot、Spring MVC、MyBatis 和 Thymeleaf 实现用户 CRUD、条件搜索、部门与角色关系、Session 登录拦截和头像上传；默认使用内存 H2，也可切换 MySQL。
+由 `user-management` 演进而来的高校辅导员信息管理原型，当前已完成工程命名与页面展示统一。现有功能仍是通用人员资料维护：使用 Spring Boot、Spring MVC、MyBatis 和 Thymeleaf 实现用户 CRUD、条件搜索、部门与角色关系、Session 登录拦截和头像上传；默认使用内存 H2，也可切换 MySQL。
 
-> 这是用于学习和展示 Java Web 分层开发的项目，不是生产级身份认证或完整 RBAC 权限平台。边界见[项目证据与简历口径](docs/project-evidence.md)。
+> 当前为开发中的原型。`User` 是人员资料，登录账号来自独立配置；资料角色不参与权限校验。工号、任职状态、分页和正式账号权限尚未实现。边界见[项目证据](docs/project-evidence.md)，本轮范围和后续顺序见[重构记录](docs/refactoring-foundation.md)。
 
-![User directory](docs/images/directory.jpg)
+![人员目录](docs/images/directory.png)
 
 ## 功能
 
-- 用户新增、详情、编辑、删除，以及按姓名/备注的大小写无关模糊搜索
+- 人员资料新增、详情、编辑、删除，以及按姓名/备注的大小写无关模糊搜索（当前姓名仍须唯一）
 - 用户、部门、角色和用户—角色多对多关系建模
 - 角色勾选与事务内关系同步
 - 基于 Session + MVC Interceptor 的演示登录保护
@@ -21,7 +23,7 @@
 - JPG/PNG 白名单、Content-Type 检查、UUID 重命名和独立上传目录
 - H2 零配置演示环境，以及通过环境变量连接 MySQL 的独立 profile
 - 11 项自动化测试，覆盖应用启动、Web 流程、数据关系、事务更新和文件存储
-- 真实 MySQL Community Server 9.0.1 端到端验收记录
+- 历史 MySQL Community Server 9.0.1 端到端验收记录（2026-08-07）
 - 响应式 Thymeleaf 管理界面
 
 ## 架构
@@ -48,6 +50,8 @@ cd user-management
 ./mvnw spring-boot:run
 ```
 
+本阶段仓库地址和本地目录仍使用 `user-management`；应用标识与构建产物改为 `campus-counselor-management`。
+
 访问 [http://localhost:8080](http://localhost:8080)，本地演示账号：
 
 ```text
@@ -55,7 +59,14 @@ username: admin
 password: demo-pass
 ```
 
-默认数据保存在内存 H2 中，每次重启会恢复三条示例用户数据。账号和密码可通过 `APP_ADMIN_USERNAME`、`APP_ADMIN_PASSWORD` 覆盖。
+默认数据保存在内存 H2 中，每次重启会恢复三条虚构人员资料（Alex Chen、Jamie Lin、Morgan Wu），不代表真实师生信息。账号和密码可通过 `APP_ADMIN_USERNAME`、`APP_ADMIN_PASSWORD` 覆盖。
+
+也可以构建可执行 JAR：
+
+```bash
+./mvnw --batch-mode --no-transfer-progress clean verify
+java -jar target/campus-counselor-management-0.1.0-SNAPSHOT.jar
+```
 
 ## 使用 MySQL
 
@@ -86,14 +97,14 @@ export SPRING_PROFILES_ACTIVE='mysql'
 ./mvnw test
 ```
 
-当前测试集共 11 项：
+2026-09-06 重构前后均运行通过原有 11 项测试：
 
 - MVC 集成：未登录重定向、登录、列表渲染、用户创建、表单校验
 - Service / MyBatis 集成：搜索、部门和角色映射、事务内角色替换
 - 文件存储单元测试：UUID 路径、类型拒绝和文件清理
 - Spring 应用上下文启动
 
-此外，项目已使用真实 MySQL Community Server 9.0.1 + Connector/J 完成独立验收，覆盖建表/种子数据、登录、带头像与多角色新增、详情、搜索、编辑、事务内角色替换、删除级联和头像清理。验收记录见 [`docs/mysql-acceptance.md`](docs/mysql-acceptance.md)。
+此外，旧版本于 2026-08-07 使用真实 MySQL Community Server 9.0.1 + Connector/J 完成独立验收，覆盖建表/种子数据、登录、带头像与多角色新增、详情、搜索、编辑、事务内角色替换、删除级联和头像清理。历史验收记录见 [`docs/mysql-acceptance.md`](docs/mysql-acceptance.md)，本轮未重新执行 MySQL 验收。
 
 GitHub Actions 配置位于 [`.github/workflows/ci.yml`](.github/workflows/ci.yml)，在 push 和 pull request 时使用 JDK 17 执行同一测试命令。
 
@@ -105,7 +116,8 @@ GitHub Actions 配置位于 [`.github/workflows/ci.yml`](.github/workflows/ci.ym
 ├── docs/
 │   ├── images/
 │   └── project-evidence.md
-├── src/main/java/com/example/usermanagement/
+├── src/main/java/io/github/gflabandon/counselor/
+│   ├── CounselorManagementApplication.java
 │   ├── config/          # MVC、MyBatis 配置
 │   ├── controller/      # 登录与用户页面请求
 │   ├── entity/          # User、Department、Role
@@ -121,9 +133,11 @@ GitHub Actions 配置位于 [`.github/workflows/ci.yml`](.github/workflows/ci.ym
 
 ## 页面预览
 
+以下为阶段一使用虚构演示数据运行后的页面。
+
 | 登录 | 用户目录 |
 | --- | --- |
-| ![Login page](docs/images/login.jpg) | ![Directory page](docs/images/directory.jpg) |
+| ![Login page](docs/images/login.png) | ![Directory page](docs/images/directory.png) |
 
 ## 安全边界
 

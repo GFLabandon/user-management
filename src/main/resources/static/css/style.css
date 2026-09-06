@@ -28,7 +28,7 @@ body {
     margin: 0;
     background: var(--slate-50);
     color: var(--navy-950);
-    font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
     font-size: 15px;
     line-height: 1.5;
 }
@@ -92,6 +92,7 @@ h2 {
     display: grid;
     width: 38px;
     height: 38px;
+    flex-shrink: 0;
     place-items: center;
     border-radius: 12px;
     background: linear-gradient(145deg, #4a7bff, #234bbb);
@@ -731,6 +732,9 @@ input[type="file"] {
 
     .nav-shell {
         min-height: 66px;
+        flex-wrap: wrap;
+        gap: 12px;
+        padding-block: 12px;
     }
 
     nav > a:not(.button) {
