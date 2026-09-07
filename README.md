@@ -5,11 +5,11 @@ Campus Counselor Management
 ![Java 17](https://img.shields.io/badge/Java-17-ED8B00?logo=openjdk&logoColor=white)
 ![Spring Boot 3.5](https://img.shields.io/badge/Spring_Boot-3.5-6DB33F?logo=springboot&logoColor=white)
 ![MyBatis](https://img.shields.io/badge/MyBatis-3-111827)
-![Tests](https://img.shields.io/badge/tests-37_passed-177454)
+![Tests](https://img.shields.io/badge/tests-68_passed-177454)
 
 由 `user-management` 演进而来的辅导员档案管理原型，采用 Java 17、Spring Boot、MyBatis、Thymeleaf 与 Flyway。支持建档、检索、院系维护、状态变更和头像上传。
 
-> 当前完成档案业务及账号权限阶段。档案与登录账号分开，采用 Spring Security 表单登录、管理员／只读授权与 CSRF 防护。仍是本地开发原型，没有真实学校交付或生产运行记录。
+> 当前完成档案业务、账号权限和 4A 部署配置验收。档案与登录账号分开，采用 Spring Security 表单登录、管理员／只读授权与 CSRF 防护。仍是本地开发原型，没有真实学校交付或生产运行记录。
 
 ![辅导员档案列表](docs/images/archive/phase-2/counselors.png)
 
@@ -44,7 +44,11 @@ cd user-management
 java -jar target/campus-counselor-management-0.1.0-SNAPSHOT.jar
 ```
 
-## 新 MySQL 数据库
+## 部署配置（4A）
+
+使用 `scripts/run-deploy.sh` 固定启用 deploy，提供 `.env.deploy.example` 中的连接与目录变量。启动前拒绝演示配置混用、root 数据库账号和无效上传目录。步骤见[部署指南](docs/guides/deployment.md)，版本及发布遗留项见[依赖核对](docs/verification/dependencies-2026-09-07.md)。尚未提供容器编排或 HTTPS 公网部署。
+
+## 新 MySQL 数据库（本地调试）
 
 创建空库并为专用账号授予所需权限。当前启动时由 Flyway 执行迁移，账号需要建表、改表、索引及业务读写权限。
 
@@ -91,9 +95,9 @@ flowchart LR
 ./mvnw --batch-mode --no-transfer-progress clean verify
 ```
 
-2026-09-06：37 项自动化测试通过，0 失败、0 错误、0 跳过。覆盖业务、分页 SQL 次数、事务回滚、迁移、文件清理，以及数据库账号、CSRF、权限拒绝、旧会话撤销、私有头像和内容解码。测试数量是当前验证记录，不代表生产质量或性能指标。
+2026-09-07：68 项自动化测试通过，0 失败、0 错误、0 跳过。覆盖业务、分页 SQL 次数、事务回滚、迁移、文件清理，以及数据库账号、CSRF、权限拒绝、旧会话撤销、私有头像和内容解码。另覆盖部署配置、首次账号初始化和停用账号的认证补丁。测试数量是当前验证记录，不代表生产质量或性能指标。
 
-独立 MySQL 9.0.1 的历史迁移与恢复结果见[第二阶段记录](docs/acceptance/phase-2-counselor-records.md)。本阶段另验证 V3→V4、空库无凭据拒绝启动，以及真实登录／multipart 上传／权限流程，见[第三阶段记录](docs/acceptance/phase-3-account-security.md)。CI 使用 JDK 17 执行测试，真实 MySQL 验收为独立本地记录。
+独立 MySQL 9.0.1 的历史迁移与恢复结果见[第二阶段记录](docs/acceptance/phase-2-counselor-records.md)。本阶段另验证 V3→V4、空库无凭据拒绝启动，以及真实登录／multipart 上传／权限流程，见[第三阶段记录](docs/acceptance/phase-3-account-security.md)。4A 的新启动脚本另完成专用非 root MySQL 账号、登录和重启验收，见[4A 记录](docs/acceptance/phase-4a-deployment-config.md)。CI 使用 JDK 17 执行测试，真实 MySQL 验收为独立本地记录。
 
 ## 页面预览
 
@@ -128,6 +132,7 @@ docs/
 ├── guides/                             # 迁移等操作指南
 ├── acceptance/                         # 各阶段验收记录
 ├── plans/                              # 后续优化方案
+├── verification/                       # 依赖快照与维护核对
 ├── images/                             # current 当前截图、archive 历史截图
 └── legacy/                             # 原版 SQL，供迁移副本与恢复核对
 ```
@@ -140,4 +145,4 @@ docs/
 - 文件与数据库不在同一个事务中，当前提供同步失败补偿和清理失败日志，尚无持久化清理队列。
 - 没有学生／班级管理、审批、导入导出、AI 功能、生产部署或高并发证据。
 
-下一阶段完善可复现部署、健康检查、日志、备份恢复与发布说明，部署前单独检查依赖维护状态。[项目证据](docs/project-evidence.md)区分当前实现、历史记录与待开发能力。
+下一步核验完整维护版本组合，并继续 4B 容器部署、健康检查，随后完成日志、备份恢复与发布说明。[项目证据](docs/project-evidence.md)区分当前实现、历史记录与待开发能力。

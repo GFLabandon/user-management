@@ -39,6 +39,9 @@ public class AccountBootstrap implements ApplicationRunner {
             throw new IllegalStateException("Empty account database requires APP_BOOTSTRAP_USERNAME and APP_BOOTSTRAP_PASSWORD.");
         }
         AccountService.validatePassword(password);
+        if (!demo && (password.equals("demo-admin-pass") || password.equals("demo-viewer-pass") || password.equals("replace-with-a-unique-password"))) {
+            throw new IllegalStateException("Non-demo bootstrap requires a unique administrator password; demo/example passwords are not allowed.");
+        }
         if (demo && username.equalsIgnoreCase("viewer")) throw new IllegalStateException("Demo administrator must differ from viewer.");
         create(username.toLowerCase(Locale.ROOT), password, AccountRole.ADMIN);
         if (demo) create("viewer", "demo-viewer-pass", AccountRole.VIEWER);
