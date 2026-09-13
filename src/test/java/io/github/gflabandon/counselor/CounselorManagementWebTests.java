@@ -14,7 +14,7 @@ import io.github.gflabandon.counselor.web.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.mock.web.MockHttpSession;
@@ -45,7 +45,7 @@ class CounselorManagementWebTests {
 
     @Test void allNewRoutesAndLegacyRoutesRequireLogin() throws Exception {
         for (String route : new String[]{"/counselors", "/counselors/new", "/counselors/1/edit", "/departments", "/departments/new", "/users/list"}) {
-            mvc.perform(get(route)).andExpect(status().is3xxRedirection()).andExpect(redirectedUrl("http://localhost/login"));
+            mvc.perform(get(route)).andExpect(status().is3xxRedirection()).andExpect(redirectedUrl("/login"));
         }
         mvc.perform(post("/counselors")).andExpect(status().isForbidden());
         mvc.perform(post("/departments/1/delete")).andExpect(status().isForbidden());
