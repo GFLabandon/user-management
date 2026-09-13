@@ -1,0 +1,62 @@
+name: counselor
+
+x-logging: &bounded-logs
+  driver: local
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+services:
+  db:
+    image: mysql:8.4.11@sha256:85b9bf2e29cf836ecb8c2a15a935d4ba0c606631dff1dd79531a11983c638f2a
+    environment:
+      MYSQL_DATABASE: counselor
+      MYSQL_USER: counselor_app
+      MYSQL_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env.compose}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Set MYSQL_ROOT_PASSWORD in .env.compose}
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", 'MYSQL_PWD="$${MYSQL_PASSWORD}" mysql --protocol=TCP -h127.0.0.1 -u"$${MYSQL_USER}" "$${MYSQL_DATABASE}" --execute="SELECT 1" --silent > /dev/null 2>&1']
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 40s
+    restart: unless-stopped
+    stop_grace_period: 60s
+    logging: *bounded-logs
+
+  app:
+    image: campus-counselor-management:local
+    build: .
+    environment:
+      DB_URL: jdbc:mysql://db:3306/counselor?sslMode=DISABLED&allowPublicKeyRetrieval=true&connectTimeout=2000&socketTimeout=3000
+      DB_USERNAME: counselor_app
+      DB_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env.compose}
+      APP_BOOTSTRAP_USERNAME: ${APP_BOOTSTRAP_USERNAME:-}
+      APP_BOOTSTRAP_PASSWORD: ${APP_BOOTSTRAP_PASSWORD:-}
+      UPLOAD_DIR: /app/uploads
+      SERVER_ADDRESS: 0.0.0.0
+      SERVER_PORT: "8080"
+      # This Compose entry is loopback-only HTTP. HTTPS deployment must set true.
+      SESSION_COOKIE_SECURE: "false"
+    ports:
+      - "127.0.0.1:${APP_PORT:-8080}:8080"
+    volumes:
+      - uploads:/app/uploads
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=64m,uid=10001,gid=10001,mode=1770
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    mem_limit: 512m
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    stop_grace_period: 40s
+    logging: *bounded-logs
+
+volumes:
+  mysql-data:
+  uploads:

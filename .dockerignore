@@ -1,0 +1,20 @@
+# Build context allowlist: no environment files, uploads, logs, Git or local artifacts.
+**
+!pom.xml
+!mvnw
+!.mvn/
+!.mvn/**
+!src/
+!src/**
+!docker/
+!docker/HealthProbe.java
+
+# Exclude ignored local configuration even when it sits inside an allowed directory.
+**/.env*
+**/application-local.properties
+**/*.pem
+**/*.key
+**/*.p12
+**/*.pfx
+**/*.jks
+**/*.keystore

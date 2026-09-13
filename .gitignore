@@ -11,6 +11,7 @@ uploads/
 .env.*
 !.env.example
 !.env.deploy.example
+!.env.compose.example
 
 # Local credentials and private key material
 application-local.properties

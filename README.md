@@ -3,13 +3,13 @@
 Campus Counselor Management
 
 ![Java 17](https://img.shields.io/badge/Java-17-ED8B00?logo=openjdk&logoColor=white)
-![Spring Boot 3.5](https://img.shields.io/badge/Spring_Boot-3.5-6DB33F?logo=springboot&logoColor=white)
+![Spring Boot 4.0](https://img.shields.io/badge/Spring_Boot-4.0-6DB33F?logo=springboot&logoColor=white)
 ![MyBatis](https://img.shields.io/badge/MyBatis-3-111827)
-![Tests](https://img.shields.io/badge/tests-68_passed-177454)
+![Tests](https://img.shields.io/badge/tests-75_passed-177454)
 
 由 `user-management` 演进而来的辅导员档案管理原型，采用 Java 17、Spring Boot、MyBatis、Thymeleaf 与 Flyway。支持建档、检索、院系维护、状态变更和头像上传。
 
-> 当前完成档案业务、账号权限和 4A 部署配置验收。档案与登录账号分开，采用 Spring Security 表单登录、管理员／只读授权与 CSRF 防护。仍是本地开发原型，没有真实学校交付或生产运行记录。
+> 当前完成档案业务、账号权限、4A 配置与 4B 容器运行验收。档案与登录账号分开，采用 Spring Security 表单登录、管理员／只读授权与 CSRF 防护。支持本机单实例容器演示，没有真实学校交付或生产运行记录。
 
 ![辅导员档案列表](docs/images/archive/phase-2/counselors.png)
 
@@ -46,7 +46,20 @@ java -jar target/campus-counselor-management-0.1.0-SNAPSHOT.jar
 
 ## 部署配置（4A）
 
-使用 `scripts/run-deploy.sh` 固定启用 deploy，提供 `.env.deploy.example` 中的连接与目录变量。启动前拒绝演示配置混用、root 数据库账号和无效上传目录。步骤见[部署指南](docs/guides/deployment.md)，版本及发布遗留项见[依赖核对](docs/verification/dependencies-2026-09-07.md)。尚未提供容器编排或 HTTPS 公网部署。
+使用 `scripts/run-deploy.sh` 固定启用 deploy，提供 `.env.deploy.example` 中的连接与目录变量。启动前拒绝演示配置混用、root 数据库账号和无效上传目录。步骤见[部署指南](docs/guides/deployment.md)，版本及发布遗留项见[依赖核对](docs/verification/dependencies-2026-09-13.md)。尚未提供 HTTPS 公网部署。
+
+## 容器启动（4B）
+
+要求 Docker 和 Compose v2。复制 [.env.compose.example](.env.compose.example) 为 `.env.compose`，设置文件权限 `600`，填写独立数据库密码、root 密码和首次管理员账号密码后执行：
+
+```sh
+docker compose --env-file .env.compose config --quiet
+docker compose --env-file .env.compose up -d --build --wait --wait-timeout 240
+```
+
+访问 `http://127.0.0.1:8080`，使用填写的账号登录。构建阶段运行全部测试，应用以非 root 用户运行；MySQL 和头像使用独立数据卷。初始化成功后移除首次管理员凭据。正常停止用 `down` 保留卷，不加 `--volumes`。重建应用需要重新登录，档案和头像保留。
+
+健康端点为 `/actuator/health/liveness` 和 `/actuator/health/readiness`；数据库断开时后者返回 503，前者仍表示进程存活。日志按请求编号关联并限制保留大小。详见[部署指南](docs/guides/deployment.md)与 [4B 验收](docs/acceptance/phase-4b-runtime.md)。这不是 HTTPS 公网部署流程。
 
 ## 新 MySQL 数据库（本地调试）
 
@@ -95,9 +108,9 @@ flowchart LR
 ./mvnw --batch-mode --no-transfer-progress clean verify
 ```
 
-2026-09-07：68 项自动化测试通过，0 失败、0 错误、0 跳过。覆盖业务、分页 SQL 次数、事务回滚、迁移、文件清理，以及数据库账号、CSRF、权限拒绝、旧会话撤销、私有头像和内容解码。另覆盖部署配置、首次账号初始化和停用账号的认证补丁。测试数量是当前验证记录，不代表生产质量或性能指标。
+2026-09-13：本机与 Linux arm64 镜像构建均为 75 项测试通过，0 失败、0 错误、0 跳过。覆盖业务、分页 SQL 次数、事务回滚、迁移、文件清理、账号、CSRF、权限拒绝、旧会话撤销、私有头像、部署配置、初始化和认证补丁；新增健康端点隔离、可用性变化及脱敏日志验证。测试数量不代表生产质量或性能指标。
 
-独立 MySQL 9.0.1 的历史迁移与恢复结果见[第二阶段记录](docs/acceptance/phase-2-counselor-records.md)。本阶段另验证 V3→V4、空库无凭据拒绝启动，以及真实登录／multipart 上传／权限流程，见[第三阶段记录](docs/acceptance/phase-3-account-security.md)。4A 的新启动脚本另完成专用非 root MySQL 账号、登录和重启验收，见[4A 记录](docs/acceptance/phase-4a-deployment-config.md)。CI 使用 JDK 17 执行测试，真实 MySQL 验收为独立本地记录。
+独立 MySQL 9.0.1 的历史迁移与恢复结果见[第二阶段记录](docs/acceptance/phase-2-counselor-records.md)。V3→V4、首次凭据及登录／multipart／权限流程见[第三阶段记录](docs/acceptance/phase-3-account-security.md)；专用非 root MySQL 账号启动和重启见 [4A 记录](docs/acceptance/phase-4a-deployment-config.md)。4B 新增 MySQL 8.4.11 容器故障恢复和持久化验收，可用 `python3 scripts/verify-compose.py` 重复执行。CI 当前仍只运行 Maven 测试，真实 MySQL CI 留待 4D。
 
 ## 页面预览
 
@@ -145,4 +158,4 @@ docs/
 - 文件与数据库不在同一个事务中，当前提供同步失败补偿和清理失败日志，尚无持久化清理队列。
 - 没有学生／班级管理、审批、导入导出、AI 功能、生产部署或高并发证据。
 
-下一步核验完整维护版本组合，并继续 4B 容器部署、健康检查，随后完成日志、备份恢复与发布说明。[项目证据](docs/project-evidence.md)区分当前实现、历史记录与待开发能力。
+下一步是 4C：协调数据库与头像备份，在独立空环境恢复验证；随后完成 4D 的 MySQL CI、依赖及镜像检查和发布说明。Flyway 的版本验证提示、HTTPS、登录限流仍需处理。[项目证据](docs/project-evidence.md)区分当前实现、历史记录与待开发能力。

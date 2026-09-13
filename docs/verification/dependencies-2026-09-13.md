@@ -22,6 +22,8 @@
 
 [完整解析树](dependency-tree-2026-09-13.txt)记录依赖升级提交时的组合；4B 增加 Actuator 后另保存最终树。
 
+4B 完成后：新增 Actuator 4.0.8，完整组合见[运行阶段依赖树](dependency-tree-4b-2026-09-13.txt)。配置处理器同时切换到 Boot 4 的 `org.springframework.boot.EnvironmentPostProcessor` 和对应 spring.factories 注册键；原有配置拒绝用例全部保留。
+
 ## 兼容变更与回归
 
 按照 [Boot 4 迁移指南](https://github.com/spring-projects/spring-boot/wiki/Spring-Boot-4.0-Migration-Guide)，使用 webmvc、flyway 及对应 Web / Security 测试 starter；更新 MockMvc 自动配置包名。保留 EnvironmentPostProcessor 原注册入口，真实 SpringApplication 配置阶段测试继续通过。
@@ -38,3 +40,5 @@
 Security 7.0.7 达到先前列出的 DPoP、WebAuthn 和 AES 公告修复版；本项目仍未引入这些功能。[Spring 安全公告](https://spring.io/security/)
 
 本轮是兼容升级与定向回归，尚未执行完整 SCA 或镜像漏洞扫描。4D 应补自动依赖检查，公网开放前仍需复核最新公告、HTTPS 和登录限流。固定版本／镜像摘要保障本次构建可追查，不表示其以后无需更新。
+
+运行核对发现 Flyway 11.14.1 仍对 MySQL 8.4 和 H2 2.5.250 输出超出内置验证版本的提示。保留提示和 BOM 管理版本，以本项目具体用例给出运行证据，暂不宣称供应商完整认证。官方 MySQL 页面列出的验证版本为 5.7、8.0、9.4；上游另有 8.4 支持讨论。4D 需继续核对版本支持及迁移回归，不以关闭日志掩盖这个边界。[Flyway MySQL 说明](https://documentation.red-gate.com/flyway/reference/database-driver-reference/mysql)、[上游问题 #4168](https://github.com/flyway/flyway/issues/4168)

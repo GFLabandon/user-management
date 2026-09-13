@@ -1,1 +1,1 @@
-org.springframework.boot.env.EnvironmentPostProcessor=io.github.gflabandon.counselor.config.DeploymentEnvironmentValidator
+org.springframework.boot.EnvironmentPostProcessor=io.github.gflabandon.counselor.config.DeploymentEnvironmentValidator
