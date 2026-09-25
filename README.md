@@ -9,7 +9,7 @@ Campus Counselor Management
 
 由 `user-management` 演进而来的辅导员档案管理原型，采用 Java 17、Spring Boot、MyBatis、Thymeleaf 与 Flyway。支持建档、检索、院系维护、状态变更和头像上传。
 
-> 当前完成档案业务、账号权限、4A 配置与 4B 容器运行验收。档案与登录账号分开，采用 Spring Security 表单登录、管理员／只读授权与 CSRF 防护。支持本机单实例容器演示，没有真实学校交付或生产运行记录。
+> 当前完成档案业务、账号权限、4A 配置、4B 容器运行与 4C 协调备份恢复验收。档案与登录账号分开，采用 Spring Security 表单登录、管理员／只读授权与 CSRF 防护。支持本机单实例容器演示，没有真实学校交付或生产运行记录。
 
 ![辅导员档案列表](docs/images/archive/phase-2/counselors.png)
 
@@ -61,6 +61,12 @@ docker compose --env-file .env.compose up -d --build --wait --wait-timeout 240
 
 健康端点为 `/actuator/health/liveness` 和 `/actuator/health/readiness`；数据库断开时后者返回 503，前者仍表示进程存活。日志按请求编号关联并限制保留大小。详见[部署指南](docs/guides/deployment.md)与 [4B 验收](docs/acceptance/phase-4b-runtime.md)。这不是 HTTPS 公网部署流程。
 
+## 备份与恢复（4C）
+
+提供 `scripts/backup.sh`、`scripts/restore.sh`，要求 Python 3.9+。在维护窗口停止应用、锁定数据库写入，协调导出 SQL 与头像，并生成文件清单、SHA-256 和全部数据行摘要。备份后应用保持停止，由操作者检查后启动。
+
+恢复只接受全新的 Compose 项目，使用备份记录的镜像；拒绝覆盖已有项目、损坏备份或缺少引用图片的备份。数据和图片校验完成后，再启动应用进行网页登录检查。完整命令、凭据与镜像准备见[备份恢复指南](docs/guides/backup-and-restore.md)，实测见 [4C 验收](docs/acceptance/phase-4c-backup-recovery.md)。
+
 ## 新 MySQL 数据库（本地调试）
 
 创建空库并为专用账号授予所需权限。当前启动时由 Flyway 执行迁移，账号需要建表、改表、索引及业务读写权限。
@@ -110,7 +116,14 @@ flowchart LR
 
 2026-09-13：本机与 Linux arm64 镜像构建均为 75 项测试通过，0 失败、0 错误、0 跳过。覆盖业务、分页 SQL 次数、事务回滚、迁移、文件清理、账号、CSRF、权限拒绝、旧会话撤销、私有头像、部署配置、初始化和认证补丁；新增健康端点隔离、可用性变化及脱敏日志验证。测试数量不代表生产质量或性能指标。
 
-独立 MySQL 9.0.1 的历史迁移与恢复结果见[第二阶段记录](docs/acceptance/phase-2-counselor-records.md)。V3→V4、首次凭据及登录／multipart／权限流程见[第三阶段记录](docs/acceptance/phase-3-account-security.md)；专用非 root MySQL 账号启动和重启见 [4A 记录](docs/acceptance/phase-4a-deployment-config.md)。4B 新增 MySQL 8.4.11 容器故障恢复和持久化验收，可用 `python3 scripts/verify-compose.py` 重复执行。CI 当前仍只运行 Maven 测试，真实 MySQL CI 留待 4D。
+独立 MySQL 9.0.1 的历史迁移与恢复结果见[第二阶段记录](docs/acceptance/phase-2-counselor-records.md)。V3→V4、首次凭据及登录／multipart／权限流程见[第三阶段记录](docs/acceptance/phase-3-account-security.md)；专用非 root MySQL 账号启动和重启见 [4A 记录](docs/acceptance/phase-4a-deployment-config.md)。4B 新增 MySQL 8.4.11 容器故障恢复和持久化验收，可用 `python3 scripts/verify-compose.py` 重复执行。4C 在 2026-09-25 通过 13 项脚本安全测试和 8 组真实 MySQL 恢复验收，覆盖全部表数据、密码哈希、头像、恢复后登录／编辑及失败保护；本阶段没有修改 Java 或 V1–V4，未重跑上述历史 75 项 Java 测试。
+
+```sh
+python3 -B -m unittest discover -s scripts/tests -v
+python3 -B scripts/verify-recovery.py
+```
+
+CI 配置现包含 Maven 测试与 Python 安全测试；本阶段尚未推送，未运行远程 CI。真实 MySQL CI 留待 4D。
 
 ## 页面预览
 
@@ -158,4 +171,4 @@ docs/
 - 文件与数据库不在同一个事务中，当前提供同步失败补偿和清理失败日志，尚无持久化清理队列。
 - 没有学生／班级管理、审批、导入导出、AI 功能、生产部署或高并发证据。
 
-下一步是 4C：协调数据库与头像备份，在独立空环境恢复验证；随后完成 4D 的 MySQL CI、依赖及镜像检查和发布说明。Flyway 的版本验证提示、HTTPS、登录限流仍需处理。[项目证据](docs/project-evidence.md)区分当前实现、历史记录与待开发能力。
+下一步是 4D：将容器与恢复演练接入 MySQL CI，完成依赖及镜像检查和发布说明。Flyway 的版本验证提示、HTTPS、登录限流仍需处理。[项目证据](docs/project-evidence.md)区分当前实现、历史记录与待开发能力。

@@ -1,6 +1,6 @@
 # 部署配置、容器运行与健康检查（4A / 4B）
 
-当前提供 deploy 启动入口、应用 + MySQL 容器编排、独立数据卷和健康检查。Compose 仅用于本机单实例 HTTP 演示；HTTPS、协调备份恢复和发布检查仍待后续完成。
+当前提供 deploy 启动入口、应用 + MySQL 容器编排、独立数据卷和健康检查。Compose 仅用于本机单实例 HTTP 演示；协调备份恢复已在 4C 验收，见[备份恢复指南](backup-and-restore.md)；HTTPS 和发布检查仍待后续完成。
 
 ## 运行入口
 
@@ -102,7 +102,7 @@ docker compose --env-file .env.compose up -d --wait
 docker compose --env-file .env.compose up -d --build --wait app
 ```
 
-正常维护不要使用 `down --volumes`、`volume prune` 或 `system prune`。两个卷必须一起备份；重建容器保留数据，不等于备份。协调备份与空环境恢复属于 4C。Session 保存在进程内，重建应用需要重新登录；当前只保证单实例，不支持共享会话或无损滚动发布。
+正常维护不要使用 `down --volumes`、`volume prune` 或 `system prune`。两个卷必须一起备份；重建容器保留数据，不等于备份。协调备份与空环境恢复按 [4C 指南](backup-and-restore.md)执行。Session 保存在进程内，重建应用需要重新登录；当前只保证单实例，不支持共享会话或无损滚动发布。
 
 ## 健康与故障定位
 

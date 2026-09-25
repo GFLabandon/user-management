@@ -1,6 +1,6 @@
 # 项目证据与表述边界
 
-核验日期：2026-09-13，4B 分支 `codex/deployment-runtime`，从 4A 的 `ed0b0c2` 继续；依赖升级提交 `96507d8`。产品名称：高校辅导员信息管理系统（Campus Counselor Management）。仓库目录仍为 `user-management`。
+核验日期：2026-09-25，4C 分支 `codex/backup-recovery`，从 4B 的 `493fed6` 继续；依赖升级仍为 `96507d8`。产品名称：高校辅导员信息管理系统（Campus Counselor Management）。仓库目录仍为 `user-management`。
 
 ## 当前实现
 
@@ -21,18 +21,21 @@
 | 依赖核对 | Boot 4.0.8 / Security 7.0.7 / MyBatis Starter 4.0.1，H2 2.5.250 修复迁移回归；见 verification 目录 |
 | 容器运行 | 非 root 应用、只读根文件系统、MySQL 8.4.11 与头像独立卷、回环 HTTP；见 Dockerfile / compose.yaml |
 | 健康与日志 | 独立无状态探针授权、readiness 检查 DB、liveness 不依赖 DB；请求编号与脱敏日志、Docker 日志保留限制 |
-| 测试 | 本机与 Linux arm64 构建各 75 项通过，另有真实容器 HTTP 验收脚本 |
+| 备份恢复 | 停应用并持有数据库读锁；SQL、头像、清单和摘要；仅恢复到全新项目；见 scripts/maintenance.py |
+| 测试 | 4B 历史 Java 测试：本机与 Linux arm64 各 75 项通过；4C：13 项 Python 安全测试、8 组真实 MySQL 恢复验收 |
 | MySQL 验收 | 第二阶段迁移、重启和备份恢复；第三阶段另验证 V3→V4、首次凭据、CSRF multipart 和权限；4A 新增专用数据库账号启动及重启验收；详见各阶段验收记录 |
 
 Java 代码位于 `src/main/java/io/github/gflabandon/counselor/`，Java 迁移位于 `src/main/java/db/migration/`。自动化报告位于本地 `target/surefire-reports/`，不提交构建产物。
 
 4B 的独立 MySQL 容器验收覆盖慢启动、首次凭据、真实登录与 multipart CSRF、只读越权、旧会话撤销、数据库停止／恢复、重建后账号和图片持久化。脚本为 `scripts/verify-compose.py`，记录见 [4B 验收](acceptance/phase-4b-runtime.md)。Flyway 仍提示 MySQL 8.4 / H2 2.5 超出其内置验证范围；本项目用例通过不等于供应商完整兼容认证。
 
+4C 通过随机隔离 Compose 项目核对全部 11 张表的行数和数据行摘要、Flyway 历史、账号哈希、头像引用及文件内容；恢复后实际登录、搜索和编辑。额外覆盖读锁阻止写入与异常释放、损坏备份拒绝、已有目标拒绝、缺失图片导致备份无效。脚本为 `scripts/verify-recovery.py`，见 [4C 验收](acceptance/phase-4c-backup-recovery.md)。本阶段只修改维护脚本、CI 快速检查和文档，没有重跑 Java 测试或远程 CI。
+
 ## 可解释的项目描述
 
 用于演示高校辅导员档案维护的 Java Web 项目，支持工号与姓名检索、院系归属、任职状态、头像上传和状态记录。按 Controller、Service、Mapper 分层实现，采用 Flyway 管理数据库变化，以版本号检查避免过期编辑覆盖。
 
-本次是在旧通用用户管理原型上进行业务重构，不是从真实学校需求推导出的已交付系统。前三阶段开发和验收日期为 2026-09-06，4A 为 2026-09-07，4B 为 2026-09-13，不能倒填功能完成日期。
+本次是在旧通用用户管理原型上进行业务重构，不是从真实学校需求推导出的已交付系统。前三阶段开发和验收日期为 2026-09-06，4A 为 2026-09-07，4B 为 2026-09-13，4C 为 2026-09-25，不能倒填功能完成日期。
 
 ## 不应声称
 
@@ -40,7 +43,7 @@ Java 代码位于 `src/main/java/io/github/gflabandon/counselor/`，Java 迁移�
 - 尚无生产部署、HTTPS、登录限流、病毒扫描或完整依赖漏洞验收，不能宣称已满足公网部署要求。
 - 状态历史与操作记录分开；操作记录没有字段前后值、归档或防篡改保障。
 - 75 项测试及固定两条列表 SQL 不代表高并发、性能指标或完整质量保障。
-- 容器数据持久化不等于备份；4C 的协调备份恢复尚未完成。Session 是单进程内存状态，不支持无损滚动发布。
+- 协调备份与恢复已在本机小样本验收；尚无定时备份、自动加密、异地保管或生产 RTO／RPO 证据。Session 是单进程内存状态，不支持无损滚动发布。
 - 没有真实高校交付、真实用户规模、学生／班级管理、审批、Excel 导入导出或 AI 功能证据。
 - 新数据库结构不能仅通过切回旧 Git 提交回退；须恢复对应数据库与上传目录备份。
 

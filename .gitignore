@@ -5,6 +5,8 @@
 
 target/
 uploads/
+backups/
+__pycache__/
 *.log
 
 .env
