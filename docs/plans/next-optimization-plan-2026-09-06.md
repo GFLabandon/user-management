@@ -2,7 +2,7 @@
 
 日期：2026-09-06。代码基线：`c193486`（第三阶段），已整合到本地 `main`。
 
-本文保留原方案顺序。2026-09-30 更新：4D 工作流、真实 MySQL 本机验收和发布指南已落地，见 [4D 验收](../acceptance/phase-4d-ci-release.md)。安全补丁已清除应用阻断项，MySQL 官方重建镜像仍有 28 个阻断项，须优先完成后续处置与复验；远程 CI 未运行，不能直接进入发布。此前 4A、4B 与 4C 已完成，见 [4A 验收](../acceptance/phase-4a-deployment-config.md)、[4B 验收](../acceptance/phase-4b-runtime.md)、[4C 验收](../acceptance/phase-4c-backup-recovery.md)。依赖升级独立提交 `96507d8`，已验证 Boot 4.0.8 与容器运行组合；Flyway 验证范围提示与扫描后的剩余风险仍需处理，运行镜像及打包依赖扫描已执行。5A–6 尚未实施，未开放公网服务。下文“当前依据”保留方案制定时的观察，最新事实以验收记录为准。
+本文保留原方案顺序。2026-09-30 更新：4D 工作流、真实 MySQL 本机验收和发布指南已落地，见 [4D 验收](../acceptance/phase-4d-ci-release.md)。安全补丁已清除应用阻断项，MySQL 官方重建镜像仍有 28 个阻断项，须优先完成后续处置与复验；阶段成果已整合到 main，仍需确认远程 CI 结果，不能直接进入发布。此前 4A、4B 与 4C 已完成，见 [4A 验收](../acceptance/phase-4a-deployment-config.md)、[4B 验收](../acceptance/phase-4b-runtime.md)、[4C 验收](../acceptance/phase-4c-backup-recovery.md)。依赖升级独立提交 `96507d8`，已验证 Boot 4.0.8 与容器运行组合；Flyway 验证范围提示与扫描后的剩余风险仍需处理，运行镜像及打包依赖扫描已执行。5A–6 尚未实施，未开放公网服务。下文“当前依据”保留方案制定时的观察，最新事实以验收记录为准。
 
 ## 优先结论
 

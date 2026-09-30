@@ -123,7 +123,7 @@ python3 -B -m unittest discover -s scripts/tests -v
 python3 -B scripts/verify-recovery.py
 ```
 
-2026-09-30：重新通过 75 项 Java、18 项 Python 测试，以及 10 组运行、5 组真实 MySQL 迁移、8 组恢复验收。CI 配置分为快速测试、MySQL、安全扫描三个任务；本阶段未推送，远程 CI 尚未运行。安全扫描及发布边界见 [4D 验收](docs/acceptance/phase-4d-ci-release.md)和[发布指南](docs/guides/release.md)。
+2026-09-30：重新通过 75 项 Java、18 项 Python 测试，以及 10 组运行、5 组真实 MySQL 迁移、8 组恢复验收。CI 配置分为快速测试、MySQL、安全扫描三个任务；阶段成果已整合到 `main`；远程 CI 是否通过以候选提交的 GitHub Actions 结果为准。安全扫描及发布边界见 [4D 验收](docs/acceptance/phase-4d-ci-release.md)和[发布指南](docs/guides/release.md)。
 
 ```sh
 docker build --target migration-verification -t campus-counselor-migrations:local .

@@ -1,6 +1,6 @@
 # 项目证据与表述边界
 
-核验日期：2026-09-30，4D 分支 `codex/ci-release-verification`，从 4C 的 `bf8a300` 继续；Boot 升级基线为 `96507d8`，本阶段另补 Tomcat／Jackson／OpenSSL 与 MySQL 镜像摘要修复。产品名称：高校辅导员信息管理系统（Campus Counselor Management）。仓库目录仍为 `user-management`。
+核验日期：2026-09-30，第一至 4D 阶段已整合到 `main`，最新实现提交 `61635f8`；Boot 升级基线为 `96507d8`，本阶段另补 Tomcat／Jackson／OpenSSL 与 MySQL 镜像摘要修复。产品名称：高校辅导员信息管理系统（Campus Counselor Management）。仓库目录仍为 `user-management`。
 
 ## 当前实现
 
@@ -23,7 +23,7 @@
 | 健康与日志 | 独立无状态探针授权、readiness 检查 DB、liveness 不依赖 DB；请求编号与脱敏日志、Docker 日志保留限制 |
 | 备份恢复 | 停应用并持有数据库读锁；SQL、头像、清单和摘要；仅恢复到全新项目；见 scripts/maintenance.py |
 | 测试 | 4D 本机重跑：75 项 Java、18 项 Python；真实 MySQL 运行 10 组、迁移 5 组、恢复 8 组通过 |
-| CI 与扫描 | 分离快速测试、MySQL、安全扫描任务；扫描实际运行镜像与 Java 依赖；远程 CI 未运行，扫描结论见 4D 核对记录 |
+| CI 与扫描 | 分离快速测试、MySQL、安全扫描任务；扫描实际运行镜像与 Java 依赖；远程 CI 状态以 GitHub Actions 为准，扫描结论见 4D 核对记录 |
 | MySQL 验收 | 第二阶段迁移、重启和备份恢复；第三阶段另验证 V3→V4、首次凭据、CSRF multipart 和权限；4A 新增专用数据库账号启动及重启验收；详见各阶段验收记录 |
 
 Java 代码位于 `src/main/java/io/github/gflabandon/counselor/`，Java 迁移位于 `src/main/java/db/migration/`。自动化报告位于本地 `target/surefire-reports/`，不提交构建产物。
