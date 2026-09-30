@@ -1,4 +1,8 @@
 FROM eclipse-temurin:17.0.20_8-jdk-jammy@sha256:ef4374b4b6b9d813dd3f5b593a35ec9a820cfb64a55994798147cc73435a0208 AS build
+# Ubuntu USN-8847-1: keep the native TLS libraries at the verified patched version.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends --only-upgrade libssl3=3.0.2-0ubuntu1.30 openssl=3.0.2-0ubuntu1.30 \
+    && rm -rf /var/lib/apt/lists/*
 RUN groupadd --gid 10001 builder \
     && useradd --uid 10001 --gid builder --create-home builder \
     && mkdir /workspace && chown builder:builder /workspace
@@ -22,6 +26,10 @@ WORKDIR /workspace/migration-runtime
 ENTRYPOINT ["java", "-cp", ".:BOOT-INF/lib/*:BOOT-INF/classes", "MysqlMigrationVerification"]
 
 FROM eclipse-temurin:17.0.20_8-jre-jammy@sha256:ec72ba5962b45ae4e7f96bfb5ebf6eeb34a488b967f937c8e14f0aaec688954f
+# Ubuntu USN-8847-1: keep the native TLS libraries at the verified patched version.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends --only-upgrade libssl3=3.0.2-0ubuntu1.30 openssl=3.0.2-0ubuntu1.30 \
+    && rm -rf /var/lib/apt/lists/*
 RUN groupadd --gid 10001 counselor \
     && useradd --uid 10001 --gid counselor --no-create-home --shell /usr/sbin/nologin counselor \
     && mkdir -p /app/uploads \

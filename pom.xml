@@ -19,6 +19,10 @@
 
     <properties>
         <java.version>17</java.version>
+        <!-- Temporary same-series security patches; recheck when the Boot BOM advances. -->
+        <tomcat.version>11.0.26</tomcat.version>
+        <jackson-2-bom.version>2.21.7</jackson-2-bom.version>
+        <jackson-bom.version>3.1.7</jackson-bom.version>
         <!-- H2 2.4.240 retains a closed session in CHECK constraints (H2 #4302). -->
         <h2.version>2.5.250</h2.version>
     </properties>

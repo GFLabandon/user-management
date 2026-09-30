@@ -116,7 +116,7 @@ flowchart LR
 
 2026-09-13：本机与 Linux arm64 镜像构建均为 75 项测试通过，0 失败、0 错误、0 跳过。覆盖业务、分页 SQL 次数、事务回滚、迁移、文件清理、账号、CSRF、权限拒绝、旧会话撤销、私有头像、部署配置、初始化和认证补丁；新增健康端点隔离、可用性变化及脱敏日志验证。测试数量不代表生产质量或性能指标。
 
-独立 MySQL 9.0.1 的历史迁移与恢复结果见[第二阶段记录](docs/acceptance/phase-2-counselor-records.md)。V3→V4、首次凭据及登录／multipart／权限流程见[第三阶段记录](docs/acceptance/phase-3-account-security.md)；专用非 root MySQL 账号启动和重启见 [4A 记录](docs/acceptance/phase-4a-deployment-config.md)。4B 新增 MySQL 8.4.11 容器故障恢复和持久化验收，可用 `python3 scripts/verify-compose.py` 重复执行。4C 在 2026-09-25 通过 13 项脚本安全测试和 8 组真实 MySQL 恢复验收，覆盖全部表数据、密码哈希、头像、恢复后登录／编辑及失败保护；本阶段没有修改 Java 或 V1–V4，未重跑上述历史 75 项 Java 测试。
+独立 MySQL 9.0.1 的历史迁移与恢复结果见[第二阶段记录](docs/acceptance/phase-2-counselor-records.md)。V3→V4、首次凭据及登录／multipart／权限流程见[第三阶段记录](docs/acceptance/phase-3-account-security.md)；专用非 root MySQL 账号启动和重启见 [4A 记录](docs/acceptance/phase-4a-deployment-config.md)。4B 新增 MySQL 8.4.11 容器故障恢复和持久化验收，可用 `python3 scripts/verify-compose.py` 重复执行。4C 在 2026-09-25 通过 13 项脚本安全测试和 8 组真实 MySQL 恢复验收，覆盖全部表数据、密码哈希、头像、恢复后登录／编辑及失败保护；4C 没有修改 Java 或 V1–V4，当时未重跑上述 75 项 Java 测试。
 
 ```sh
 python3 -B -m unittest discover -s scripts/tests -v
@@ -178,4 +178,4 @@ docs/
 - 文件与数据库不在同一个事务中，当前提供同步失败补偿和清理失败日志，尚无持久化清理队列。
 - 没有学生／班级管理、审批、导入导出、AI 功能、生产部署或高并发证据。
 
-4D 的工作流与发布指南已落地；发布前仍须核对安全扫描发现，并运行候选提交的远程 CI。之后再推进 5A 的错误页面、账号选择与操作记录体验。Flyway 的版本验证提示、HTTPS、登录限流仍需处理。[项目证据](docs/project-evidence.md)区分当前实现、历史记录与待开发能力。
+4D 的工作流与发布指南已落地，应用补丁后的高危／严重项已清除；MySQL 官方镜像仍有 28 个阻断项，安全门禁未通过。先处理这些发现并运行候选提交的远程 CI，之后再推进 5A 的错误页面、账号选择与操作记录体验。Flyway 的版本验证提示、HTTPS、登录限流仍需处理。[项目证据](docs/project-evidence.md)区分当前实现、历史记录与待开发能力。

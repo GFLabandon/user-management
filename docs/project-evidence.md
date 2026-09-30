@@ -1,6 +1,6 @@
 # 项目证据与表述边界
 
-核验日期：2026-09-30，4D 分支 `codex/ci-release-verification`，从 4C 的 `bf8a300` 继续；依赖升级仍为 `96507d8`。产品名称：高校辅导员信息管理系统（Campus Counselor Management）。仓库目录仍为 `user-management`。
+核验日期：2026-09-30，4D 分支 `codex/ci-release-verification`，从 4C 的 `bf8a300` 继续；Boot 升级基线为 `96507d8`，本阶段另补 Tomcat／Jackson／OpenSSL 与 MySQL 镜像摘要修复。产品名称：高校辅导员信息管理系统（Campus Counselor Management）。仓库目录仍为 `user-management`。
 
 ## 当前实现
 
@@ -32,7 +32,7 @@ Java 代码位于 `src/main/java/io/github/gflabandon/counselor/`，Java 迁移�
 
 4C 通过随机隔离 Compose 项目核对全部 11 张表的行数和数据行摘要、Flyway 历史、账号哈希、头像引用及文件内容；恢复后实际登录、搜索和编辑。额外覆盖读锁阻止写入与异常释放、损坏备份拒绝、已有目标拒绝、缺失图片导致备份无效。脚本为 `scripts/verify-recovery.py`，见 [4C 验收](acceptance/phase-4c-backup-recovery.md)。本阶段只修改维护脚本、CI 快速检查和文档，没有重跑 Java 测试或远程 CI。
 
-4D 的本机 CI 同入口验证覆盖旧库映射缺失时零复制、完整迁移保留 ID／关系／图片引用、V3→V4 及未知非空库拒绝接管。工具和发布步骤见 [4D 验收](acceptance/phase-4d-ci-release.md)、[安全核对](verification/security-2026-09-30.md)及[发布指南](guides/release.md)。这不代表远程 CI 或实际发布已经通过。
+4D 的本机 CI 同入口验证覆盖旧库映射缺失时零复制、完整迁移保留 ID／关系／图片引用、V3→V4 及未知非空库拒绝接管。工具和发布步骤见 [4D 验收](acceptance/phase-4d-ci-release.md)、[安全核对](verification/security-2026-09-30.md)及[发布指南](guides/release.md)。应用的 HIGH／CRITICAL 发现已归零，MySQL 镜像仍有 28 个阻断项，安全任务保持失败；这不代表远程 CI 或实际发布已经通过。
 
 ## 可解释的项目描述
 

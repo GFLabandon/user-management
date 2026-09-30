@@ -12,7 +12,7 @@
 
 ## 本机验证
 
-环境：macOS arm64、Temurin 17.0.20+8、Docker 29.7.2、MySQL 8.4.11、Boot 4.0.8、Flyway 11.14.1。应用镜像构建沿用缓存；Java 回归在本机重新执行，不把缓存构建声称为新执行的 Linux 测试。
+环境：macOS arm64、Temurin 17.0.20+8、Docker 29.7.2、MySQL 8.4.11、Boot 4.0.8、Flyway 11.14.1。初次应用镜像构建沿用缓存。安全补丁后已重新构建 Linux arm64 镜像，本机与容器构建各执行 75 项 Java 测试并通过；Tomcat 11.0.26、Jackson 2.21.7／3.1.7 与 OpenSSL 补丁见安全记录。
 
 | 验证 | 结果 |
 | --- | --- |
@@ -24,7 +24,7 @@
 | 真实 MySQL 迁移验收 | 5 组通过 |
 | 协调备份与恢复 | 8 组通过 |
 
-CI 同入口本机摘要 `target/mysql-ci-summary.json` 显示三个脚本均为 exit 0，分别耗时 137.3、55.6、57.3 秒。该时长来自小样本本机环境，不是性能或恢复服务承诺。详细摘要位于 `target/compose-verification/`、`migration-verification/`、`recovery-verification/`，均不提交构建产物。
+CI 同入口本机摘要 `target/mysql-ci-summary.json` 显示三个脚本均为 exit 0，补丁后最终一轮分别耗时 137.1、39.1、45.6 秒。该时长来自小样本本机环境，不是性能或恢复服务承诺。最终三套摘要分别来自 `counselor-verify-70a34901ca26`、`counselor-migration-ba9946ef1cc6`、`counselor-recovery-84f326736d`。详细结果位于 `target/compose-verification/`、`migration-verification/`、`recovery-verification/`，均不提交构建产物。
 
 新增迁移验收逐场景使用全新 Compose 数据库：
 
@@ -38,11 +38,13 @@ CI 同入口本机摘要 `target/mysql-ci-summary.json` 显示三个脚本均为
 
 ## 安全扫描与 Flyway 范围
 
-实际扫描结果、工具／数据库时间和待处理项见[安全核对记录](../verification/security-2026-09-30.md)。安全任务红灯是发布阻断，不能被功能验收成功覆盖。
+初次安全扫描发现应用 7 个、MySQL 64 个 HIGH／CRITICAL 组件项；独立补丁后应用归零、MySQL 降至 28 个，最终安全门禁仍失败，不能发布。实际扫描结果、工具／数据库时间和待处理项见[安全核对记录](../verification/security-2026-09-30.md)。安全任务红灯是发布阻断，不能被功能验收成功覆盖。
 
 2026-09-30 核对：Flyway 官方 MySQL 页面仍列验证版本 5.7、8.0、9.4；H2 页面列 1.2、2.0。本项目当前 MySQL 8.4.11／H2 2.5.250 仍超出该列举范围，运行日志中的提示保留。实际迁移及回归通过提供本项目用例证据，不等于供应商完整认证；本轮没有为消除日志而降低数据库或盲目替换 Flyway。
 
 依据：[MySQL 文档](https://documentation.red-gate.com/flyway/reference/database-driver-reference/mysql)、[H2 文档](https://documentation.red-gate.com/flyway/reference/database-driver-reference/h2)。
+
+本轮所有随机验收容器、卷与网络已清理；原有四个其他项目容器继续保持停止，未动其数据卷。Docker 开始时未运行，验收结束后恢复关闭状态。
 
 ## 发布状态
 
