@@ -2,7 +2,7 @@
 
 日期：2026-09-06。代码基线：`c193486`（第三阶段），已整合到本地 `main`。
 
-本文保留原方案顺序。2026-09-25 更新：4A、4B 与 4C 已完成，见 [4A 验收](../acceptance/phase-4a-deployment-config.md)、[4B 验收](../acceptance/phase-4b-runtime.md)、[4C 验收](../acceptance/phase-4c-backup-recovery.md)。依赖升级独立提交 `96507d8`，已验证 Boot 4.0.8 与容器运行组合；Flyway 验证范围提示和全面 SCA／镜像检查仍需处理。当前已补 Python 安全测试的 CI 配置；真实 MySQL CI、4D–6 尚未实施，未开放公网服务。下文“当前依据”保留方案制定时的观察，最新事实以验收记录为准。
+本文保留原方案顺序。2026-09-30 更新：4D 工作流、真实 MySQL 本机验收和发布指南已落地，见 [4D 验收](../acceptance/phase-4d-ci-release.md)。初次扫描发现应用和 MySQL 镜像的高危／严重项，须优先补丁与复验；远程 CI 未运行，不能直接进入发布。此前 4A、4B 与 4C 已完成，见 [4A 验收](../acceptance/phase-4a-deployment-config.md)、[4B 验收](../acceptance/phase-4b-runtime.md)、[4C 验收](../acceptance/phase-4c-backup-recovery.md)。依赖升级独立提交 `96507d8`，已验证 Boot 4.0.8 与容器运行组合；Flyway 验证范围提示和全面 SCA／镜像检查仍需处理。5A–6 尚未实施，未开放公网服务。下文“当前依据”保留方案制定时的观察，最新事实以验收记录为准。
 
 ## 优先结论
 
@@ -101,6 +101,6 @@ CI 分开报告单元／Web 测试、MySQL 验收和依赖检查，失败保留�
 
 ## 下一轮可直接使用的任务说明
 
-> 从已验收的 4C 继续，仅执行 4D：读取现有 CI、Compose、4B／4C 脚本和验收记录，把构建镜像、真实 MySQL 运行与恢复验收接入独立 CI 任务；补旧库升级与缺失映射拒绝的真实 MySQL 验证，保留脱敏报告并清理本次随机资源。执行依赖及镜像检查、复核 Flyway 验证范围；必要升级独立提交。新增发布指南，说明版本、配置、迁移、备份、验证及回退。不修改 V1–V4，不触碰已有库／卷，不开放公网，不提前加入 5A／5B 业务优化。区分本机结果、远程 CI 结果和仍未验证的发布边界。
+> 先读取 4D 验收和最新安全核对，处理仍存在的 HIGH／CRITICAL 或不完整扫描，补丁独立提交并重跑 Java 与三套 MySQL 验收。候选版本须实际执行远程 CI，记录其链接与结果；没有远程结果时明确保留未验证状态。完成发布检查后再进入 5A：统一错误页面、改善账号关联档案选择、增加操作记录中文说明与检索分页。不修改 V1–V4，不操作已有数据库和卷，不提前开放公网。
 
 配置机制参考：[Spring Boot Profiles](https://docs.spring.io/spring-boot/3.5/reference/features/profiles.html)。官方文档可能随版本更新，实施时对照最终选定的依赖版本复核。

@@ -1,6 +1,6 @@
 # 文档导航
 
-当前进展：4C 数据库与头像协调备份、空环境恢复，分支 `codex/backup-recovery`，从 4B 的 `493fed6` 继续。更新时间：2026-09-25。下一步为 4D 的 MySQL CI 与发布检查。
+当前进展：4D 的 CI 工作流、真实 MySQL 迁移、安全扫描与发布指南，分支 `codex/ci-release-verification`，从 4C 的 `bf8a300` 继续。更新时间：2026-09-30。远程 CI 与实际发布尚未执行。
 
 ## 从这里开始
 
@@ -12,6 +12,7 @@
 | 维护窗口备份、校验与空环境恢复 | [备份恢复指南](guides/backup-and-restore.md) |
 | deploy、容器、健康检查与运行维护 | [部署指南](guides/deployment.md) |
 | 实际依赖、已修复项和发布遗留项 | [依赖核对](verification/dependencies-2026-09-13.md)、[4B 最终依赖树](verification/dependency-tree-4b-2026-09-13.txt) |
+| 候选版本检查与回退 | [发布指南](guides/release.md)、[安全核对](verification/security-2026-09-30.md) |
 | 已实现能力与表述边界 | [项目证据](project-evidence.md) |
 
 ## 阶段记录
@@ -24,9 +25,10 @@
 | 4A：部署配置、版本核对及认证补丁 | `codex/deployment-config`；补丁 `2f27992` | [4A 验收](acceptance/phase-4a-deployment-config.md) |
 | 4B：依赖升级、容器、持久化与健康检查 | `codex/deployment-runtime`；依赖 `96507d8` | [4B 验收](acceptance/phase-4b-runtime.md) |
 | 4C：协调备份、恢复保护与真实 HTTP 验收 | `codex/backup-recovery` | [4C 验收](acceptance/phase-4c-backup-recovery.md) |
+| 4D：MySQL CI、扫描与发布流程 | `codex/ci-release-verification` | [4D 验收](acceptance/phase-4d-ci-release.md) |
 | 重构前的 MySQL 验收 | 历史版本 | [2026-08-07 记录](acceptance/2026-08-07-mysql.md) |
 
-第一至三阶段分支已在快进合入本地 `main` 后删除，提交及全部历史仍保留。4A、4B 与 4C 使用独立分支，尚未合入 main 或推送远程。旧记录中的分支名、登录方式和功能边界描述当时状态；以当前 README 和项目证据为准。
+第一至三阶段分支已在快进合入本地 `main` 后删除，提交及全部历史仍保留。4A、4B、4C 与 4D 使用独立分支，尚未合入 main 或推送远程。旧记录中的分支名、登录方式和功能边界描述当时状态；以当前 README 和项目证据为准。
 
 ## 目录约定
 

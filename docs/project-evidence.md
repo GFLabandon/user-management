@@ -1,6 +1,6 @@
 # 项目证据与表述边界
 
-核验日期：2026-09-25，4C 分支 `codex/backup-recovery`，从 4B 的 `493fed6` 继续；依赖升级仍为 `96507d8`。产品名称：高校辅导员信息管理系统（Campus Counselor Management）。仓库目录仍为 `user-management`。
+核验日期：2026-09-30，4D 分支 `codex/ci-release-verification`，从 4C 的 `bf8a300` 继续；依赖升级仍为 `96507d8`。产品名称：高校辅导员信息管理系统（Campus Counselor Management）。仓库目录仍为 `user-management`。
 
 ## 当前实现
 
@@ -22,7 +22,8 @@
 | 容器运行 | 非 root 应用、只读根文件系统、MySQL 8.4.11 与头像独立卷、回环 HTTP；见 Dockerfile / compose.yaml |
 | 健康与日志 | 独立无状态探针授权、readiness 检查 DB、liveness 不依赖 DB；请求编号与脱敏日志、Docker 日志保留限制 |
 | 备份恢复 | 停应用并持有数据库读锁；SQL、头像、清单和摘要；仅恢复到全新项目；见 scripts/maintenance.py |
-| 测试 | 4B 历史 Java 测试：本机与 Linux arm64 各 75 项通过；4C：13 项 Python 安全测试、8 组真实 MySQL 恢复验收 |
+| 测试 | 4D 本机重跑：75 项 Java、18 项 Python；真实 MySQL 运行 10 组、迁移 5 组、恢复 8 组通过 |
+| CI 与扫描 | 分离快速测试、MySQL、安全扫描任务；扫描实际运行镜像与 Java 依赖；远程 CI 未运行，扫描结论见 4D 核对记录 |
 | MySQL 验收 | 第二阶段迁移、重启和备份恢复；第三阶段另验证 V3→V4、首次凭据、CSRF multipart 和权限；4A 新增专用数据库账号启动及重启验收；详见各阶段验收记录 |
 
 Java 代码位于 `src/main/java/io/github/gflabandon/counselor/`，Java 迁移位于 `src/main/java/db/migration/`。自动化报告位于本地 `target/surefire-reports/`，不提交构建产物。
@@ -31,16 +32,18 @@ Java 代码位于 `src/main/java/io/github/gflabandon/counselor/`，Java 迁移�
 
 4C 通过随机隔离 Compose 项目核对全部 11 张表的行数和数据行摘要、Flyway 历史、账号哈希、头像引用及文件内容；恢复后实际登录、搜索和编辑。额外覆盖读锁阻止写入与异常释放、损坏备份拒绝、已有目标拒绝、缺失图片导致备份无效。脚本为 `scripts/verify-recovery.py`，见 [4C 验收](acceptance/phase-4c-backup-recovery.md)。本阶段只修改维护脚本、CI 快速检查和文档，没有重跑 Java 测试或远程 CI。
 
+4D 的本机 CI 同入口验证覆盖旧库映射缺失时零复制、完整迁移保留 ID／关系／图片引用、V3→V4 及未知非空库拒绝接管。工具和发布步骤见 [4D 验收](acceptance/phase-4d-ci-release.md)、[安全核对](verification/security-2026-09-30.md)及[发布指南](guides/release.md)。这不代表远程 CI 或实际发布已经通过。
+
 ## 可解释的项目描述
 
 用于演示高校辅导员档案维护的 Java Web 项目，支持工号与姓名检索、院系归属、任职状态、头像上传和状态记录。按 Controller、Service、Mapper 分层实现，采用 Flyway 管理数据库变化，以版本号检查避免过期编辑覆盖。
 
-本次是在旧通用用户管理原型上进行业务重构，不是从真实学校需求推导出的已交付系统。前三阶段开发和验收日期为 2026-09-06，4A 为 2026-09-07，4B 为 2026-09-13，4C 为 2026-09-25，不能倒填功能完成日期。
+本次是在旧通用用户管理原型上进行业务重构，不是从真实学校需求推导出的已交付系统。前三阶段开发和验收日期为 2026-09-06，4A 为 2026-09-07，4B 为 2026-09-13，4C 为 2026-09-25，4D 为 2026-09-30，不能倒填功能完成日期。
 
 ## 不应声称
 
 - 当前授权是两种固定角色，不是可配置权限平台；尚无院系数据隔离、JWT、OAuth2 或 SSO。
-- 尚无生产部署、HTTPS、登录限流、病毒扫描或完整依赖漏洞验收，不能宣称已满足公网部署要求。
+- 尚无生产部署、HTTPS、登录限流或病毒扫描。运行镜像和打包依赖的漏洞扫描不等于安全认证，发现项与发布阻断以当次报告为准，不能宣称已满足公网部署要求。
 - 状态历史与操作记录分开；操作记录没有字段前后值、归档或防篡改保障。
 - 75 项测试及固定两条列表 SQL 不代表高并发、性能指标或完整质量保障。
 - 协调备份与恢复已在本机小样本验收；尚无定时备份、自动加密、异地保管或生产 RTO／RPO 证据。Session 是单进程内存状态，不支持无损滚动发布。

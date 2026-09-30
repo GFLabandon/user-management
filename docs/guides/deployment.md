@@ -1,6 +1,6 @@
 # 部署配置、容器运行与健康检查（4A / 4B）
 
-当前提供 deploy 启动入口、应用 + MySQL 容器编排、独立数据卷和健康检查。Compose 仅用于本机单实例 HTTP 演示；协调备份恢复已在 4C 验收，见[备份恢复指南](backup-and-restore.md)；HTTPS 和发布检查仍待后续完成。
+当前提供 deploy 启动入口、应用 + MySQL 容器编排、独立数据卷和健康检查。Compose 仅用于本机单实例 HTTP 演示；协调备份恢复已在 4C 验收，见[备份恢复指南](backup-and-restore.md)；发布步骤见 [4D 指南](release.md)，实际发布须核对当次 CI 与扫描结论；HTTPS 尚未实现。
 
 ## 运行入口
 

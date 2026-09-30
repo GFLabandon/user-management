@@ -11,6 +11,16 @@ COPY --chown=builder:builder docker/HealthProbe.java docker/HealthProbe.java
 RUN --mount=type=cache,target=/home/builder/.m2,uid=10001,gid=10001 sh ./mvnw --batch-mode --no-transfer-progress verify \
     && javac -d /workspace/health docker/HealthProbe.java
 
+# Isolated migration harness uses the exact packaged Flyway, driver and V1-V4 classes.
+FROM build AS migration-verification
+COPY --chown=builder:builder docker/MysqlMigrationVerification.java /workspace/verification/
+RUN mkdir /workspace/migration-runtime \
+    && cd /workspace/migration-runtime \
+    && jar xf /workspace/target/campus-counselor-management-0.1.0-SNAPSHOT.jar \
+    && javac -cp 'BOOT-INF/lib/*:BOOT-INF/classes' -d . /workspace/verification/MysqlMigrationVerification.java
+WORKDIR /workspace/migration-runtime
+ENTRYPOINT ["java", "-cp", ".:BOOT-INF/lib/*:BOOT-INF/classes", "MysqlMigrationVerification"]
+
 FROM eclipse-temurin:17.0.20_8-jre-jammy@sha256:ec72ba5962b45ae4e7f96bfb5ebf6eeb34a488b967f937c8e14f0aaec688954f
 RUN groupadd --gid 10001 counselor \
     && useradd --uid 10001 --gid counselor --no-create-home --shell /usr/sbin/nologin counselor \

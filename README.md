@@ -9,7 +9,7 @@ Campus Counselor Management
 
 由 `user-management` 演进而来的辅导员档案管理原型，采用 Java 17、Spring Boot、MyBatis、Thymeleaf 与 Flyway。支持建档、检索、院系维护、状态变更和头像上传。
 
-> 当前完成档案业务、账号权限、4A 配置、4B 容器运行与 4C 协调备份恢复验收。档案与登录账号分开，采用 Spring Security 表单登录、管理员／只读授权与 CSRF 防护。支持本机单实例容器演示，没有真实学校交付或生产运行记录。
+> 当前完成档案业务、账号权限、4A 配置、4B 容器运行、4C 协调备份恢复及 4D 本机 CI 同入口验收。档案与登录账号分开，采用 Spring Security 表单登录、管理员／只读授权与 CSRF 防护。支持本机单实例容器演示，没有真实学校交付或生产运行记录。
 
 ![辅导员档案列表](docs/images/archive/phase-2/counselors.png)
 
@@ -123,7 +123,14 @@ python3 -B -m unittest discover -s scripts/tests -v
 python3 -B scripts/verify-recovery.py
 ```
 
-CI 配置现包含 Maven 测试与 Python 安全测试；本阶段尚未推送，未运行远程 CI。真实 MySQL CI 留待 4D。
+2026-09-30：重新通过 75 项 Java、18 项 Python 测试，以及 10 组运行、5 组真实 MySQL 迁移、8 组恢复验收。CI 配置分为快速测试、MySQL、安全扫描三个任务；本阶段未推送，远程 CI 尚未运行。安全扫描及发布边界见 [4D 验收](docs/acceptance/phase-4d-ci-release.md)和[发布指南](docs/guides/release.md)。
+
+```sh
+docker build --target migration-verification -t campus-counselor-migrations:local .
+python3 -B scripts/verify-mysql-ci.py
+python3 -B scripts/install-trivy.py
+python3 -B scripts/check-security.py
+```
 
 ## 页面预览
 
@@ -171,4 +178,4 @@ docs/
 - 文件与数据库不在同一个事务中，当前提供同步失败补偿和清理失败日志，尚无持久化清理队列。
 - 没有学生／班级管理、审批、导入导出、AI 功能、生产部署或高并发证据。
 
-下一步是 4D：将容器与恢复演练接入 MySQL CI，完成依赖及镜像检查和发布说明。Flyway 的版本验证提示、HTTPS、登录限流仍需处理。[项目证据](docs/project-evidence.md)区分当前实现、历史记录与待开发能力。
+4D 的工作流与发布指南已落地；发布前仍须核对安全扫描发现，并运行候选提交的远程 CI。之后再推进 5A 的错误页面、账号选择与操作记录体验。Flyway 的版本验证提示、HTTPS、登录限流仍需处理。[项目证据](docs/project-evidence.md)区分当前实现、历史记录与待开发能力。

@@ -8,6 +8,7 @@ import os
 from pathlib import Path
 import re
 import secrets
+import signal
 import shutil
 import socket
 import struct
@@ -19,6 +20,13 @@ import urllib.parse
 import urllib.request
 import zlib
 import maintenance as m
+
+
+def interrupted(signum, frame):
+    raise SystemExit(128 + signum)
+
+
+signal.signal(signal.SIGTERM, interrupted)
 
 
 class Inputs(HTMLParser):
@@ -227,6 +235,10 @@ def main():
                 'source_commit': manifest['source_checkout_commit'], 'app_image': manifest['app_image'],
                 'mysql': manifest['mysql_version'], 'counts_at_backup': manifest['counts']}, ensure_ascii=False, indent=2))
             print(f'Evidence: {report}', flush=True)
+        except BaseException:
+            (report / 'result.json').write_text(json.dumps({'passed': False, 'checks': checks,
+                'error': 'Recovery suite interrupted or failed; inspect local diagnostics.'}, indent=2))
+            raise
         finally:
             # Backup contents include credential hashes: delete test artifacts, retain only summary evidence.
             for deployment, _ in deployments:

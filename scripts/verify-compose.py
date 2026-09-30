@@ -9,6 +9,7 @@ import os
 from pathlib import Path
 import re
 import secrets
+import signal
 import socket
 import struct
 import zlib
@@ -19,6 +20,13 @@ import urllib.error
 import urllib.parse
 import urllib.request
 from html.parser import HTMLParser
+
+def interrupted(signum, frame):
+    raise SystemExit(128 + signum)
+
+
+signal.signal(signal.SIGTERM, interrupted)
+
 
 ROOT = Path(__file__).resolve().parents[1]
 PROJECT = "counselor-verify-" + secrets.token_hex(6)

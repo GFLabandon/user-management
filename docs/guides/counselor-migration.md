@@ -100,4 +100,4 @@ V3 对缺失或不合法映射先整体检查，再写入档案，避免前几�
 
 ## 技术依据
 
-Spring Boot 建议由一种机制管理结构初始化，并支持按配置选择 Flyway 位置、Java 迁移以及 MySQL 专用模块。见 [Spring Boot 3.5 数据初始化说明](https://docs.spring.io/spring-boot/3.5/how-to/data-initialization.html)。项目使用 Boot 3.5.7 管理的 Flyway 11.7.2，未额外升级其他框架。
+Spring Boot 建议由一种机制管理结构初始化，并支持按配置选择 Flyway 位置、Java 迁移以及 MySQL 专用模块。见 [Spring Boot 3.5 数据初始化说明](https://docs.spring.io/spring-boot/3.5/how-to/data-initialization.html)。该链接对应 2026-09-06 的历史版本。当前为 Boot 4.0.8 / Flyway 11.14.1；4D 使用打包依赖在独立 MySQL 8.4.11 中复验，结果见 [4D 验收](../acceptance/phase-4d-ci-release.md)。V1–V4 保持不变。
