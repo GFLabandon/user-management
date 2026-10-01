@@ -198,7 +198,11 @@ def main():
             assert restored_hash == source.sql("SELECT password_hash FROM system_accounts WHERE username='recovery_admin'")
             passed('fresh target restores all table rows, Flyway history, password hashes and exact upload inventory')
             # Start existing restored containers, do not recreate them using a mutable app image tag.
-            target.compose('start', '--wait', '--wait-timeout', '120', 'app')
+            container_before = target.inspect('app')
+            target.compose('start', 'app')
+            target.wait_healthy('app', timeout=120)
+            container_after = target.inspect('app')
+            assert (container_after['Id'], container_after['Image']) == (container_before['Id'], manifest['app_image'])
             restored = Browser(target_port)
             restored.login('recovery_admin', admin_password)
             assert '恢复演练档案' in restored.request('/counselors?keyword=RECOVERY-001')[1].decode()

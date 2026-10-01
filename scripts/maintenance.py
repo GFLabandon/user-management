@@ -162,6 +162,21 @@ class Deployment:
         state = self.inspect('app')['State']
         require(state['Status'] in ('created', 'exited') and not state['Running'], 'Application must remain stopped.')
 
+    def wait_healthy(self, service, timeout=120):
+        """Wait without recreating containers; works with Compose versions lacking start --wait."""
+        deadline = time.monotonic() + timeout
+        while time.monotonic() < deadline:
+            state = self.inspect(service)['State']
+            health = state.get('Health', {}).get('Status')
+            require(state['Status'] not in ('exited', 'dead', 'restarting'),
+                    f'{service} stopped or restarted before becoming healthy.')
+            require(health in ('starting', 'healthy', 'unhealthy'), f'{service} has no health check.')
+            require(health != 'unhealthy', f'{service} health check failed.')
+            if state['Running'] and health == 'healthy':
+                return
+            time.sleep(1)
+        raise MaintenanceError(f'{service} did not become healthy within {timeout}s.')
+
     def require_standard_connections(self, app, db):
         app_env = dict(entry.split('=', 1) for entry in app['Config']['Env'])
         db_env = dict(entry.split('=', 1) for entry in db['Config']['Env'])

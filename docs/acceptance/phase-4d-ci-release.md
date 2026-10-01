@@ -49,3 +49,13 @@ CI 同入口本机摘要 `target/mysql-ci-summary.json` 显示三个脚本均为
 ## 发布状态
 
 上述验收执行时仅有本地提交，尚未运行远程 GitHub Actions 或发布。2026-09-30 后续已将阶段提交快进整合到 main；此历史验收记录不代替推送后的远程 CI 结果。Linux amd64 托管 runner 的完整结果仍需候选提交实际运行确认。HTTPS、登录限流、多实例会话、告警和异地备份不在本次交付内。
+
+## 2026-10-01：推送后的远程兼容性检查
+
+`main` 已推送至 `53c9895`，本地与远程没有分叉、冲突索引或残留冲突标记；已整合的四个阶段分支已删除，提交历史保留。
+
+首次[远程 CI](https://github.com/GFLabandon/user-management/actions/runs/36723487418)的 Java／Python 和镜像构建通过；MySQL 运行 10 组、迁移 5 组通过，恢复完成数据／图片校验后，在启动应用命令处失败。该 Ubuntu runner 使用 Compose 2.38.2，官方 `start` 实现没有 `--wait`／`--wait-timeout`，与本机版本存在参数兼容差异。依据：[runner 软件清单](https://github.com/actions/runner-images/blob/ubuntu24/20260927.320/images/ubuntu/Ubuntu2404-Readme.md)、[Compose 2.38.2 源码](https://github.com/docker/compose/blob/v2.38.2/cmd/compose/start.go)。
+
+修复改为 `start app` 后独立轮询既有容器的健康状态，保留 120 秒超时；异常退出、重启、无健康检查或 unhealthy 均明确失败。恢复验收额外确认容器 ID 和镜像 ID 未变，避免通过重建绕过固定镜像要求。新增正常就绪、异常状态和超时测试，本机共 21 项 Python 测试通过，actionlint 通过；远程复验结果以该修复提交的 Actions 记录为准。
+
+首次远程安全报告确认应用没有 HIGH／CRITICAL，MySQL 仍有 28 个阻断项，扫描本身执行成功。该失败与 Git 冲突及恢复启动参数问题无关，安全门禁保持原标准。

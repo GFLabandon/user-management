@@ -38,8 +38,10 @@ counselor-20260925-01/
 
 ```sh
 python3 scripts/maintenance.py verify --backup backups/counselor-20260925-01
-docker compose --project-name counselor --env-file .env.compose start --wait app
+docker compose --project-name counselor --env-file .env.compose start app
 ```
+
+启动后用同一项目和环境文件运行 `docker compose ... ps app`，确认状态为 healthy，再访问页面。旧版 Compose 的 `start` 没有 `--wait` 参数；自动演练通过轮询容器健康状态等待，不通过 `up` 重建。
 
 失败目录保留 `.incomplete`，不能作为有效备份恢复。不要覆盖或删除旧备份来重试，改用新目录名。检查具体失败原因、数据库锁是否释放及图片引用，再决定恢复源应用。常见错误包括缺少被引用的图片、无权限读取文件、空间不足、数据表不符合 V1–V4 或数据库连接断开。
 
@@ -61,7 +63,7 @@ chmod 600 .env.restore
 
 # 使用 start 启动脚本创建的精确镜像容器，先不要使用 up 重建。
 docker compose --project-name counselor-restored-20260925 \
-  --env-file .env.restore start --wait --wait-timeout 120 app
+  --env-file .env.restore start app
 ```
 
 访问 `http://127.0.0.1:8081`，使用备份中的管理员账号登录。依次检查检索、档案详情、图片、只读权限，并在可丢弃的恢复副本中完成一次编辑，确认状态历史和审计继续写入。新实例不会恢复内存 Session，必须重新登录。

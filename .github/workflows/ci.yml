@@ -40,6 +40,10 @@ jobs:
     timeout-minutes: 35
     steps:
       - uses: actions/checkout@v4
+      - name: Record Docker and Compose versions
+        run: |
+          docker version --format '{{.Server.Version}}'
+          docker compose version
       - name: Build tested application and migration harness
         run: |
           docker build -t campus-counselor-management:local .

@@ -151,5 +151,32 @@ class BackupSafetyTests(unittest.TestCase):
             m.Deployment('../another-project', env)
 
 
+class HealthWaitTests(unittest.TestCase):
+    def setUp(self):
+        self.deployment = m.Deployment.__new__(m.Deployment)
+
+    def test_starting_is_not_ready_until_healthy(self):
+        states = [{'State': {'Status': 'running', 'Running': True, 'Health': {'Status': value}}}
+                  for value in ('starting', 'healthy')]
+        with patch.object(self.deployment, 'inspect', side_effect=states) as inspect, patch.object(m.time, 'sleep'):
+            self.deployment.wait_healthy('app')
+            self.assertEqual(inspect.call_count, 2)
+
+    def test_stopped_unhealthy_and_missing_probe_are_rejected(self):
+        for status, health in [('exited', 'starting'), ('dead', 'healthy'), ('restarting', 'starting'),
+                              ('running', 'unhealthy'), ('running', None)]:
+            state = {'State': {'Status': status, 'Running': status == 'running', 'Health': {'Status': health}}}
+            with self.subTest(status=status, health=health), \
+                    patch.object(self.deployment, 'inspect', return_value=state), self.assertRaises(m.MaintenanceError):
+                self.deployment.wait_healthy('app')
+
+    def test_stalled_startup_has_bounded_wait(self):
+        state = {'State': {'Status': 'running', 'Running': True, 'Health': {'Status': 'starting'}}}
+        with patch.object(self.deployment, 'inspect', return_value=state), \
+                patch.object(m.time, 'monotonic', side_effect=[0, 0, 2]), patch.object(m.time, 'sleep'), \
+                self.assertRaisesRegex(m.MaintenanceError, 'within 1s'):
+            self.deployment.wait_healthy('app', timeout=1)
+
+
 if __name__ == '__main__':
     unittest.main()
