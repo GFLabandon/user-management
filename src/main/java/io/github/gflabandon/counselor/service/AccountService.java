@@ -37,7 +37,7 @@ public class AccountService {
     public CounselorOption counselorOption(Integer id) { return id == null ? null : mapper.counselorOption(id); }
     public SystemAccount get(int id) {
         SystemAccount account = mapper.findById(id);
-        if (account == null) throw new BusinessException("账号不存在。");
+        if (account == null) throw new RecordNotFoundException("账号不存在。");
         return account;
     }
 

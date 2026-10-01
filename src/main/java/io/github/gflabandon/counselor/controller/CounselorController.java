@@ -7,9 +7,9 @@ import io.github.gflabandon.counselor.service.*;
 import io.github.gflabandon.counselor.web.CounselorForm;
 import java.security.Principal;
 import jakarta.validation.Valid;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -79,21 +79,25 @@ public class CounselorController {
     @PostMapping
     public String create(@Valid @ModelAttribute CounselorForm counselorForm, BindingResult errors,
                          @RequestParam(required = false) MultipartFile photo, Principal principal,
-                         Model model, RedirectAttributes redirect) {
-        return save(null, counselorForm, errors, photo, principal, model, redirect);
+                         Model model, RedirectAttributes redirect, HttpServletResponse response) {
+        return save(null, counselorForm, errors, photo, principal, model, redirect, response);
     }
 
     @PostMapping("/{id}")
     public String update(@PathVariable int id, @RequestParam int version, @Valid @ModelAttribute CounselorForm counselorForm, BindingResult errors,
                          @RequestParam(required = false) MultipartFile photo, Principal principal,
-                         Model model, RedirectAttributes redirect) {
-        return save(id, counselorForm, errors, photo, principal, model, redirect);
+                         Model model, RedirectAttributes redirect, HttpServletResponse response) {
+        return save(id, counselorForm, errors, photo, principal, model, redirect, response);
     }
 
     private String save(Integer id, CounselorForm input, BindingResult errors, MultipartFile photo,
-                        Principal principal, Model model, RedirectAttributes redirect) {
+                        Principal principal, Model model, RedirectAttributes redirect, HttpServletResponse response) {
         if (id != null) service.get(id);
-        if (errors.hasErrors()) { failure(id, "VALIDATION"); return form(model, id); }
+        if (errors.hasErrors()) {
+            response.setStatus(400);
+            model.addAttribute("uploadRetry", photo != null && !photo.isEmpty());
+            failure(id, "VALIDATION"); return form(model, id);
+        }
         String newImage = null;
         int savedId;
         String oldImage = null;
@@ -104,10 +108,16 @@ public class CounselorController {
             else { oldImage = service.update(id, input, newImage, actor); savedId = id; }
         } catch (IOException | BusinessException | DataIntegrityViolationException exception) {
             storage.delete(newImage);
+            if (exception instanceof RecordNotFoundException missing) throw missing;
+            response.setStatus(exception instanceof EditConflictException || exception instanceof DataIntegrityViolationException ? 409
+                    : exception instanceof IOException && !(exception instanceof UploadValidationException) ? 500 : 400);
             failure(id, "SAVE_FAILED");
             model.addAttribute("error", exception instanceof DataIntegrityViolationException
-                    ? "工号已存在或关联数据无效，请检查后重试。" : exception.getMessage());
+                    ? "工号已存在或关联数据无效，请检查后重试。"
+                    : exception instanceof IOException && !(exception instanceof UploadValidationException)
+                    ? "图片保存失败，请稍后重试或联系管理员，并提供请求编号。" : exception.getMessage());
             if (exception instanceof EditConflictException) model.addAttribute("conflict", true);
+            model.addAttribute("uploadRetry", photo != null && !photo.isEmpty());
             return form(model, id);
         } catch (RuntimeException exception) {
             storage.delete(newImage);
@@ -126,7 +136,7 @@ public class CounselorController {
         try {
             service.deactivate(id, version, principal.getName());
             redirect.addFlashAttribute("success", "档案已停用，原有资料和状态记录保留。");
-        } catch (BusinessException exception) { failure(id, "DEACTIVATE_FAILED"); redirect.addFlashAttribute("error", exception.getMessage()); }
+        } catch (BusinessException exception) { failure(id, "DEACTIVATE_FAILED"); throw exception; }
         return "redirect:/counselors/" + id;
     }
 
@@ -140,10 +150,4 @@ public class CounselorController {
         audit.event(AuditService.actor(), "COUNSELOR_WRITE", "COUNSELOR", id, "FAILURE", reason);
     }
 
-    @ExceptionHandler(BusinessException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public String businessError(BusinessException exception, Model model) {
-        model.addAttribute("error", exception.getMessage());
-        return "error/business";
-    }
 }

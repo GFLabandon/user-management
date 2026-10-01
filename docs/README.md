@@ -1,6 +1,6 @@
 # 文档导航
 
-当前进展：阶段成果已整合到 `main`，代码基线 `7706eaa`。更新时间：2026-10-01。该提交的远程 CI 中 Java/Python 与真实 MySQL 运行、迁移、恢复验收通过；安全扫描仍有 MySQL 镜像阻断项，尚未发布。5A.1 账号关联选择已在独立分支通过本机验收，尚未推送／合并；见[5A.1 验收](acceptance/phase-5a1-account-picker.md)。具体证据与后续安排见[下一阶段实施方案](plans/next-steps-2026-10-01.md)。
+当前进展：阶段成果已整合到 `main`，代码基线 `7706eaa`。更新时间：2026-10-01。该提交的远程 CI 中 Java/Python 与真实 MySQL 运行、迁移、恢复验收通过；安全扫描仍有 MySQL 镜像阻断项，尚未发布。5A.1 账号关联选择及 5A.2 错误反馈已通过本机验收，当前在 `codex/error-feedback`，尚未推送／合并；见[5A.2 验收](acceptance/phase-5a2-error-feedback.md)。具体证据与后续安排见[下一阶段实施方案](plans/next-steps-2026-10-01.md)。
 
 ## 从这里开始
 
@@ -29,6 +29,7 @@
 | 4D：MySQL CI、扫描与发布流程 | `88e2f9c`、补丁 `61635f8` | [4D 验收](acceptance/phase-4d-ci-release.md) |
 | 4D.1：官方镜像处置核对 | 本地核对，发布仍阻断 | [4D.1 核对](verification/security-mysql-review-2026-10-01.md) |
 | 5A.1：账号关联档案搜索选择 | 独立分支，本机验收 | [5A.1 验收](acceptance/phase-5a1-account-picker.md) |
+| 5A.2：错误与失败提示 | 独立分支，本机验收 | [5A.2 验收](acceptance/phase-5a2-error-feedback.md) |
 | 重构前的 MySQL 验收 | 历史版本 | [2026-08-07 记录](acceptance/2026-08-07-mysql.md) |
 
 第一至 4D 阶段均已快进整合到 `main`；阶段分支不再作为维护入口，阶段提交及全部历史仍保留。旧记录中的分支名、登录方式和功能边界描述当时状态；以当前 README 和项目证据为准。

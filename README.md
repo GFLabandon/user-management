@@ -5,7 +5,7 @@ Campus Counselor Management
 ![Java 17](https://img.shields.io/badge/Java-17-ED8B00?logo=openjdk&logoColor=white)
 ![Spring Boot 4.0](https://img.shields.io/badge/Spring_Boot-4.0-6DB33F?logo=springboot&logoColor=white)
 ![MyBatis](https://img.shields.io/badge/MyBatis-3-111827)
-![Tests](https://img.shields.io/badge/tests-81_passed-177454)
+![Tests](https://img.shields.io/badge/tests-91_passed-177454)
 
 由 `user-management` 演进而来的辅导员档案管理原型，采用 Java 17、Spring Boot、MyBatis、Thymeleaf 与 Flyway。支持建档、检索、院系维护、状态变更和头像上传。
 
@@ -19,7 +19,8 @@ Campus Counselor Management
 - 按工号或姓名检索，按院系、任职状态筛选；分页、稳定排序及页码越界处理。
 - 列表使用一次计数和一次关联分页查询，避免逐条查询院系。
 - 新增、编辑、停用档案；保留状态变化、操作者与时间。恢复在职可在编辑页完成。
-- 版本号检查：过期编辑和停用请求不能覆盖已保存的修改。
+- 版本号检查：过期编辑和停用请求不能覆盖已保存的修改；冲突返回 409，保留输入并提供重新打开最新记录的入口。
+- 中文失败提示覆盖参数、权限、CSRF、页面不存在、上传过大及服务异常；保留 HTTP 状态码与请求编号，密码不回填。
 - 院系新增、改名、停用；已被新档案或旧资料引用的院系禁止删除。
 - 专用表单对象与字段白名单，数据库主键、照片路径不接受表单直接赋值。
 - 独立账号、bcrypt 密码哈希、管理员／只读权限；账号停用或变更后，旧会话在下一次请求失效。
@@ -110,6 +111,8 @@ flowchart LR
 档案、院系和头像由 Spring Security 统一保护；`/accounts` 与 `/audit` 仅管理员可访问。`/users/list` 保留只读跳转；旧新增、编辑、删除地址已退役。
 
 ## 测试与验收
+
+2026-10-01：5A.2 错误反馈通过本机及 Linux arm64 镜像内 91 项 Java 测试（含真实 HTTP／multipart）、21 项 Python 测试、11 组真实 MySQL 运行验收和浏览器检查；见[5A.2 验收](docs/acceptance/phase-5a2-error-feedback.md)。未推送或执行新远程 CI，MySQL 发布阻断仍保留。
 
 2026-10-01：5A.1 账号关联选择已在本机通过 81 项 Java、21 项 Python 测试和 11 组真实 MySQL 运行验收，并完成浏览器操作检查。见[5A.1 验收](docs/acceptance/phase-5a1-account-picker.md)。同日[官方镜像核对](docs/verification/security-mysql-review-2026-10-01.md)没有发现新的同版本构建，发布继续阻断；本轮未执行新远程 CI。
 

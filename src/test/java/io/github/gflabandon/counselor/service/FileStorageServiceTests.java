@@ -36,7 +36,7 @@ class FileStorageServiceTests {
 
         assertThatThrownBy(() -> service.storeImage(file))
                 .isInstanceOf(java.io.IOException.class)
-                .hasMessageContaining("JPG and PNG");
+                .hasMessageContaining("JPG/PNG");
     }
 
     @Test

@@ -25,7 +25,7 @@
             </div>
 
             <div class="alert alert-error" role="alert" th:if="${param.error}">账号或密码错误，或账号已停用。</div>
-            <p class="alert" th:if="${param.expired}">账号信息已变更，请重新登录。</p>
+            <p class="alert" th:if="${param.expired}">登录已过期或账号信息已变更，请重新登录。密码重置后请使用新密码；账号停用时请联系管理员。</p>
 
             <label class="field">
                 <span>登录账号</span>

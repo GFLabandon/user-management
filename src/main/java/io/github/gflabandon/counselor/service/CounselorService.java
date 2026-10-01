@@ -38,7 +38,7 @@ public class CounselorService {
 
     public Counselor get(int id) {
         Counselor counselor = mapper.findById(id);
-        if (counselor == null) throw new BusinessException("未找到该辅导员档案。");
+        if (counselor == null) throw new RecordNotFoundException("未找到该辅导员档案。");
         return counselor;
     }
 

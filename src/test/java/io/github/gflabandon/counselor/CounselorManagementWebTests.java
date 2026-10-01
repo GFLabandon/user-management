@@ -98,7 +98,7 @@ class CounselorManagementWebTests {
 
     @Test void invalidFieldsReturnErrorsAndUnboundEntityFieldsCannotBeInjected() throws Exception {
         mvc.perform(post("/counselors").with(admin()).with(csrf()).param("employeeNo", " ").param("name", " ").param("departmentId", ""))
-                .andExpect(status().isOk()).andExpect(model().attributeHasFieldErrors("counselorForm", "employeeNo", "name", "departmentId"));
+                .andExpect(status().isBadRequest()).andExpect(model().attributeHasFieldErrors("counselorForm", "employeeNo", "name", "departmentId"));
         mvc.perform(post("/counselors").with(admin()).with(csrf()).param("employeeNo", "SAFE-1").param("name", "正常姓名")
                         .param("departmentId", String.valueOf(departmentId())).param("id", "1").param("photoPath", "/uploads/injected.png"))
                 .andExpect(status().is3xxRedirection());
@@ -110,7 +110,7 @@ class CounselorManagementWebTests {
     @Test void malformedStatusIsRejectedWithoutWriting() throws Exception {
         mvc.perform(post("/counselors").with(admin()).with(csrf()).param("employeeNo", "BAD-1").param("name", "老师")
                         .param("departmentId", String.valueOf(departmentId())).param("employmentStatus", "UNKNOWN"))
-                .andExpect(status().isOk()).andExpect(model().attributeHasFieldErrors("counselorForm", "employmentStatus"));
+                .andExpect(status().isBadRequest()).andExpect(model().attributeHasFieldErrors("counselorForm", "employmentStatus"));
         assertThat(service.search("BAD-1", null, null, 1, 10).total()).isZero();
     }
 
@@ -166,7 +166,7 @@ class CounselorManagementWebTests {
         mvc.perform(multipart("/counselors/" + id).file(new MockMultipartFile("photo", "new.png", "image/png", TestImages.png()))
                         .with(admin()).with(csrf()).param("employeeNo", "IMAGE-1").param("name", "过期修改")
                         .param("departmentId", String.valueOf(departmentId())).param("version", "0"))
-                .andExpect(status().isOk()).andExpect(content().string(containsString("重新打开最新档案")))
+                .andExpect(status().isConflict()).andExpect(content().string(containsString("重新打开最新档案")))
                 .andExpect(model().attribute("conflict", true));
         assertThat(service.get(id).getPhotoPath()).isEqualTo("/uploads/existing.png");
         try (var files = Files.list(uploads)) { assertThat(files.toList()).containsExactly(oldImage); }

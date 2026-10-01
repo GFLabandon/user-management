@@ -284,8 +284,8 @@ try:
         first = pool.submit(associate, admin, "picker_first")
         second = pool.submit(associate, second_admin, "picker_second")
         responses = [first.result(), second.result()]
-    assert sorted(row[0] for row in responses) == [200, 302]
-    failed = next(row[1].decode() for row in responses if row[0] == 200)
+    assert sorted(row[0] for row in responses) == [302, 400]
+    failed = next(row[1].decode() for row in responses if row[0] == 400)
     assert "已关联其他账号" in failed and VIEWER_PASSWORD not in failed
     assert sql(f"SELECT COUNT(*) FROM system_accounts WHERE counselor_id={selected}") == "1"
     owner_id = sql(f"SELECT id FROM system_accounts WHERE counselor_id={selected}")
@@ -300,11 +300,11 @@ try:
     assert "同名验收档案 · PICK-00" in admin.request("/accounts")[1].decode()
     common = {"username": owner_name, "password": "", "role": "VIEWER", "enabled": "true", "version": "0"}
     invalid = admin.request(f"/accounts/{owner_id}", dict(common, _csrf=admin.csrf(edit_path), counselorId="999999"))
-    assert invalid[0] == 200 and "档案不存在" in invalid[1].decode()
+    assert invalid[0] == 400 and "档案不存在" in invalid[1].decode()
     assert sql(f"SELECT counselor_id FROM system_accounts WHERE id={owner_id}") == selected
     assert admin.request(f"/accounts/{owner_id}", dict(common, _csrf=admin.csrf(edit_path), counselorId=""))[0] == 302
     stale = second_admin.request(f"/accounts/{owner_id}", dict(common, _csrf=second_admin.csrf(edit_path), counselorId=selected))
-    assert stale[0] == 200 and "资料已被其他操作更新" in stale[1].decode()
+    assert stale[0] == 409 and "资料已被其他操作更新" in stale[1].decode()
     assert sql(f"SELECT counselor_id IS NULL AND version=1 FROM system_accounts WHERE id={owner_id}") == "1"
     assert winner.request(query)[2]["Location"] == "/login?expired"
     passed("account picker limits and projects MySQL results; concurrent association, forged IDs, stale edits and viewer access are guarded")
@@ -323,10 +323,15 @@ try:
     health(admin, "liveness", 200)
     health(anon, "readiness", 503)
     health(admin, "readiness", 503)
-    code, _, headers = admin.request("/counselors?keyword=private-query-marker", headers={"X-Request-ID": "untrusted-id-marker"})
+    code, failed_body, headers = admin.request("/counselors?keyword=private-query-marker", headers={"X-Request-ID": "untrusted-id-marker"})
     assert code == 503
     failed_request_id = headers["X-Request-ID"]
     assert re.fullmatch(r"[0-9a-f-]{36}", failed_request_id)
+    failure_page = failed_body.decode()
+    assert "服务暂时不可用" in failure_page and failed_request_id in failure_page
+    assert "返回档案列表" in failure_page and "重新登录" in failure_page
+    for value in SECRETS + ["private-query-marker", "untrusted-id-marker", "SELECT ", "Exception", "jdbc:mysql"]:
+        assert value not in failure_page
     until(lambda: state("app").get("Health", {}).get("Status") == "unhealthy", timeout=90)
     assert compose("ps", "--quiet", "app").stdout.strip() == app_id
     passed("database outage returns readiness 503 and business 503 while liveness remains UP, without app restart")

@@ -5,7 +5,8 @@
 <section class="page-heading"><div><h1 th:text="${recordId == null ? '新增账号' : '编辑账号'}"></h1><p class="muted">保存后，该账号的旧会话会失效。不能停用或降级当前管理员。</p></div><a th:href="@{/accounts}">返回账号列表</a></section>
 <form class="card profile-form account-form" th:action="${recordId == null} ? @{/accounts} : @{/accounts/{id}(id=${recordId})}" th:object="${accountForm}" method="post">
 <input type="hidden" th:field="*{version}"><div class="alert alert-error" th:if="${error}" th:text="${error}"></div>
-<p class="alert alert-error" th:if="${#fields.hasAnyErrors()}">请检查登录名、权限、关联档案及密码长度。</p>
+<p th:if="${conflict}"><a th:href="@{/accounts/{id}/edit(id=${recordId})}">重新打开最新账号</a>（非敏感输入仍保留在本页，请先复制需要保留的内容；密码不会回填。）</p>
+<div class="alert alert-error" role="alert" th:if="${#fields.hasAnyErrors()}"><p>请检查以下输入：</p><ul><li th:each="message : ${#fields.allErrors()}" th:text="${message}"></li></ul></div>
 <label class="field"><span>登录名</span><input th:field="*{username}" th:readonly="${recordId != null}" pattern="[A-Za-z0-9][A-Za-z0-9._-]{2,49}" maxlength="50" required autocomplete="off"><small>3–50 位字母、数字、点、下划线或连字符；建立后不能修改。</small></label>
 <label class="field"><span th:text="${recordId == null ? '初始密码' : '新密码（留空保持原密码）'}"></span><input name="password" type="password" autocomplete="new-password" minlength="12" maxlength="64" th:required="${recordId == null}"><small>12–64 个字符，UTF-8 不超过 72 字节。</small></label>
 <label class="field"><span>权限</span><select th:field="*{role}"><option value="VIEWER">只读用户</option><option value="ADMIN">管理员</option></select></label>
@@ -22,4 +23,5 @@
 <ul id="counselor-results" class="picker-results" aria-label="可关联档案"></ul>
 <noscript><p class="alert alert-error">请启用 JavaScript 后搜索或更改关联档案；现有关联仍会保留。</p></noscript>
 </section>
-<button class="button button-primary" type="submit">保存账号</button></form></main><footer th:replace="~{layout :: footer}"></footer><script defer th:src="@{/js/account-counselor-picker.js}"></script></body></html>
+<small th:if="${error != null or #fields.hasAnyErrors()}">请求编号：<span th:text="${requestId}"></span>；请检查后再提交，密码需重新输入。</small>
+<button class="button button-primary" type="submit" th:disabled="${conflict == true}">保存账号</button></form></main><footer th:replace="~{layout :: footer}"></footer><script defer th:src="@{/js/account-counselor-picker.js}"></script></body></html>

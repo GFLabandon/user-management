@@ -107,7 +107,7 @@ class AccountSecurityTests {
         for (String path : new String[]{"/accounts", "/accounts/new", "/accounts/1/edit", "/audit"})
             mvc.perform(get(path).with(as("admin"))).andExpect(status().isOk());
         var response = mvc.perform(post("/accounts").with(as("admin")).with(csrf()).param("username", "!").param("password", "secret-to-never-echo"))
-                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+                .andExpect(status().isBadRequest()).andReturn().getResponse().getContentAsString();
         assertThat(response).doesNotContain("secret-to-never-echo", "{bcrypt}");
     }
     @Test void photosRequireLoginAndExistingReferenceAndRejectSymlinks() throws Exception {

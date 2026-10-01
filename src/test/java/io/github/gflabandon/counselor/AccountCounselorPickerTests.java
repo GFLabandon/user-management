@@ -48,7 +48,7 @@ class AccountCounselorPickerTests {
         mvc.perform(get("/accounts/counselor-options").with(admin()).param("keyword", "x".repeat(51)))
                 .andExpect(status().isBadRequest());
         mvc.perform(get("/accounts/counselor-options").with(admin()).param("accountId", "999999"))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isNotFound());
     }
     @Test void boundedSearchDistinguishesSameNamesAndReturnsOnlyPickerFields() throws Exception {
         for (int i = 0; i < 21; i++) counselor("PICK-" + String.format("%02d", i), "同名测试");
@@ -82,7 +82,7 @@ class AccountCounselorPickerTests {
         int c = counselor("PICK-FAIL", "失败保留");
         String html = mvc.perform(post("/accounts").with(admin()).with(csrf()).param("username", "!")
                 .param("password", "never-echo-this-password").param("counselorId", "" + c))
-                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+                .andExpect(status().isBadRequest()).andReturn().getResponse().getContentAsString();
         assertThat(html).contains("已选择：失败保留 · PICK-FAIL", "value=\"!\"").doesNotContain("never-echo-this-password");
     }
     @Test void forgedDuplicateAndStaleSelectionsDoNotOverwriteAssociation() throws Exception {
@@ -91,7 +91,7 @@ class AccountCounselorPickerTests {
         for (String id : new String[]{"999999", "" + c}) {
             String html = mvc.perform(post("/accounts").with(admin()).with(csrf()).param("username", "picker-forged")
                     .param("password", "never-echo-this-password").param("counselorId", id))
-                    .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+                    .andExpect(status().isBadRequest()).andReturn().getResponse().getContentAsString();
             assertThat(html).contains(id.equals("999999") ? "档案不存在" : "已关联其他账号").doesNotContain("never-echo-this-password");
         }
         assertThat(accounts.all()).noneMatch(row -> row.username().equals("picker-forged"));
@@ -99,7 +99,7 @@ class AccountCounselorPickerTests {
                 .param("version", "0").param("counselorId", "")).andExpect(status().is3xxRedirection());
         String html = mvc.perform(post("/accounts/" + a).with(admin()).with(csrf()).param("username", "picker-owner")
                 .param("version", "0").param("counselorId", "" + c))
-                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+                .andExpect(status().isConflict()).andReturn().getResponse().getContentAsString();
         assertThat(html).contains("资料已被其他操作更新");
         assertThat(accounts.get(a).getCounselorId()).isNull();
         assertThat(accounts.get(a).getVersion()).isEqualTo(1);

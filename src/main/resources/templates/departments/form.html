@@ -6,6 +6,8 @@
 <form class="card profile-form" th:action="${recordId == null} ? @{/departments} : @{/departments/{id}(id=${recordId})}" method="post" th:object="${departmentForm}"><input type="hidden" th:field="*{version}">
 <div class="alert alert-success" role="status" th:if="${success}" th:text="${success}"></div>
 <div class="alert alert-error" role="alert" th:if="${error}" th:text="${error}"></div>
+<p th:if="${conflict}"><a th:href="@{/departments/{id}/edit(id=${recordId})}">重新打开最新院系</a>（当前输入仍保留，请先复制需要保留的内容。）</p>
+<small th:if="${error != null or #fields.hasAnyErrors()}">请求编号：<span th:text="${requestId}"></span>；请检查输入后再提交。</small>
 <div class="form-grid"><label class="field field-wide"><span>院系名称</span><input th:field="*{name}" maxlength="100" required><small class="field-error" th:errors="*{name}"></small></label>
 <label class="field"><span>状态</span><select th:field="*{active}"><option value="true">启用</option><option value="false">停用</option></select><small>停用后不接受新增关联，原有档案归属保留。</small></label>
-<small class="field-error" th:errors="*{version}"></small></div><div class="form-actions"><a class="button button-ghost" th:href="@{/departments}">取消</a><button class="button button-primary" type="submit">保存院系</button></div></form></main><div th:replace="~{layout :: footer}"></div></body></html>
+<small class="field-error" th:errors="*{version}"></small></div><div class="form-actions"><a class="button button-ghost" th:href="@{/departments}">取消</a><button class="button button-primary" type="submit" th:disabled="${conflict == true}">保存院系</button></div></form></main><div th:replace="~{layout :: footer}"></div></body></html>
