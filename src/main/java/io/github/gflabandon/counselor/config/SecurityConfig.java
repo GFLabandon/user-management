@@ -26,7 +26,7 @@ public class SecurityConfig {
         http.addFilterAfter(new LiveAccountFilter(accounts), SecurityContextHolderFilter.class)
             .authorizeHttpRequests(r -> r
                 .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
-                .requestMatchers("/login", "/css/**", "/favicon.ico", "/error").permitAll()
+                .requestMatchers("/login", "/css/**", "/js/**", "/favicon.ico", "/error").permitAll()
                 .requestMatchers("/accounts", "/accounts/**", "/audit").hasRole("ADMIN")
                 .requestMatchers("/counselors/new", "/counselors/*/edit", "/departments/new", "/departments/*/edit").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.GET, "/", "/counselors", "/counselors/**", "/departments", "/uploads/*", "/users", "/users/list").hasAnyRole("ADMIN", "VIEWER")

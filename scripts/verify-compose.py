@@ -3,6 +3,7 @@
 Requires a previously built campus-counselor-management:local image. Uses Python stdlib.
 """
 import hashlib
+from concurrent.futures import ThreadPoolExecutor
 import http.cookiejar
 import json
 import os
@@ -254,6 +255,59 @@ try:
             "username": "acceptance_viewer", "password": "", "role": "VIEWER", "enabled": "false", "version": "0"})[0] == 302
     assert viewer.request("/counselors")[2]["Location"] == "/login?expired"
     passed("viewer cannot forge writes; disabling account revokes existing session")
+    # Keep SQL fixtures inside this script's random, disposable project.
+    sql("INSERT INTO counselors (employee_no, name, department_id, employment_status, remark) VALUES "
+        + ",".join(f"('PICK-{i:02d}', '同名验收档案', {department}, 'ACTIVE', 'private-picker-marker')" for i in range(21)))
+    query = "/accounts/counselor-options?" + urllib.parse.urlencode({"keyword": "同名验收档案"})
+    code, body, _ = admin.request(query)
+    options = json.loads(body)
+    assert code == 200 and len(options) == 20
+    assert set(options[0]) == {"id", "employeeNo", "name", "departmentName"}
+    assert [row["employeeNo"] for row in options] == [f"PICK-{i:02d}" for i in range(20)]
+    assert b"private-picker-marker" not in body
+    assert json.loads(admin.request("/accounts/counselor-options?keyword=pick-20")[1])[0]["employeeNo"] == "PICK-20"
+    for term in ["", "%", "_", "' OR 1=1 --", "no-match"]:
+        assert json.loads(admin.request("/accounts/counselor-options?" + urllib.parse.urlencode({"keyword": term}))[1]) == []
+    assert anon.request(query)[0] == 302
+    # Two authenticated administrators submit different accounts for the same archive simultaneously.
+    second_password = secrets.token_urlsafe(24)
+    SECRETS.append(second_password)
+    assert admin.request("/accounts", {"_csrf": admin.csrf("/accounts/new"), "username": "picker_admin",
+            "password": second_password, "role": "ADMIN", "enabled": "true", "version": "0"})[0] == 302
+    second_admin = Browser()
+    second_admin.login("picker_admin", second_password)
+    selected = str(options[0]["id"])
+    def associate(browser, username):
+        return browser.request("/accounts", {"_csrf": browser.csrf("/accounts/new"), "username": username,
+                "password": VIEWER_PASSWORD, "role": "VIEWER", "enabled": "true", "version": "0", "counselorId": selected})
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        first = pool.submit(associate, admin, "picker_first")
+        second = pool.submit(associate, second_admin, "picker_second")
+        responses = [first.result(), second.result()]
+    assert sorted(row[0] for row in responses) == [200, 302]
+    failed = next(row[1].decode() for row in responses if row[0] == 200)
+    assert "已关联其他账号" in failed and VIEWER_PASSWORD not in failed
+    assert sql(f"SELECT COUNT(*) FROM system_accounts WHERE counselor_id={selected}") == "1"
+    owner_id = sql(f"SELECT id FROM system_accounts WHERE counselor_id={selected}")
+    owner_name = sql(f"SELECT username FROM system_accounts WHERE id={owner_id}")
+    winner = Browser()
+    winner.login(owner_name, VIEWER_PASSWORD)
+    assert winner.request(query)[0] == 403
+    assert json.loads(admin.request("/accounts/counselor-options?keyword=PICK-00")[1]) == []
+    assert json.loads(admin.request(f"/accounts/counselor-options?keyword=PICK-00&accountId={owner_id}")[1])[0]["id"] == int(selected)
+    edit_path = f"/accounts/{owner_id}/edit"
+    assert "已选择：同名验收档案 · PICK-00" in admin.request(edit_path)[1].decode()
+    assert "同名验收档案 · PICK-00" in admin.request("/accounts")[1].decode()
+    common = {"username": owner_name, "password": "", "role": "VIEWER", "enabled": "true", "version": "0"}
+    invalid = admin.request(f"/accounts/{owner_id}", dict(common, _csrf=admin.csrf(edit_path), counselorId="999999"))
+    assert invalid[0] == 200 and "档案不存在" in invalid[1].decode()
+    assert sql(f"SELECT counselor_id FROM system_accounts WHERE id={owner_id}") == selected
+    assert admin.request(f"/accounts/{owner_id}", dict(common, _csrf=admin.csrf(edit_path), counselorId=""))[0] == 302
+    stale = second_admin.request(f"/accounts/{owner_id}", dict(common, _csrf=second_admin.csrf(edit_path), counselorId=selected))
+    assert stale[0] == 200 and "资料已被其他操作更新" in stale[1].decode()
+    assert sql(f"SELECT counselor_id IS NULL AND version=1 FROM system_accounts WHERE id={owner_id}") == "1"
+    assert winner.request(query)[2]["Location"] == "/login?expired"
+    passed("account picker limits and projects MySQL results; concurrent association, forged IDs, stale edits and viewer access are guarded")
     before = snapshot()
     app_id = compose("ps", "--quiet", "app").stdout.strip()
     details = json.loads(command(["docker", "inspect", app_id]).stdout)[0]

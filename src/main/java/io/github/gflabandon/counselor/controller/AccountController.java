@@ -2,6 +2,8 @@ package io.github.gflabandon.counselor.controller;
 
 import io.github.gflabandon.counselor.service.*;
 import io.github.gflabandon.counselor.web.AccountForm;
+import io.github.gflabandon.counselor.web.CounselorOption;
+import java.util.List;
 import jakarta.validation.Valid;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Controller;
@@ -21,6 +23,11 @@ public class AccountController {
         binder.setAllowedFields("username", "password", "role", "enabled", "counselorId", "version");
     }
     @GetMapping public String list(Model model) { model.addAttribute("accounts", accounts.all()); return "accounts/list"; }
+    @GetMapping("/counselor-options") @ResponseBody
+    public List<CounselorOption> counselorOptions(@RequestParam(defaultValue = "") String keyword,
+            @RequestParam(required = false) Integer accountId) {
+        return accounts.counselorOptions(keyword, accountId);
+    }
     @GetMapping("/new") public String createForm(Model model) {
         model.addAttribute("accountForm", new AccountForm()); return "accounts/form";
     }
@@ -28,7 +35,9 @@ public class AccountController {
         var account = accounts.get(id); var form = new AccountForm();
         form.setUsername(account.getUsername()); form.setRole(account.getRole()); form.setEnabled(account.getEnabled());
         form.setCounselorId(account.getCounselorId()); form.setVersion(account.getVersion());
-        model.addAttribute("accountForm", form); model.addAttribute("recordId", id); return "accounts/form";
+        model.addAttribute("accountForm", form); model.addAttribute("recordId", id);
+        model.addAttribute("selectedCounselor", accounts.counselorOption(form.getCounselorId()));
+        return "accounts/form";
     }
     @PostMapping public String create(@Valid @ModelAttribute AccountForm accountForm, BindingResult errors,
             Model model, RedirectAttributes redirect) { return save(null, accountForm, errors, model, redirect); }
@@ -38,6 +47,7 @@ public class AccountController {
     }
     private String save(Integer id, AccountForm form, BindingResult errors, Model model, RedirectAttributes redirect) {
         model.addAttribute("recordId", id);
+        model.addAttribute("selectedCounselor", accounts.counselorOption(form.getCounselorId()));
         try {
             if (errors.hasErrors()) {
                 audit.event(AuditService.actor(), "ACCOUNT_WRITE", "ACCOUNT", id, "FAILURE", "VALIDATION");

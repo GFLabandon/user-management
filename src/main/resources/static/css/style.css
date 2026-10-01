@@ -810,5 +810,13 @@ input[type="file"] {
 }
 
 .account-form { display: grid; gap: 20px; }
+.counselor-picker { border-top: 1px solid var(--slate-200); padding-top: 20px; min-width: 0; }
+.counselor-picker h2 { font-size: 1rem; }
+.counselor-picker p { overflow-wrap: anywhere; }
+.counselor-picker .field { margin-top: 18px; }
+.picker-search { display: flex; flex-wrap: wrap; gap: 10px; }
+.picker-search input { flex: 1; min-width: 140px; width: 100%; }
+.picker-results { list-style: none; padding: 0; display: grid; gap: 8px; }
+.picker-results button { width: 100%; justify-content: flex-start; text-align: left; white-space: normal; overflow-wrap: anywhere; }
 .nav-shell { flex-wrap: wrap; gap: 18px; }
 nav { flex-wrap: wrap; }

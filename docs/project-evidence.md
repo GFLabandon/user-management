@@ -1,6 +1,6 @@
 # 项目证据与表述边界
 
-核验日期：2026-09-30，第一至 4D 阶段已整合到 `main`，最新实现提交 `61635f8`；Boot 升级基线为 `96507d8`，本阶段另补 Tomcat／Jackson／OpenSSL 与 MySQL 镜像摘要修复。产品名称：高校辅导员信息管理系统（Campus Counselor Management）。仓库目录仍为 `user-management`。
+核验日期：2026-10-01。第一至 4D 阶段已整合到 `main`，基线 `7706eaa`；5A.1 在 `codex/account-counselor-picker` 完成本地验收，尚未推送或合并。Boot 升级基线为 `96507d8`，4D 另补 Tomcat／Jackson／OpenSSL 与 MySQL 镜像摘要修复。产品名称：高校辅导员信息管理系统（Campus Counselor Management）。仓库目录仍为 `user-management`。
 
 ## 当前实现
 
@@ -15,6 +15,7 @@
 | 院系维护 | 新增、编辑、停用；有新档案或旧资料引用时禁止删除 |
 | 图片 | 解码和尺寸／大小校验、重新编码、UUID 存储；读取要求登录且有档案引用，拒绝符号链接；保留失败清理 |
 | 登录与权限 | Spring Security 表单与 CSRF；独立账号、bcrypt、ADMIN／VIEWER，账号版本变化撤销旧会话 |
+| 账号关联选择 | 工号／姓名搜索，最多 20 条，仅返回选择所需字段；编辑回显、取消关联、JOIN 列表；真实 MySQL 双管理员争用与版本冲突验收 |
 | 操作记录 | 登录结果、访问拒绝、账号／档案／院系成功与已处理失败；成功记录与业务同事务 |
 | 数据库 | H2 演示；MySQL 持久化；Flyway V1–V4 和显式旧数据工号映射 |
 | 部署配置 | deploy 启动入口、数据库连接前的配置与目录校验；非 root 数据库账号验收 |
@@ -22,7 +23,7 @@
 | 容器运行 | 非 root 应用、只读根文件系统、MySQL 8.4.11 与头像独立卷、回环 HTTP；见 Dockerfile / compose.yaml |
 | 健康与日志 | 独立无状态探针授权、readiness 检查 DB、liveness 不依赖 DB；请求编号与脱敏日志、Docker 日志保留限制 |
 | 备份恢复 | 停应用并持有数据库读锁；SQL、头像、清单和摘要；仅恢复到全新项目；见 scripts/maintenance.py |
-| 测试 | 4D 本机重跑：75 项 Java、18 项 Python；真实 MySQL 运行 10 组、迁移 5 组、恢复 8 组通过 |
+| 测试 | 5A.1 本机重跑：81 项 Java、21 项 Python、真实 MySQL 运行 11 组通过；迁移 5 组、恢复 8 组沿用基线远程 CI 证据 |
 | CI 与扫描 | 分离快速测试、MySQL、安全扫描任务；扫描实际运行镜像与 Java 依赖；远程 CI 状态以 GitHub Actions 为准，扫描结论见 4D 核对记录 |
 | MySQL 验收 | 第二阶段迁移、重启和备份恢复；第三阶段另验证 V3→V4、首次凭据、CSRF multipart 和权限；4A 新增专用数据库账号启动及重启验收；详见各阶段验收记录 |
 
@@ -32,7 +33,9 @@ Java 代码位于 `src/main/java/io/github/gflabandon/counselor/`，Java 迁移�
 
 4C 通过随机隔离 Compose 项目核对全部 11 张表的行数和数据行摘要、Flyway 历史、账号哈希、头像引用及文件内容；恢复后实际登录、搜索和编辑。额外覆盖读锁阻止写入与异常释放、损坏备份拒绝、已有目标拒绝、缺失图片导致备份无效。脚本为 `scripts/verify-recovery.py`，见 [4C 验收](acceptance/phase-4c-backup-recovery.md)。本阶段只修改维护脚本、CI 快速检查和文档，没有重跑 Java 测试或远程 CI。
 
-4D 的本机 CI 同入口验证覆盖旧库映射缺失时零复制、完整迁移保留 ID／关系／图片引用、V3→V4 及未知非空库拒绝接管。工具和发布步骤见 [4D 验收](acceptance/phase-4d-ci-release.md)、[安全核对](verification/security-2026-09-30.md)及[发布指南](guides/release.md)。应用的 HIGH／CRITICAL 发现已归零，MySQL 镜像仍有 28 个阻断项，安全任务保持失败；这不代表远程 CI 或实际发布已经通过。
+4D 的本机 CI 同入口验证覆盖旧库映射缺失时零复制、完整迁移保留 ID／关系／图片引用、V3→V4 及未知非空库拒绝接管。工具和发布步骤见 [4D 验收](acceptance/phase-4d-ci-release.md)、[安全核对](verification/security-2026-09-30.md)及[发布指南](guides/release.md)。应用的 HIGH／CRITICAL 发现已归零，9 月 30 日 MySQL 镜像仍有 28 个阻断项；10 月 1 日基线远程 CI 为 30 项，安全任务保持失败。当天官方摘要未更新，详见[4D.1 核对](verification/security-mysql-review-2026-10-01.md)。这不代表实际发布已经通过。
+
+5A.1 通过工号／姓名选择档案，保持服务端存在性、唯一关联、账号版本检查和旧会话撤销。新增查询不暴露备注、照片路径、密码或其他账号信息；截图、命令、并发与权限结果见[5A.1 验收](acceptance/phase-5a1-account-picker.md)。没有修改迁移、备份契约或镜像依赖。
 
 ## 可解释的项目描述
 
@@ -45,7 +48,7 @@ Java 代码位于 `src/main/java/io/github/gflabandon/counselor/`，Java 迁移�
 - 当前授权是两种固定角色，不是可配置权限平台；尚无院系数据隔离、JWT、OAuth2 或 SSO。
 - 尚无生产部署、HTTPS、登录限流或病毒扫描。运行镜像和打包依赖的漏洞扫描不等于安全认证，发现项与发布阻断以当次报告为准，不能宣称已满足公网部署要求。
 - 状态历史与操作记录分开；操作记录没有字段前后值、归档或防篡改保障。
-- 75 项测试及固定两条列表 SQL 不代表高并发、性能指标或完整质量保障。
+- 自动化测试数量及档案列表的固定两条 SQL 不代表高并发、性能指标或完整质量保障。
 - 协调备份与恢复已在本机小样本验收；尚无定时备份、自动加密、异地保管或生产 RTO／RPO 证据。Session 是单进程内存状态，不支持无损滚动发布。
 - 没有真实高校交付、真实用户规模、学生／班级管理、审批、Excel 导入导出或 AI 功能证据。
 - 新数据库结构不能仅通过切回旧 Git 提交回退；须恢复对应数据库与上传目录备份。

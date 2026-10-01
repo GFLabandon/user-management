@@ -7,6 +7,7 @@ import io.github.gflabandon.counselor.entity.*;
 import io.github.gflabandon.counselor.mapper.AccountMapper;
 import io.github.gflabandon.counselor.mapper.CounselorMapper;
 import io.github.gflabandon.counselor.web.AccountForm;
+import io.github.gflabandon.counselor.web.CounselorOption;
 import jakarta.validation.Valid;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -24,9 +25,16 @@ public class AccountService {
     public AccountService(AccountMapper mapper, CounselorMapper counselors, PasswordEncoder encoder, AuditService audit) {
         this.mapper = mapper; this.counselors = counselors; this.encoder = encoder; this.audit = audit;
     }
-    public record AccountSummary(int id, String username, AccountRole role, boolean enabled, Integer counselorId) {}
-    public List<AccountSummary> all() { return mapper.all().stream().map(a -> new AccountSummary(
-            a.getId(), a.getUsername(), a.getRole(), a.getEnabled(), a.getCounselorId())).toList(); }
+    public record AccountSummary(int id, String username, AccountRole role, boolean enabled, Integer counselorId,
+                                 String counselorName, String employeeNo, String departmentName) {}
+    public List<AccountSummary> all() { return mapper.summaries(); }
+    public List<CounselorOption> counselorOptions(String keyword, Integer accountId) {
+        if (accountId != null) get(accountId);
+        String term = keyword == null ? "" : keyword.strip();
+        if (term.length() > 50) throw new BusinessException("搜索词不能超过 50 个字符。");
+        return term.isEmpty() ? List.of() : mapper.counselorOptions(term, accountId);
+    }
+    public CounselorOption counselorOption(Integer id) { return id == null ? null : mapper.counselorOption(id); }
     public SystemAccount get(int id) {
         SystemAccount account = mapper.findById(id);
         if (account == null) throw new BusinessException("账号不存在。");
@@ -48,6 +56,10 @@ public class AccountService {
         }
         if (form.getCounselorId() != null && counselors.findById(form.getCounselorId()) == null) {
             throw new BusinessException("关联的辅导员档案不存在。");
+        }
+        if (form.getCounselorId() != null) {
+            Integer linked = mapper.linkedAccount(form.getCounselorId());
+            if (linked != null && !linked.equals(id)) throw new BusinessException("该档案已关联其他账号，请重新选择。");
         }
         String password = form.getPassword();
         if (id == null || (password != null && !password.isEmpty())) {

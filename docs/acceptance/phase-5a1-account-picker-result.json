@@ -1,0 +1,32 @@
+{
+  "date": "2026-10-01",
+  "scope": "local arm64 acceptance; not remote CI or security release approval",
+  "java": {
+    "tests": 81,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "python": {
+    "tests": 21,
+    "passed": true
+  },
+  "mysql": {
+    "project": "counselor-verify-f83d96adaae1",
+    "checks": [
+      "delayed database keeps application from starting early",
+      "empty database migrates V1-V4 but refuses startup without bootstrap credentials",
+      "fresh deploy has no demo records, administrator login works and management endpoints stay closed",
+      "real multipart CSRF, counselor create/search and private PNG upload/read",
+      "viewer cannot forge writes; disabling account revokes existing session",
+      "account picker limits and projects MySQL results; concurrent association, forged IDs, stale edits and viewer access are guarded",
+      "non-root app, read-only root filesystem, bounded logs, loopback HTTP and no published database port",
+      "database outage returns readiness 503 and business 503 while liveness remains UP, without app restart",
+      "database recovery restores readiness and existing login; request ID links sanitized error logs",
+      "application recreation preserves account hash, records, history and image after bootstrap secrets are removed",
+      "full Compose down/up retains database and uploads volumes"
+    ],
+    "passed": true
+  },
+  "imageId": "sha256:c12ea2af3355425534ec830a783ad58dc2391aadd98c224600e97992db349bfb"
+}

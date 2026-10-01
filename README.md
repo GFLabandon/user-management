@@ -5,7 +5,7 @@ Campus Counselor Management
 ![Java 17](https://img.shields.io/badge/Java-17-ED8B00?logo=openjdk&logoColor=white)
 ![Spring Boot 4.0](https://img.shields.io/badge/Spring_Boot-4.0-6DB33F?logo=springboot&logoColor=white)
 ![MyBatis](https://img.shields.io/badge/MyBatis-3-111827)
-![Tests](https://img.shields.io/badge/tests-75_passed-177454)
+![Tests](https://img.shields.io/badge/tests-81_passed-177454)
 
 由 `user-management` 演进而来的辅导员档案管理原型，采用 Java 17、Spring Boot、MyBatis、Thymeleaf 与 Flyway。支持建档、检索、院系维护、状态变更和头像上传。
 
@@ -23,6 +23,7 @@ Campus Counselor Management
 - 院系新增、改名、停用；已被新档案或旧资料引用的院系禁止删除。
 - 专用表单对象与字段白名单，数据库主键、照片路径不接受表单直接赋值。
 - 独立账号、bcrypt 密码哈希、管理员／只读权限；账号停用或变更后，旧会话在下一次请求失效。
+- 管理员可按工号／姓名搜索选择关联档案，展示院系、支持取消关联；保留唯一关联与并发修改保护。
 - 登录和写表单保留 CSRF；管理员可维护账号并查看最近 100 条操作记录。
 - 头像读取要求登录且被档案引用。上传校验 JPG/PNG 内容、5 MB、2048 像素边长和 400 万总像素，重新编码去除元数据及尾部内容；失败时清理新头像，事务提交后才删除旧头像。
 - Flyway 管理表结构；旧资料迁移要求明确工号映射，保留原 ID、姓名、院系、照片路径与旧角色关系。
@@ -109,6 +110,8 @@ flowchart LR
 档案、院系和头像由 Spring Security 统一保护；`/accounts` 与 `/audit` 仅管理员可访问。`/users/list` 保留只读跳转；旧新增、编辑、删除地址已退役。
 
 ## 测试与验收
+
+2026-10-01：5A.1 账号关联选择已在本机通过 81 项 Java、21 项 Python 测试和 11 组真实 MySQL 运行验收，并完成浏览器操作检查。见[5A.1 验收](docs/acceptance/phase-5a1-account-picker.md)。同日[官方镜像核对](docs/verification/security-mysql-review-2026-10-01.md)没有发现新的同版本构建，发布继续阻断；本轮未执行新远程 CI。
 
 ```bash
 ./mvnw --batch-mode --no-transfer-progress clean verify
