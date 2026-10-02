@@ -6,11 +6,12 @@
 
 确认工作区干净，记录 `git rev-parse HEAD`。阅读对应阶段验收、依赖扫描和待处理项。V1–V4 不得改写；未来结构变化追加版本，同时扩展备份脚本支持范围和恢复演练。
 
-在隔离环境构建两个镜像：
+在隔离环境构建两个运行镜像和迁移验收工具：
 
 ```sh
 ./mvnw --batch-mode --no-transfer-progress verify
 python3 -B -m unittest discover -s scripts/tests -v
+docker build -t campus-counselor-mysql:8.4.11-runtime-1 docker/mysql
 docker build -t campus-counselor-management:local .
 docker build --target migration-verification -t campus-counselor-migrations:local .
 python3 -B scripts/verify-mysql-ci.py
@@ -32,7 +33,7 @@ CI 在 main push、PR 或手动触发时分开运行三项任务：Java／Python
 | MySQL 汇总 | `target/mysql-ci-summary.json`，各套 `*-verification/*/result.json` |
 | 扫描报告 | `target/security/application.json`、`mysql.json`、`java-dependencies.json`、`summary.json` |
 
-Trivy 0.74.0 的安装包固定 SHA-256；脚本扫描实际应用镜像中的 Java 依赖和操作系统包，以及 Compose 指定摘要的 MySQL 镜像。扫描数据库需要联网更新，首次 Java 数据库下载较大。报告保留扫描器版本、数据库更新时间、镜像身份、受影响版本和修复版本。
+Trivy 0.74.0 的安装包固定 SHA-256；脚本扫描实际应用镜像中的 Java 依赖和操作系统包，以及 Compose 配置对应的 MySQL 派生镜像（锁定本机镜像 ID）。扫描数据库需要联网更新，首次 Java 数据库下载较大。报告保留扫描器版本、数据库更新时间、镜像身份、受影响版本和修复版本。
 
 HIGH／CRITICAL（包括暂无修复的条目）、扫描错误、缺少 Java／系统包扫描结果均导致检查失败。没有忽略清单或自动豁免。先核对上游公告、受影响组件及可用修复，再单独升级、回归和重扫；不能通过降低严重性门槛或忽略扫描错误使任务变绿。扫描通过也不能覆盖应用逻辑、配置和未知漏洞的风险。
 

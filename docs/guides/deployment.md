@@ -67,7 +67,7 @@ URL 不允许包含 user/password 或自定义驱动工厂。允许的连接选�
 
 ## 容器方式启动
 
-要求 Docker Engine / Docker Desktop 和支持 `--wait` 的 Compose v2。无需本机 Java、MySQL 或 Maven；镜像构建阶段使用 Maven Wrapper 运行全部测试。构建和运行镜像固定 Temurin 17.0.20+8 的版本及多架构摘要，数据库固定 MySQL 8.4.11 的摘要。本轮验证架构为 Linux arm64，未实测 amd64。
+要求 Docker Engine / Docker Desktop 和支持 `--wait` 的 Compose v2。无需本机 Java、MySQL 或 Maven；镜像构建阶段使用 Maven Wrapper 运行全部测试。构建和运行镜像固定 Temurin 17.0.20+8 的版本及多架构摘要。数据库由固定官方 MySQL 8.4.11 基础构建派生镜像，移除独立 Shell 包并重编译 gosu，服务端版本不变；详见[镜像指南](mysql-runtime-image.md)。本机验证为 Linux arm64，Linux amd64 结果以候选 PR 的远程 CI 为准。
 
 ```sh
 cp .env.compose.example .env.compose

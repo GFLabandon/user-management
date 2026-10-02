@@ -46,6 +46,7 @@ Apple M2，主机内存 8 GiB；Docker 分配 8 CPU、约 3.82 GiB 内存，Linu
 ## 复现与收尾
 
 ```sh
+docker build -t campus-counselor-mysql:8.4.11-runtime-1 docker/mysql
 docker build --target query-verification -t campus-counselor-queries:local .
 python3 -B scripts/benchmark-queries.py
 ```

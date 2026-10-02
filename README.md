@@ -52,6 +52,8 @@ java -jar target/campus-counselor-management-0.1.0-SNAPSHOT.jar
 
 ## 容器启动（4B）
 
+数据库现使用本项目的 MySQL 8.4.11 派生镜像：保留官方服务端和入口脚本，移除未使用的 Shell，重编译降权工具 gosu；构建来源与维护方式见[镜像指南](docs/guides/mysql-runtime-image.md)。`up --build` 同时构建应用和数据库。
+
 要求 Docker 和 Compose v2。复制 [.env.compose.example](.env.compose.example) 为 `.env.compose`，设置文件权限 `600`，填写独立数据库密码、root 密码和首次管理员账号密码后执行：
 
 ```sh
@@ -113,6 +115,8 @@ flowchart LR
 档案、院系和头像由 Spring Security 统一保护；`/accounts` 与 `/audit` 仅管理员可访问。`/users/list` 保留只读跳转；旧新增、编辑、删除地址已退役。
 
 ## 测试与验收
+
+2026-10-02：MySQL 安全修复本机通过 111 项 Java、32 项 Python、真实 MySQL 运行 14 组、迁移／镜像切换 6 组、恢复 10 组；应用与派生数据库镜像 HIGH／CRITICAL 均为 0，未降低门禁。见[修复验收](docs/verification/security-mysql-runtime-2026-10-02.md)。所有阶段成果汇集于 [PR #1](https://github.com/GFLabandon/user-management/pull/1)，远程 CI 与合并状态以候选提交为准。
 
 2026-10-02：第 6 阶段完成三档合成数据查询基线，实际 Mapper／Service 的 33 个场景通过结果和 SQL 数量校验；最大档为 1 万份档案和 10 万条操作记录。本轮保留现有查询和索引，完整方法、执行计划、耗时与边界见[查询基线](docs/acceptance/phase-6-query-baseline.md)。当前在 `codex/query-baseline`，远程验收以候选 PR 为准。本机 Docker 清理及保留内容见[资源说明](docs/guides/docker-resources.md)。
 
@@ -192,4 +196,4 @@ docs/
 - 文件与数据库不在同一个事务中，当前提供事务完成回调、引用协调、失败日志和停机备份后的受控重试；尚无跨重启自动补偿或多实例协调。
 - 没有学生／班级管理、审批、导入导出、AI 功能、生产部署或高并发证据。
 
-4D 的工作流与发布指南已落地；10 月 1 日基线远程扫描中 MySQL 官方镜像仍有 30 个阻断项，安全门禁未通过。本轮没有重跑扫描或远程 CI。5A 与 5B 已本地验收，后续开发安排见[下一阶段实施方案](docs/plans/next-steps-2026-10-01.md)。Flyway 的版本验证提示、HTTPS、登录限流仍需处理。[项目证据](docs/project-evidence.md)区分当前实现、历史记录与待开发能力。
+4D 的工作流与发布指南已落地，5A、5B 和查询基线已有验收证据。10 月 2 日增加 MySQL 派生镜像修复，原 30 项 HIGH／CRITICAL 阻断在本机复扫归零；远程候选检查见 [PR #1](https://github.com/GFLabandon/user-management/pull/1)。这不代表没有中低危发现或已具备公网生产条件。Flyway 的版本验证提示、HTTPS、登录限流和 Actions 运行时升级仍需处理。[项目证据](docs/project-evidence.md)区分当前实现、历史记录与待开发能力。

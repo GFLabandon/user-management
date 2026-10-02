@@ -1,5 +1,7 @@
 # 项目证据与表述边界
 
+最新补充：2026-10-02 的 MySQL 派生镜像修复本机通过 111 项 Java、32 项 Python、14 组运行、6 组迁移／镜像切换、10 组恢复验收；应用与数据库 HIGH／CRITICAL 均为 0，仍保留中低危／未知发现。没有修改数据库服务端、V1–V4 或备份格式；见[修复证据](verification/security-mysql-runtime-2026-10-02.md)。远程与合并状态以 [PR #1](https://github.com/GFLabandon/user-management/pull/1) 为准。
+
 核验日期：2026-10-02。第一至 4D 阶段已整合到 `main`，基线 `7706eaa`；5A.1 提交为 `e2f1689`，5A.2 提交为 `8f79615`，5A.3 提交为 `0580c8b`；5B 提交为 `0e2546e`。第 6 阶段在 `codex/query-baseline` 完成本地查询基线，推送、远程验收与合并以候选 PR 为准。Boot 升级基线为 `96507d8`，4D 另补 Tomcat／Jackson／OpenSSL 与 MySQL 镜像摘要修复。产品名称：高校辅导员信息管理系统（Campus Counselor Management）。仓库目录仍为 `user-management`。
 
 ## 当前实现

@@ -6,6 +6,8 @@
 
 ## 执行记录（更新至 2026-10-02）
 
+- 4D.2 已落实小范围 MySQL 派生镜像：卸载已核实独立的 Shell 包，固定来源重编译 gosu；本机完整门禁通过，111 项 Java、32 项 Python、14／6／10 组真实 MySQL 验收通过。未改变服务端版本、V1–V4、备份格式或扫描阈值；见[修复记录](../verification/security-mysql-runtime-2026-10-02.md)。远程复验和合并状态以 [PR #1](https://github.com/GFLabandon/user-management/pull/1) 为准。
+
 - 4D.1 已完成本轮有边界的核对：官方摘要未变化，发布继续阻断；组件分类和 Actions 维护待办见[安全处置记录](../verification/security-mysql-review-2026-10-01.md)。
 - 5A.1 已实现并在本机验收：81 项 Java、21 项 Python、11 组真实 MySQL 运行验收通过，含两个管理员争用同一档案；浏览器搜索／选择／保存／回显通过，见[验收记录](../acceptance/phase-5a1-account-picker.md)。提交 `e2f1689`，尚未推送或合并；5A.2 从该提交继续。
 - 5A.2 已完成统一错误页、正确状态码、表单保留与安全提示：91 项 Java、21 项 Python、11 组真实 MySQL 运行验收通过，见[验收记录](../acceptance/phase-5a2-error-feedback.md)。提交 `8f79615`，未推送或合并；5A.3 从该提交继续。

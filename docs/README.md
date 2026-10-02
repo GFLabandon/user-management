@@ -1,5 +1,7 @@
 # 文档导航
 
+最新安全修复：MySQL 8.4.11 派生镜像已通过本机 111 项 Java、32 项 Python、14／6／10 组真实 MySQL 验收及完整扫描；HIGH／CRITICAL 为 0。见[4D.2 验收](verification/security-mysql-runtime-2026-10-02.md)与[镜像维护指南](guides/mysql-runtime-image.md)。当前成果和远程检查汇集于 [PR #1](https://github.com/GFLabandon/user-management/pull/1)；下面的基线与阶段记录保留历史状态。
+
 当前进展：第一至 4D 阶段已整合到 `main`，代码基线 `7706eaa`。更新时间：2026-10-02。该提交的远程 CI 中 Java/Python 与真实 MySQL 验收通过；安全扫描仍有 MySQL 镜像阻断项，尚未发布。5A.1–5A.3、5B 及第 6 阶段查询基线已通过本机验收，当前在 `codex/query-baseline`，推送与合并以候选 PR 为准；见[查询基线](acceptance/phase-6-query-baseline.md)与[演示路径](guides/phase-5a-demo.md)。具体安排见[下一阶段实施方案](plans/next-steps-2026-10-01.md)。
 
 ## 从这里开始
@@ -9,6 +11,7 @@
 | 本地启动、账号和当前功能 | [项目 README](../README.md) |
 | 5A 完整演示和截图 | [5A 演示路径](guides/phase-5a-demo.md) |
 | 本机 Docker 资源用途与清理 | [Docker 资源说明](guides/docker-resources.md) |
+| MySQL 派生镜像构建、维护与升级 | [数据库镜像指南](guides/mysql-runtime-image.md) |
 | 三档查询基线、计划与复现 | [查询基线](acceptance/phase-6-query-baseline.md) |
 | 下一轮开发顺序与验收标准 | [下一阶段实施方案](plans/next-steps-2026-10-01.md) |
 | 原始阶段划分与历史计划 | [后续优化方案（2026-09-06）](plans/next-optimization-plan-2026-09-06.md) |
@@ -32,6 +35,7 @@
 | 4C：协调备份、恢复保护与真实 HTTP 验收 | `bf8a300` | [4C 验收](acceptance/phase-4c-backup-recovery.md) |
 | 4D：MySQL CI、扫描与发布流程 | `88e2f9c`、补丁 `61635f8` | [4D 验收](acceptance/phase-4d-ci-release.md) |
 | 4D.1：官方镜像处置核对 | 本地核对，发布仍阻断 | [4D.1 核对](verification/security-mysql-review-2026-10-01.md) |
+| 4D.2：数据库派生镜像安全修复 | 本机门禁通过；远程检查见 PR | [4D.2 验收](verification/security-mysql-runtime-2026-10-02.md) |
 | 5A.1：账号关联档案搜索选择 | 独立分支，本机验收 | [5A.1 验收](acceptance/phase-5a1-account-picker.md) |
 | 5A.2：错误与失败提示 | 独立分支，本机验收 | [5A.2 验收](acceptance/phase-5a2-error-feedback.md) |
 | 5A.3：操作记录中文说明、筛选与分页 | 独立分支，本机验收 | [5A.3 验收](acceptance/phase-5a3-audit-query.md) |
