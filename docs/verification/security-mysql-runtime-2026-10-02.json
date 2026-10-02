@@ -1,0 +1,174 @@
+{
+  "date": "2026-10-02",
+  "scope": "local Linux arm64; remote candidate evidence is on PR 1",
+  "baseCommit": "6253082",
+  "java": {
+    "tests": 111,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "python": {
+    "tests": 32,
+    "passed": true
+  },
+  "security": {
+    "passed": true,
+    "checkedAt": "2026-10-02T09:58:58.577851+00:00",
+    "policy": "Fail on every HIGH/CRITICAL finding, including unfixed; no suppressions.",
+    "scanner": {
+      "Version": "0.74.0",
+      "VulnerabilityDB": {
+        "Version": 2,
+        "NextUpdate": "2026-10-03T06:55:51.690179148Z",
+        "UpdatedAt": "2026-10-02T06:55:51.690179759Z",
+        "DownloadedAt": "2026-10-02T09:56:15.433268Z"
+      },
+      "JavaDB": {
+        "Version": 1,
+        "NextUpdate": "2026-10-03T00:59:00.480851829Z",
+        "UpdatedAt": "2026-09-30T00:59:00.480851969Z",
+        "DownloadedAt": "2026-09-30T12:51:14.256474Z"
+      }
+    },
+    "images": {
+      "application": {
+        "configuredImage": "campus-counselor-management:local",
+        "imageId": "sha256:035064e11bc8050c5ba6577e3260564debc71780b7d85c2cc68db419bf0ca738",
+        "blocking": [],
+        "severityCounts": {
+          "MEDIUM": 52,
+          "LOW": 16
+        },
+        "coverage": [
+          {
+            "target": "sha256:035064e11bc8050c5ba6577e3260564debc71780b7d85c2cc68db419bf0ca738 (ubuntu 22.04)",
+            "type": "ubuntu",
+            "class": "os-pkgs"
+          },
+          {
+            "target": "Java",
+            "type": "jar",
+            "class": "lang-pkgs"
+          }
+        ]
+      },
+      "mysql": {
+        "configuredImage": "campus-counselor-mysql:8.4.11-runtime-1",
+        "imageId": "sha256:dd9c43cd775892060f08c7e49aa75f33a99cac4a6ce7e173c722d2ae2f290da8",
+        "blocking": [],
+        "severityCounts": {
+          "MEDIUM": 3,
+          "UNKNOWN": 1
+        },
+        "coverage": [
+          {
+            "target": "sha256:dd9c43cd775892060f08c7e49aa75f33a99cac4a6ce7e173c722d2ae2f290da8 (oracle 9.8)",
+            "type": "oracle",
+            "class": "os-pkgs"
+          },
+          {
+            "target": "usr/local/bin/gosu",
+            "type": "gobinary",
+            "class": "lang-pkgs"
+          }
+        ]
+      }
+    }
+  },
+  "runtime": {
+    "project": "counselor-verify-659aaeb24b21",
+    "checks": [
+      "delayed database keeps application from starting early",
+      "empty database migrates V1-V4 but refuses startup without bootstrap credentials",
+      "fresh deploy has no demo records, administrator login works and management endpoints stay closed",
+      "real multipart CSRF, counselor create/search and private PNG upload/read",
+      "image replacement protects shared references; stale and database-rejected uploads roll back cleanly; last old reference cleanup succeeds",
+      "viewer cannot forge writes; disabling account revokes existing session",
+      "account picker limits and projects MySQL results; concurrent association, forged IDs, stale edits and viewer access are guarded",
+      "audit queries reach events beyond 100 with bound filters, inclusive dates, Chinese labels, safe validation and admin-only pagination",
+      "non-root app, read-only root filesystem, bounded logs, loopback HTTP and no published database port",
+      "derived MySQL keeps server/client/dump 8.4.11; rebuilt gosu drops PID 1 to mysql UID 999; unused Shell is absent",
+      "database outage returns readiness 503 and business 503 while liveness remains UP, without app restart",
+      "database recovery restores readiness and existing login; request ID links sanitized error logs",
+      "application recreation preserves account hash, records, history and image after bootstrap secrets are removed",
+      "full Compose down/up retains database and uploads volumes"
+    ],
+    "passed": true
+  },
+  "migrations": {
+    "passed": true,
+    "checks": [
+      "fresh",
+      "missing-mapping",
+      "mapped-legacy",
+      "v3-upgrade",
+      "unversioned",
+      "runtime-upgrade"
+    ],
+    "project_prefix": "counselor-migration-d5aa411cc1b7",
+    "commit": "6253082b27066e92eee81590fdece18a90d6d4e6"
+  },
+  "recovery": {
+    "passed": true,
+    "checks": [
+      "source fixture: two accounts, Chinese counselor, status history, audit and private image plus orphan",
+      "coordinated backup leaves application stopped and contains complete private checksummed bundle",
+      "offline image preview rejects running app, active and legacy references, traversal, missing backup and changed bytes",
+      "failed offline deletion is retryable and idempotent; original image remains recoverable in unchanged backup",
+      "real database lock blocks writes and releases when backup work raises an error",
+      "corrupt or missing backup refuses restore before creating target resources",
+      "fresh target restores all table rows, Flyway history, password hashes and exact upload inventory",
+      "restored HTTP login/search/edit/image and viewer permissions work; status history continues",
+      "existing nonempty target and original source are refused without stopping or changing target",
+      "missing referenced photo leaves backup incomplete, source stopped and database lock released"
+    ],
+    "restore_through_http_seconds": 23.8,
+    "restore_command_result": "Restore verified in 13.8s. Project: counselor-recovery-b1786d54dd-target. Application remains stopped; run docker compose start app, then verify login and images.",
+    "source_commit": "6253082b27066e92eee81590fdece18a90d6d4e6",
+    "app_image": "sha256:035064e11bc8050c5ba6577e3260564debc71780b7d85c2cc68db419bf0ca738",
+    "mysql": "8.4.11",
+    "counts_at_backup": {
+      "account_admin_guard": 1,
+      "audit_events": 6,
+      "counselor_status_history": 2,
+      "counselors": 1,
+      "departments": 1,
+      "flyway_schema_history": 4,
+      "legacy_counselor_mapping": 0,
+      "roles": 0,
+      "system_accounts": 2,
+      "user_roles": 0,
+      "users": 0
+    }
+  },
+  "initialSuiteSummary": {
+    "passed": true,
+    "suites": [
+      {
+        "suite": "verify-compose.py",
+        "exit_code": 0,
+        "seconds": 138.1
+      },
+      {
+        "suite": "verify-migrations.py",
+        "exit_code": 0,
+        "seconds": 66.2
+      },
+      {
+        "suite": "verify-recovery.py",
+        "exit_code": 0,
+        "seconds": 77.0
+      }
+    ]
+  },
+  "source": {
+    "mysqlBase": "mysql:8.4.11@sha256:6ea90827b1100f8f2ae306a539f86d2c264a26ed435a2a9f75551dd5c3aeb242",
+    "gosuCommit": "6456aaa0f3c854d199d0f037f068eb97515b7513",
+    "gosuArchiveSHA256": "33d7537d588ea49458b9509bcf4554bdf5ceacc66da71e5caa1058ea3b689c3b",
+    "go": "1.27.1",
+    "goImage": "golang:1.27.1-bookworm@sha256:69a7b9788769bec032d238959b61854e9ae87f57be9029ec04e9885fabf99195"
+  },
+  "unchangedSchema": true,
+  "unchangedBackupFormat": true
+}

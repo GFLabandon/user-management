@@ -36,7 +36,7 @@ class FileStorageServiceTests {
 
         assertThatThrownBy(() -> service.storeImage(file))
                 .isInstanceOf(java.io.IOException.class)
-                .hasMessageContaining("JPG and PNG");
+                .hasMessageContaining("JPG/PNG");
     }
 
     @Test
@@ -45,7 +45,7 @@ class FileStorageServiceTests {
         Path stored = temporaryDirectory.resolve("avatar.jpg");
         Files.write(stored, new byte[]{1});
 
-        service.delete("/uploads/avatar.jpg");
+        service.deleteUnreferenced("/uploads/avatar.jpg");
 
         assertThat(stored).doesNotExist();
     }
@@ -89,5 +89,28 @@ class FileStorageServiceTests {
         String stored = service.storeImage(new MockMultipartFile("photo", "valid.png", "image/png", output.toByteArray()));
         assertThat(new String(Files.readAllBytes(service.resolveImage(Path.of(stored).getFileName().toString())), java.nio.charset.StandardCharsets.ISO_8859_1))
                 .doesNotContain("trailing-untrusted-payload");
+    }
+    @Test void deletionRejectsTraversalSymlinksDirectoriesAndForeignPaths() throws Exception {
+        var service = new FileStorageService(temporaryDirectory.toString());
+        Path target = temporaryDirectory.resolve("safe.png"); Files.write(target, new byte[]{1});
+        Path link = temporaryDirectory.resolve("link.png"); Files.createSymbolicLink(link, target);
+        Files.createDirectory(temporaryDirectory.resolve("folder.png"));
+        for (String path : new String[]{"../safe.png", "/elsewhere/safe.png", "/uploads/../safe.png", "/uploads/link.png", "/uploads/folder.png", "/uploads/safe.png/"})
+            assertThat(service.deleteUnreferenced(path)).isEqualTo(FileStorageService.DeleteResult.INVALID);
+        assertThat(target).exists(); assertThat(Files.isSymbolicLink(link)).isTrue();
+        assertThat(service.deleteUnreferenced("/uploads/missing.png")).isEqualTo(FileStorageService.DeleteResult.ABSENT);
+    }
+
+    @Test void failedCreateDoesNotDeleteAFileItDidNotCreate() throws Exception {
+        var retained = new java.util.concurrent.atomic.AtomicReference<Path>();
+        var service = new FileStorageService(temporaryDirectory.toString()) {
+            @Override java.io.OutputStream openImageOutput(Path path) throws java.io.IOException {
+                Files.write(path, new byte[]{7}); retained.set(path);
+                throw new java.nio.file.FileAlreadyExistsException(path.toString());
+            }
+        };
+        assertThatThrownBy(() -> service.storeImage(new MockMultipartFile("photo", "photo.png", "image/png", io.github.gflabandon.counselor.TestImages.png())))
+                .isInstanceOf(java.io.IOException.class);
+        assertThat(Files.readAllBytes(retained.get())).containsExactly((byte) 7);
     }
 }

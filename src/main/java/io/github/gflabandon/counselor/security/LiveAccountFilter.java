@@ -12,6 +12,10 @@ public class LiveAccountFilter extends OncePerRequestFilter {
     private final AccountMapper accounts;
     public LiveAccountFilter(AccountMapper accounts) { this.accounts = accounts; }
     @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        return request.getDispatcherType() == DispatcherType.ERROR || request.getServletPath().equals("/error");
+    }
+    @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
         var auth = SecurityContextHolder.getContext().getAuthentication();

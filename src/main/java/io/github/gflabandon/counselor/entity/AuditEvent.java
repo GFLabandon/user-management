@@ -35,4 +35,9 @@ public class AuditEvent {
     public LocalDateTime getOccurredAt() { return occurredAt; }
     public void setOccurredAt(LocalDateTime occurredAt) { this.occurredAt = occurredAt; }
 
+    public String getActionLabel() { return AuditLabels.action(action); }
+    public String getTargetLabel() { return AuditLabels.target(targetType); }
+    public String getOutcomeLabel() { return AuditLabels.outcome(outcome); }
+    public String getReasonLabel() { return AuditLabels.reason(reason); }
+
 }

@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head(title=${errorTitle})}"></head>
+<body><header th:replace="~{layout :: header}"></header>
+<main class="page-shell form-page"><section class="card record-note">
+<p class="eyebrow" th:text="${'请求状态 ' + errorStatus}"></p>
+<h1 th:text="${errorTitle}"></h1>
+<p role="alert" th:text="${errorMessage}"></p>
+<p th:text="${errorNextStep}"></p>
+<small th:if="${requestId != null}">请求编号：<span th:text="${requestId}"></span></small>
+<div class="form-actions"><a class="button button-primary" th:href="@{/counselors}">返回档案列表</a><a class="button button-ghost" th:href="@{/login}">重新登录</a></div>
+</section></main><footer th:replace="~{layout :: footer}"></footer></body></html>

@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Destructive only to a fresh, randomly named Compose project created by this run.
-Requires a previously built campus-counselor-management:local image. Uses Python stdlib.
+Requires the application and Compose database images to be built first. Uses Python stdlib.
 """
 import hashlib
+from concurrent.futures import ThreadPoolExecutor
 import http.cookiejar
 import json
 import os
@@ -243,6 +244,34 @@ try:
     assert anon.request(photo)[0] == 302
     assert "容器验收档案" in admin.request("/counselors?keyword=CONTAINER-001")[1].decode()
     passed("real multipart CSRF, counselor create/search and private PNG upload/read")
+    # An old imported image may have multiple active archive references.
+    sql(f"INSERT INTO counselors(employee_no,name,department_id,employment_status,photo_path) VALUES ('IMAGE-SHARED','共享图片验收',{department},'ACTIVE','{photo}')")
+    shared_id = sql("SELECT id FROM counselors WHERE employee_no='IMAGE-SHARED'")
+    old_photo = photo
+    fields.update(_csrf=admin.csrf(record + "/edit"), version="0")
+    body, content_type = multipart(fields)
+    assert admin.request(record, body, content_type)[0] == 302
+    photo = sql("SELECT photo_path FROM counselors WHERE employee_no='CONTAINER-001'")
+    assert photo != old_photo and admin.request(old_photo)[0] == 200
+    def upload_names():
+        return compose("exec", "-T", "app", "find", "/app/uploads", "-maxdepth", "1", "-type", "f").stdout.splitlines()
+    before_failed_upload = sorted(upload_names())
+    fields['_csrf'] = admin.csrf(record + "/edit")
+    body, content_type = multipart(fields)
+    assert admin.request(record, body, content_type)[0] == 409
+    assert sorted(upload_names()) == before_failed_upload
+    assert sql("SELECT photo_path FROM counselors WHERE employee_no='CONTAINER-001'") == photo
+    fields.update(_csrf=admin.csrf("/counselors/new"), version="0")
+    body, content_type = multipart(fields)
+    assert admin.request("/counselors", body, content_type)[0] == 409
+    assert sorted(upload_names()) == before_failed_upload
+    fields.update(_csrf=admin.csrf(f"/counselors/{shared_id}/edit"), employeeNo="IMAGE-SHARED", name="共享图片验收")
+    body, content_type = multipart(fields)
+    assert admin.request(f"/counselors/{shared_id}", body, content_type)[0] == 302
+    assert admin.request(old_photo)[0] == 404
+    assert "/app/uploads/" + old_photo[9:] not in upload_names()
+    assert admin.request(photo)[0] == 200
+    passed("image replacement protects shared references; stale and database-rejected uploads roll back cleanly; last old reference cleanup succeeds")
     assert admin.request("/accounts", {"_csrf": admin.csrf("/accounts/new"), "username": "acceptance_viewer",
                                       "password": VIEWER_PASSWORD, "role": "VIEWER", "enabled": "true", "version": "0"})[0] == 302
     viewer.login("acceptance_viewer", VIEWER_PASSWORD)
@@ -254,6 +283,106 @@ try:
             "username": "acceptance_viewer", "password": "", "role": "VIEWER", "enabled": "false", "version": "0"})[0] == 302
     assert viewer.request("/counselors")[2]["Location"] == "/login?expired"
     passed("viewer cannot forge writes; disabling account revokes existing session")
+    # Keep SQL fixtures inside this script's random, disposable project.
+    sql("INSERT INTO counselors (employee_no, name, department_id, employment_status, remark) VALUES "
+        + ",".join(f"('PICK-{i:02d}', '同名验收档案', {department}, 'ACTIVE', 'private-picker-marker')" for i in range(21)))
+    query = "/accounts/counselor-options?" + urllib.parse.urlencode({"keyword": "同名验收档案"})
+    code, body, _ = admin.request(query)
+    options = json.loads(body)
+    assert code == 200 and len(options) == 20
+    assert set(options[0]) == {"id", "employeeNo", "name", "departmentName"}
+    assert [row["employeeNo"] for row in options] == [f"PICK-{i:02d}" for i in range(20)]
+    assert b"private-picker-marker" not in body
+    assert json.loads(admin.request("/accounts/counselor-options?keyword=pick-20")[1])[0]["employeeNo"] == "PICK-20"
+    for term in ["", "%", "_", "' OR 1=1 --", "no-match"]:
+        assert json.loads(admin.request("/accounts/counselor-options?" + urllib.parse.urlencode({"keyword": term}))[1]) == []
+    assert anon.request(query)[0] == 302
+    # Two authenticated administrators submit different accounts for the same archive simultaneously.
+    second_password = secrets.token_urlsafe(24)
+    SECRETS.append(second_password)
+    assert admin.request("/accounts", {"_csrf": admin.csrf("/accounts/new"), "username": "picker_admin",
+            "password": second_password, "role": "ADMIN", "enabled": "true", "version": "0"})[0] == 302
+    second_admin = Browser()
+    second_admin.login("picker_admin", second_password)
+    selected = str(options[0]["id"])
+    def associate(browser, username):
+        return browser.request("/accounts", {"_csrf": browser.csrf("/accounts/new"), "username": username,
+                "password": VIEWER_PASSWORD, "role": "VIEWER", "enabled": "true", "version": "0", "counselorId": selected})
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        first = pool.submit(associate, admin, "picker_first")
+        second = pool.submit(associate, second_admin, "picker_second")
+        responses = [first.result(), second.result()]
+    assert sorted(row[0] for row in responses) == [302, 400]
+    failed = next(row[1].decode() for row in responses if row[0] == 400)
+    assert "已关联其他账号" in failed and VIEWER_PASSWORD not in failed
+    assert sql(f"SELECT COUNT(*) FROM system_accounts WHERE counselor_id={selected}") == "1"
+    owner_id = sql(f"SELECT id FROM system_accounts WHERE counselor_id={selected}")
+    owner_name = sql(f"SELECT username FROM system_accounts WHERE id={owner_id}")
+    winner = Browser()
+    winner.login(owner_name, VIEWER_PASSWORD)
+    assert winner.request(query)[0] == 403
+    assert json.loads(admin.request("/accounts/counselor-options?keyword=PICK-00")[1]) == []
+    assert json.loads(admin.request(f"/accounts/counselor-options?keyword=PICK-00&accountId={owner_id}")[1])[0]["id"] == int(selected)
+    edit_path = f"/accounts/{owner_id}/edit"
+    assert "已选择：同名验收档案 · PICK-00" in admin.request(edit_path)[1].decode()
+    assert "同名验收档案 · PICK-00" in admin.request("/accounts")[1].decode()
+    common = {"username": owner_name, "password": "", "role": "VIEWER", "enabled": "true", "version": "0"}
+    invalid = admin.request(f"/accounts/{owner_id}", dict(common, _csrf=admin.csrf(edit_path), counselorId="999999"))
+    assert invalid[0] == 400 and "档案不存在" in invalid[1].decode()
+    assert sql(f"SELECT counselor_id FROM system_accounts WHERE id={owner_id}") == selected
+    assert admin.request(f"/accounts/{owner_id}", dict(common, _csrf=admin.csrf(edit_path), counselorId=""))[0] == 302
+    stale = second_admin.request(f"/accounts/{owner_id}", dict(common, _csrf=second_admin.csrf(edit_path), counselorId=selected))
+    assert stale[0] == 409 and "资料已被其他操作更新" in stale[1].decode()
+    assert sql(f"SELECT counselor_id IS NULL AND version=1 FROM system_accounts WHERE id={owner_id}") == "1"
+    assert winner.request(query)[2]["Location"] == "/login?expired"
+    passed("account picker limits and projects MySQL results; concurrent association, forged IDs, stale edits and viewer access are guarded")
+    # Audit fixtures are synthetic and live only in this disposable database.
+    sql("INSERT INTO audit_events(actor,action,target_type,target_id,outcome,reason,occurred_at) VALUES "
+        + ",".join(f"('audit_fixture','ACCOUNT_UPDATE','ACCOUNT','{i}','SUCCESS','OK','2026-01-01 12:00:00')" for i in range(105)))
+    audit_ids = [int(row) for row in sql("SELECT id FROM audit_events WHERE actor='audit_fixture' ORDER BY id DESC").splitlines()]
+    def audit_page(**params):
+        code, body, _ = admin.request("/audit?" + urllib.parse.urlencode(params))
+        return code, body.decode()
+    def row_ids(html):
+        return [int(value) for value in re.findall(r'data-event-id="(\d+)"', html)]
+    code, page = audit_page(actor="audit_fixture", size=10)
+    assert code == 200 and "共 105 条" in page and row_ids(page) == audit_ids[:10]
+    assert "更新账号" in page and "操作完成" in page and "当前数据库时区：SYSTEM / UTC" in page
+    code, page = audit_page(actor="audit_fixture", size=10, page=11)
+    assert code == 200 and row_ids(page) == audit_ids[100:]
+    code, page = audit_page(actor="audit_fixture", size=10, page=2147483647)
+    assert code == 200 and "页码超出范围" in page and row_ids(page) == audit_ids[100:]
+    sql("INSERT INTO audit_events(actor,action,target_type,target_id,outcome,reason,occurred_at) VALUES "
+        "('audit_boundary','ACCOUNT_UPDATE','ACCOUNT','42','SUCCESS','OK','2026-02-01 00:00:00'),"
+        "('audit_boundary','ACCOUNT_UPDATE','ACCOUNT','42','SUCCESS','OK','2026-02-02 23:59:59'),"
+        "('audit_boundary','ACCOUNT_UPDATE','ACCOUNT','42','SUCCESS','OK','2026-01-31 23:59:59'),"
+        "('audit_boundary','ACCOUNT_UPDATE','ACCOUNT','42','SUCCESS','OK','2026-02-03 00:00:00'),"
+        "('audit_boundary','ACCOUNT_UPDATE','ACCOUNT','42','FAILURE','VALIDATION','2026-02-01 12:00:00'),"
+        "('audit_boundary','DEPARTMENT_UPDATE','DEPARTMENT','42','SUCCESS','OK','2026-02-01 12:00:00'),"
+        "('audit_boundary','ACCOUNT_UPDATE','ACCOUNT','420','SUCCESS','OK','2026-02-01 12:00:00')")
+    code, page = audit_page(actor=" AUDIT_BOUNDARY ", targetType="ACCOUNT", targetId="42", outcome="SUCCESS",
+                            startDate="2026-02-01", endDate="2026-02-02")
+    expected_ids = [int(row) for row in sql("SELECT id FROM audit_events WHERE actor='audit_boundary' AND target_type='ACCOUNT' "
+        "AND target_id='42' AND outcome='SUCCESS' AND occurred_at >= '2026-02-01' AND occurred_at < '2026-02-03' ORDER BY id DESC").splitlines()]
+    assert code == 200 and "共 2 条" in page and row_ids(page) == expected_ids
+    for term in ["%", "_", "' OR 1=1 --", "missing_audit_actor"]:
+        code, page = audit_page(actor=term)
+        assert code == 200 and "共 0 条" in page and "没有匹配的操作记录" in page
+    for params in [dict(startDate="2026-02-30"), dict(startDate="2026-02-02", endDate="2026-02-01"),
+                   dict(page=0), dict(page="abc"), dict(size=101), dict(targetType="FORGED"), dict(outcome="FORGED")]:
+        code, page = audit_page(actor="audit_fixture", **params)
+        assert code == 400 and "筛选条件有误" in page and not row_ids(page)
+    sql("INSERT INTO audit_events(actor,action,target_type,target_id,outcome,reason) "
+        "VALUES ('audit_unknown','NEW_ACTION','NEW_TARGET',NULL,'FAILURE','private-unknown-reason')")
+    code, page = audit_page(actor="audit_unknown")
+    assert code == 200 and all(label in page for label in ["未知操作", "未知对象", "原因未分类"])
+    assert "private-unknown-reason" not in page
+    winner.login(owner_name, VIEWER_PASSWORD)
+    code, body, _ = winner.request("/audit?actor=audit_fixture&page=2")
+    assert code == 403 and b"audit_fixture" not in body
+    assert anon.request("/audit?actor=audit_fixture")[0] == 302
+    assert sql("SELECT COUNT(*) FROM audit_events WHERE actor='audit_fixture' AND action='ACCOUNT_UPDATE' AND reason='OK'") == "105"
+    passed("audit queries reach events beyond 100 with bound filters, inclusive dates, Chinese labels, safe validation and admin-only pagination")
     before = snapshot()
     app_id = compose("ps", "--quiet", "app").stdout.strip()
     details = json.loads(command(["docker", "inspect", app_id]).stdout)[0]
@@ -264,15 +393,32 @@ try:
     assert not json.loads(command(["docker", "inspect", compose("ps", "--quiet", "db").stdout.strip()]).stdout)[0]["HostConfig"]["PortBindings"]
     assert compose("exec", "-T", "app", "id", "-u").stdout.strip() == "10001"
     passed("non-root app, read-only root filesystem, bounded logs, loopback HTTP and no published database port")
+    db_details = json.loads(command(["docker", "inspect", compose("ps", "--quiet", "db").stdout.strip()]).stdout)[0]
+    assert db_details["Config"]["Labels"]["io.counselor.mysql.variant"] == "8.4.11-runtime-1"
+    assert compose("exec", "-T", "db", "cat", "/proc/1/comm").stdout.strip() == "mysqld"
+    process_status = compose("exec", "-T", "db", "cat", "/proc/1/status").stdout
+    assert re.search(r"^Uid:\s+999\s+999\s+999\s+999$", process_status, re.MULTILINE)
+    gosu_version = compose("exec", "-T", "db", "gosu", "--version").stdout
+    assert "1.19" in gosu_version and "go1.27.1" in gosu_version
+    assert compose("exec", "-T", "db", "rpm", "-q", "mysql-shell", check=False).returncode == 1
+    assert compose("exec", "-T", "db", "test", "!", "-d", "/usr/lib/mysqlsh").returncode == 0
+    for binary in ("mysql", "mysqldump", "mysqld"):
+        assert "8.4.11" in compose("exec", "-T", "db", binary, "--version").stdout
+    passed("derived MySQL keeps server/client/dump 8.4.11; rebuilt gosu drops PID 1 to mysql UID 999; unused Shell is absent")
     compose("stop", "db")
     health(anon, "liveness", 200)
     health(admin, "liveness", 200)
     health(anon, "readiness", 503)
     health(admin, "readiness", 503)
-    code, _, headers = admin.request("/counselors?keyword=private-query-marker", headers={"X-Request-ID": "untrusted-id-marker"})
+    code, failed_body, headers = admin.request("/counselors?keyword=private-query-marker", headers={"X-Request-ID": "untrusted-id-marker"})
     assert code == 503
     failed_request_id = headers["X-Request-ID"]
     assert re.fullmatch(r"[0-9a-f-]{36}", failed_request_id)
+    failure_page = failed_body.decode()
+    assert "服务暂时不可用" in failure_page and failed_request_id in failure_page
+    assert "返回档案列表" in failure_page and "重新登录" in failure_page
+    for value in SECRETS + ["private-query-marker", "untrusted-id-marker", "SELECT ", "Exception", "jdbc:mysql"]:
+        assert value not in failure_page
     until(lambda: state("app").get("Health", {}).get("Status") == "unhealthy", timeout=90)
     assert compose("ps", "--quiet", "app").stdout.strip() == app_id
     passed("database outage returns readiness 503 and business 503 while liveness remains UP, without app restart")

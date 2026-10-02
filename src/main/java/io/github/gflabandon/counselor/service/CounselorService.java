@@ -19,10 +19,11 @@ public class CounselorService {
     private final CounselorMapper mapper;
     private final DepartmentMapper departments;
     private final AuditService audit;
+    private final ImageLifecycle images;
 
-    public CounselorService(CounselorMapper mapper, DepartmentMapper departments, AuditService audit) {
+    public CounselorService(CounselorMapper mapper, DepartmentMapper departments, AuditService audit, ImageLifecycle images) {
         this.mapper = mapper;
-        this.departments = departments; this.audit = audit;
+        this.departments = departments; this.audit = audit; this.images = images;
     }
 
     public PageResult<Counselor> search(String keyword, Integer departmentId, EmploymentStatus status, int page, int size) {
@@ -38,7 +39,7 @@ public class CounselorService {
 
     public Counselor get(int id) {
         Counselor counselor = mapper.findById(id);
-        if (counselor == null) throw new BusinessException("未找到该辅导员档案。");
+        if (counselor == null) throw new RecordNotFoundException("未找到该辅导员档案。");
         return counselor;
     }
 
@@ -46,6 +47,7 @@ public class CounselorService {
 
     @Transactional
     public int create(@Valid CounselorForm form, String photoPath, String actor) {
+        images.change(photoPath);
         requireDepartment(form.getDepartmentId(), null);
         Counselor counselor = fromForm(form);
         counselor.setPhotoPath(photoPath);
@@ -55,9 +57,10 @@ public class CounselorService {
         return counselor.getId();
     }
 
-    /** Returns the old image path only after the transaction commits at the proxy boundary. */
+    /** Returns the replaced image path; ImageLifecycle handles cleanup after transaction completion. */
     @Transactional
     public String update(int id, @Valid CounselorForm form, String newPhotoPath, String actor) {
+        var imageChange = images.change(newPhotoPath);
         Counselor existing = get(id);
         if (existing.getVersion() != form.getVersion()) throw new EditConflictException();
         requireDepartment(form.getDepartmentId(), existing.getDepartmentId());
@@ -69,6 +72,7 @@ public class CounselorService {
             mapper.insertHistory(id, existing.getEmploymentStatus(), counselor.getEmploymentStatus(), actor);
         }
         audit.success(actor, "COUNSELOR_UPDATE", "COUNSELOR", id);
+        imageChange.replaced(existing.getPhotoPath());
         return newPhotoPath == null ? null : existing.getPhotoPath();
     }
 

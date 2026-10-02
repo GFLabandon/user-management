@@ -19,7 +19,7 @@ public class DepartmentService {
     public List<Department> all() { return mapper.findAll(); }
     public Department get(int id) {
         Department department = mapper.findById(id);
-        if (department == null) throw new BusinessException("院系不存在。");
+        if (department == null) throw new RecordNotFoundException("院系不存在。");
         return department;
     }
 
@@ -42,7 +42,7 @@ public class DepartmentService {
     @Transactional
     public void delete(int id, int version) {
         Department department = mapper.lockById(id);
-        if (department == null) throw new BusinessException("院系不存在。");
+        if (department == null) throw new RecordNotFoundException("院系不存在。");
         if (department.getVersion() != version) throw new EditConflictException();
         if (mapper.references(id) != 0) throw new BusinessException("该院系已被档案或旧资料引用，请使用停用功能。");
         if (mapper.delete(id, version) != 1) throw new EditConflictException();

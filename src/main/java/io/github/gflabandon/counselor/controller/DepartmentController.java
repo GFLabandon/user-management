@@ -4,9 +4,9 @@ import io.github.gflabandon.counselor.entity.Department;
 import io.github.gflabandon.counselor.service.*;
 import io.github.gflabandon.counselor.web.DepartmentForm;
 import jakarta.validation.Valid;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -41,19 +41,22 @@ public class DepartmentController {
     }
     @PostMapping
     public String create(@Valid @ModelAttribute DepartmentForm departmentForm, BindingResult errors,
-                         Model model, RedirectAttributes redirect) {
-        return save(null, departmentForm, errors, model, redirect);
+                         Model model, RedirectAttributes redirect, HttpServletResponse response) {
+        return save(null, departmentForm, errors, model, redirect, response);
     }
     @PostMapping("/{id}")
     public String update(@PathVariable int id, @RequestParam int version, @Valid @ModelAttribute DepartmentForm departmentForm, BindingResult errors,
-                         Model model, RedirectAttributes redirect) {
-        return save(id, departmentForm, errors, model, redirect);
+                         Model model, RedirectAttributes redirect, HttpServletResponse response) {
+        return save(id, departmentForm, errors, model, redirect, response);
     }
-    private String save(Integer id, DepartmentForm form, BindingResult errors, Model model, RedirectAttributes redirect) {
+    private String save(Integer id, DepartmentForm form, BindingResult errors, Model model, RedirectAttributes redirect, HttpServletResponse response) {
         model.addAttribute("recordId", id);
-        if (errors.hasErrors()) { failure(id, "VALIDATION"); return "departments/form"; }
+        if (errors.hasErrors()) { response.setStatus(400); failure(id, "VALIDATION"); return "departments/form"; }
         try { service.save(id, form); }
         catch (BusinessException | DataIntegrityViolationException exception) {
+            if (exception instanceof RecordNotFoundException missing) throw missing;
+            response.setStatus(exception instanceof EditConflictException || exception instanceof DataIntegrityViolationException ? 409 : 400);
+            model.addAttribute("conflict", exception instanceof EditConflictException);
             failure(id, "WRITE_FAILED");
             model.addAttribute("error", exception instanceof DataIntegrityViolationException ? "院系名称已存在。" : exception.getMessage());
             return "departments/form";
@@ -65,8 +68,8 @@ public class DepartmentController {
         try { service.delete(id, version); redirect.addFlashAttribute("success", "院系已删除。"); }
         catch (BusinessException | DataIntegrityViolationException exception) {
             failure(id, "WRITE_FAILED");
-            redirect.addFlashAttribute("error", exception instanceof DataIntegrityViolationException
-                    ? "院系已被引用，请使用停用功能。" : exception.getMessage());
+            if (exception instanceof DataIntegrityViolationException) throw new BusinessException("院系已被引用，请使用停用功能。");
+            throw (BusinessException) exception;
         }
         return "redirect:/departments";
     }
@@ -74,9 +77,4 @@ public class DepartmentController {
         audit.event(AuditService.actor(), "DEPARTMENT_WRITE", "DEPARTMENT", id, "FAILURE", reason);
     }
 
-    @ExceptionHandler(BusinessException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public String businessError(BusinessException exception, Model model) {
-        model.addAttribute("error", exception.getMessage()); return "error/business";
-    }
 }

@@ -5,13 +5,13 @@ Campus Counselor Management
 ![Java 17](https://img.shields.io/badge/Java-17-ED8B00?logo=openjdk&logoColor=white)
 ![Spring Boot 4.0](https://img.shields.io/badge/Spring_Boot-4.0-6DB33F?logo=springboot&logoColor=white)
 ![MyBatis](https://img.shields.io/badge/MyBatis-3-111827)
-![Tests](https://img.shields.io/badge/tests-75_passed-177454)
+![Tests](https://img.shields.io/badge/tests-111_passed-177454)
 
 由 `user-management` 演进而来的辅导员档案管理原型，采用 Java 17、Spring Boot、MyBatis、Thymeleaf 与 Flyway。支持建档、检索、院系维护、状态变更和头像上传。
 
 > 当前完成档案业务、账号权限、4A 配置、4B 容器运行、4C 协调备份恢复及 4D 本机 CI 同入口验收。档案与登录账号分开，采用 Spring Security 表单登录、管理员／只读授权与 CSRF 防护。支持本机单实例容器演示，没有真实学校交付或生产运行记录。
 
-![辅导员档案列表](docs/images/archive/phase-2/counselors.png)
+![辅导员档案查询](docs/images/current/phase-5a-counselors.jpg)
 
 ## 当前功能
 
@@ -19,12 +19,14 @@ Campus Counselor Management
 - 按工号或姓名检索，按院系、任职状态筛选；分页、稳定排序及页码越界处理。
 - 列表使用一次计数和一次关联分页查询，避免逐条查询院系。
 - 新增、编辑、停用档案；保留状态变化、操作者与时间。恢复在职可在编辑页完成。
-- 版本号检查：过期编辑和停用请求不能覆盖已保存的修改。
+- 版本号检查：过期编辑和停用请求不能覆盖已保存的修改；冲突返回 409，保留输入并提供重新打开最新记录的入口。
+- 中文失败提示覆盖参数、权限、CSRF、页面不存在、上传过大及服务异常；保留 HTTP 状态码与请求编号，密码不回填。
 - 院系新增、改名、停用；已被新档案或旧资料引用的院系禁止删除。
 - 专用表单对象与字段白名单，数据库主键、照片路径不接受表单直接赋值。
 - 独立账号、bcrypt 密码哈希、管理员／只读权限；账号停用或变更后，旧会话在下一次请求失效。
-- 登录和写表单保留 CSRF；管理员可维护账号并查看最近 100 条操作记录。
-- 头像读取要求登录且被档案引用。上传校验 JPG/PNG 内容、5 MB、2048 像素边长和 400 万总像素，重新编码去除元数据及尾部内容；失败时清理新头像，事务提交后才删除旧头像。
+- 管理员可按工号／姓名搜索选择关联档案，展示院系、支持取消关联；保留唯一关联与并发修改保护。
+- 登录和写表单保留 CSRF；管理员可维护账号并按操作者、对象、日期和结果筛选操作记录，中文说明、固定倒序分页及每页最多 100 条。
+- 头像读取要求登录且被档案引用。上传校验 JPG/PNG 内容、5 MB、2048 像素边长和 400 万总像素，重新编码去除元数据及尾部内容；已确认回滚时清理新头像，提交后检查引用再清理旧头像；失败保留文件并支持停机备份后的逐项重试。
 - Flyway 管理表结构；旧资料迁移要求明确工号映射，保留原 ID、姓名、院系、照片路径与旧角色关系。
 
 ## 快速运行
@@ -49,6 +51,8 @@ java -jar target/campus-counselor-management-0.1.0-SNAPSHOT.jar
 使用 `scripts/run-deploy.sh` 固定启用 deploy，提供 `.env.deploy.example` 中的连接与目录变量。启动前拒绝演示配置混用、root 数据库账号和无效上传目录。步骤见[部署指南](docs/guides/deployment.md)，版本及发布遗留项见[依赖核对](docs/verification/dependencies-2026-09-13.md)。尚未提供 HTTPS 公网部署。
 
 ## 容器启动（4B）
+
+数据库现使用本项目的 MySQL 8.4.11 派生镜像：保留官方服务端和入口脚本，移除未使用的 Shell，重编译降权工具 gosu；构建来源与维护方式见[镜像指南](docs/guides/mysql-runtime-image.md)。`up --build` 同时构建应用和数据库。
 
 要求 Docker 和 Compose v2。复制 [.env.compose.example](.env.compose.example) 为 `.env.compose`，设置文件权限 `600`，填写独立数据库密码、root 密码和首次管理员账号密码后执行：
 
@@ -101,7 +105,9 @@ flowchart LR
     Service --> Mapper[MyBatis 分页与参数化 SQL]
     Mapper --> DB[(H2 / MySQL)]
     Service --> History[状态记录]
-    Controller --> Storage[头像存储与失败清理]
+    Controller --> Storage[头像校验与存储]
+    Service --> Lifecycle[事务完成与引用协调]
+    Lifecycle --> Storage
 ```
 
 `Counselor` 保存业务档案，`Department` 保存院系信息。旧 `users/roles/user_roles` 仅用于迁移核对，不参与授权。`SystemAccount` 独立存入 `system_accounts`，可选择关联一份档案；建档不会自动开通账号。
@@ -109,6 +115,18 @@ flowchart LR
 档案、院系和头像由 Spring Security 统一保护；`/accounts` 与 `/audit` 仅管理员可访问。`/users/list` 保留只读跳转；旧新增、编辑、删除地址已退役。
 
 ## 测试与验收
+
+2026-10-02：MySQL 安全修复本机通过 111 项 Java、32 项 Python、真实 MySQL 运行 14 组、迁移／镜像切换 6 组、恢复 10 组；应用与派生数据库镜像 HIGH／CRITICAL 均为 0，未降低门禁。见[修复验收](docs/verification/security-mysql-runtime-2026-10-02.md)。所有阶段成果汇集于 [PR #1](https://github.com/GFLabandon/user-management/pull/1)，远程 CI 与合并状态以候选提交为准。
+
+2026-10-02：第 6 阶段完成三档合成数据查询基线，实际 Mapper／Service 的 33 个场景通过结果和 SQL 数量校验；最大档为 1 万份档案和 10 万条操作记录。本轮保留现有查询和索引，完整方法、执行计划、耗时与边界见[查询基线](docs/acceptance/phase-6-query-baseline.md)。当前在 `codex/query-baseline`，远程验收以候选 PR 为准。本机 Docker 清理及保留内容见[资源说明](docs/guides/docker-resources.md)。
+
+2026-10-02：5B 图片清理通过 111 项 Java、29 项 Python 测试及真实 MySQL 运行／迁移／恢复验收。新增事务完成清理、共享及历史引用保护和停机备份后的单文件重试，见[5B 验收](docs/acceptance/phase-5b-image-cleanup.md)与[维护指南](docs/guides/image-cleanup.md)。当前分支 `codex/image-cleanup`，未推送／合并；没有新增表或改变备份格式。
+
+2026-10-02：5A.3 操作记录查询通过本机及最终 Linux arm64 镜像内 99 项 Java、21 项 Python 测试、12 组真实 MySQL 运行验收和浏览器检查；见[5A.3 验收](docs/acceptance/phase-5a3-audit-query.md)。5A 演示路径已整理，仍未推送／合并，安全发布阻断保持不变。
+
+2026-10-01：5A.2 错误反馈通过本机及 Linux arm64 镜像内 91 项 Java 测试（含真实 HTTP／multipart）、21 项 Python 测试、11 组真实 MySQL 运行验收和浏览器检查；见[5A.2 验收](docs/acceptance/phase-5a2-error-feedback.md)。未推送或执行新远程 CI，MySQL 发布阻断仍保留。
+
+2026-10-01：5A.1 账号关联选择已在本机通过 81 项 Java、21 项 Python 测试和 11 组真实 MySQL 运行验收，并完成浏览器操作检查。见[5A.1 验收](docs/acceptance/phase-5a1-account-picker.md)。同日[官方镜像核对](docs/verification/security-mysql-review-2026-10-01.md)没有发现新的同版本构建，发布继续阻断；本轮未执行新远程 CI。
 
 ```bash
 ./mvnw --batch-mode --no-transfer-progress clean verify
@@ -134,11 +152,11 @@ python3 -B scripts/check-security.py
 
 ## 页面预览
 
-| 账号管理（当前） | 档案详情（第二阶段） |
+| 账号关联选择（5A.1） | 操作记录查询（5A.3） |
 | --- | --- |
-| ![账号管理](docs/images/current/accounts.png) | ![档案详情](docs/images/archive/phase-2/counselor-detail.png) |
+| ![账号关联选择](docs/images/current/account-counselor-picker.jpg) | ![操作记录查询](docs/images/current/audit-query.jpg) |
 
-截图仅含虚构验收资料。除 `accounts.png`、`account-form-mobile.png` 外，其余截图为早期阶段，登录信息以本文为准。
+截图仅含虚构验收资料，各阶段截图说明及“登录 → 查询档案 → 编辑冲突 → 账号关联 → 查看操作记录”步骤见 [5A 演示路径](docs/guides/phase-5a-demo.md)。
 
 ## 项目结构
 
@@ -175,7 +193,7 @@ docs/
 - 当前是两种固定角色，所有启用账号可读全部档案；尚无院系数据范围、MFA、登录限流、密码找回或 SSO。
 - 操作记录包含主要业务成功、表单失败、登录结果和权限拒绝；不保存密码或档案全文，也不提供字段前后值或防篡改存储。
 - 新上传图片重新编码；历史图片只增加读取权限，不自动重编码。尚无病毒扫描或对象存储。
-- 文件与数据库不在同一个事务中，当前提供同步失败补偿和清理失败日志，尚无持久化清理队列。
+- 文件与数据库不在同一个事务中，当前提供事务完成回调、引用协调、失败日志和停机备份后的受控重试；尚无跨重启自动补偿或多实例协调。
 - 没有学生／班级管理、审批、导入导出、AI 功能、生产部署或高并发证据。
 
-4D 的工作流与发布指南已落地，应用补丁后的高危／严重项已清除；MySQL 官方镜像仍有 28 个阻断项，安全门禁未通过。先处理这些发现并运行候选提交的远程 CI，之后再推进 5A 的错误页面、账号选择与操作记录体验。Flyway 的版本验证提示、HTTPS、登录限流仍需处理。[项目证据](docs/project-evidence.md)区分当前实现、历史记录与待开发能力。
+4D 的工作流与发布指南已落地，5A、5B 和查询基线已有验收证据。10 月 2 日增加 MySQL 派生镜像修复，原 30 项 HIGH／CRITICAL 阻断在本机复扫归零；远程候选检查见 [PR #1](https://github.com/GFLabandon/user-management/pull/1)。这不代表没有中低危发现或已具备公网生产条件。Flyway 的版本验证提示、HTTPS、登录限流和 Actions 运行时升级仍需处理。[项目证据](docs/project-evidence.md)区分当前实现、历史记录与待开发能力。

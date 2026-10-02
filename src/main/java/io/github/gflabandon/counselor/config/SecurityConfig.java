@@ -21,19 +21,22 @@ public class SecurityConfig {
         var denied = (org.springframework.security.web.access.AccessDeniedHandler) (request, response, exception) -> {
             audit.event(AuditService.actor(), "ACCESS_DENIED", "REQUEST", null, "DENIED",
                     exception instanceof CsrfException ? "CSRF" : "ROLE");
+            request.setAttribute("csrfFailure", exception instanceof CsrfException);
             response.sendError(403);
         };
         http.addFilterAfter(new LiveAccountFilter(accounts), SecurityContextHolderFilter.class)
             .authorizeHttpRequests(r -> r
                 .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
-                .requestMatchers("/login", "/css/**", "/favicon.ico", "/error").permitAll()
+                .requestMatchers("/login", "/css/**", "/js/**", "/favicon.ico", "/error").permitAll()
                 .requestMatchers("/accounts", "/accounts/**", "/audit").hasRole("ADMIN")
                 .requestMatchers("/counselors/new", "/counselors/*/edit", "/departments/new", "/departments/*/edit").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.GET, "/", "/counselors", "/counselors/**", "/departments", "/uploads/*", "/users", "/users/list").hasAnyRole("ADMIN", "VIEWER")
                 .requestMatchers(HttpMethod.HEAD, "/uploads/*").hasAnyRole("ADMIN", "VIEWER")
                 .requestMatchers(HttpMethod.POST, "/counselors", "/counselors/**", "/departments", "/departments/**").hasRole("ADMIN")
                 .anyRequest().denyAll())
-            .exceptionHandling(e -> e.accessDeniedHandler(denied))
+            .exceptionHandling(e -> e.accessDeniedHandler(denied)
+                .authenticationEntryPoint((request, response, exception) -> response.sendRedirect(request.getContextPath()
+                        + (request.getRequestedSessionId() != null && !request.isRequestedSessionIdValid() ? "/login?expired" : "/login"))))
             .formLogin(f -> f.loginPage("/login").successHandler((request, response, authentication) -> {
                 try { audit.event(authentication.getName(), "LOGIN", "ACCOUNT", null, "SUCCESS", "OK"); }
                 catch (RuntimeException failure) {

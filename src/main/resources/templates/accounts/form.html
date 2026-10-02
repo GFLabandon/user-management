@@ -5,10 +5,23 @@
 <section class="page-heading"><div><h1 th:text="${recordId == null ? '新增账号' : '编辑账号'}"></h1><p class="muted">保存后，该账号的旧会话会失效。不能停用或降级当前管理员。</p></div><a th:href="@{/accounts}">返回账号列表</a></section>
 <form class="card profile-form account-form" th:action="${recordId == null} ? @{/accounts} : @{/accounts/{id}(id=${recordId})}" th:object="${accountForm}" method="post">
 <input type="hidden" th:field="*{version}"><div class="alert alert-error" th:if="${error}" th:text="${error}"></div>
-<p class="alert alert-error" th:if="${#fields.hasAnyErrors()}">请检查登录名、权限、关联编号及密码长度。</p>
+<p th:if="${conflict}"><a th:href="@{/accounts/{id}/edit(id=${recordId})}">重新打开最新账号</a>（非敏感输入仍保留在本页，请先复制需要保留的内容；密码不会回填。）</p>
+<div class="alert alert-error" role="alert" th:if="${#fields.hasAnyErrors()}"><p>请检查以下输入：</p><ul><li th:each="message : ${#fields.allErrors()}" th:text="${message}"></li></ul></div>
 <label class="field"><span>登录名</span><input th:field="*{username}" th:readonly="${recordId != null}" pattern="[A-Za-z0-9][A-Za-z0-9._-]{2,49}" maxlength="50" required autocomplete="off"><small>3–50 位字母、数字、点、下划线或连字符；建立后不能修改。</small></label>
 <label class="field"><span th:text="${recordId == null ? '初始密码' : '新密码（留空保持原密码）'}"></span><input name="password" type="password" autocomplete="new-password" minlength="12" maxlength="64" th:required="${recordId == null}"><small>12–64 个字符，UTF-8 不超过 72 字节。</small></label>
 <label class="field"><span>权限</span><select th:field="*{role}"><option value="VIEWER">只读用户</option><option value="ADMIN">管理员</option></select></label>
 <label class="field"><span>账号状态</span><select th:field="*{enabled}"><option value="true">启用</option><option value="false">停用</option></select></label>
-<label class="field"><span>关联档案编号（可选）</span><input type="number" min="1" th:field="*{counselorId}"><small>使用档案详情页网址中的编号，每份档案最多关联一个账号。</small></label>
-<button class="button button-primary" type="submit">保存账号</button></form></main><footer th:replace="~{layout :: footer}"></footer></body></html>
+<section class="counselor-picker" aria-labelledby="picker-title" th:attr="data-search-url=@{/accounts/counselor-options},data-account-id=${recordId}">
+<h2 id="picker-title">关联档案（可选）</h2>
+<input type="hidden" th:field="*{counselorId}">
+<p id="selected-counselor" aria-live="polite" th:text="${selectedCounselor != null ? '已选择：' + selectedCounselor.name + ' · ' + selectedCounselor.employeeNo + ' · ' + selectedCounselor.departmentName : (accountForm.counselorId == null ? '未关联档案' : '所选档案不存在，请重新选择或取消关联。')}"></p>
+<button id="clear-counselor" class="button button-ghost button-small" type="button" th:disabled="${accountForm.counselorId == null}">取消关联</button>
+<label class="field" for="counselor-keyword"><span>按工号或姓名查找</span></label>
+<div class="picker-search"><input id="counselor-keyword" type="search" maxlength="50" autocomplete="off" placeholder="输入工号或姓名" aria-describedby="picker-help"><button id="search-counselors" class="button button-ghost" type="button">搜索档案</button></div>
+<p id="picker-help" class="muted">每次最多显示 20 条；仅展示未关联或当前账号已关联的档案。同名时请核对工号和院系。</p>
+<p id="picker-status" role="status">输入关键词后搜索，再点击档案进行选择。</p>
+<ul id="counselor-results" class="picker-results" aria-label="可关联档案"></ul>
+<noscript><p class="alert alert-error">请启用 JavaScript 后搜索或更改关联档案；现有关联仍会保留。</p></noscript>
+</section>
+<small th:if="${error != null or #fields.hasAnyErrors()}">请求编号：<span th:text="${requestId}"></span>；请检查后再提交，密码需重新输入。</small>
+<button class="button button-primary" type="submit" th:disabled="${conflict == true}">保存账号</button></form></main><footer th:replace="~{layout :: footer}"></footer><script defer th:src="@{/js/account-counselor-picker.js}"></script></body></html>

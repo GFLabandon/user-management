@@ -9,6 +9,7 @@
 !docker/
 !docker/HealthProbe.java
 !docker/MysqlMigrationVerification.java
+!docker/QueryBaseline.java
 
 # Exclude ignored local configuration even when it sits inside an allowed directory.
 **/.env*

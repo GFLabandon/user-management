@@ -9,6 +9,9 @@ public interface CounselorMapper {
     @org.apache.ibatis.annotations.Select("SELECT COUNT(*) FROM counselors WHERE photo_path = #{path}")
     int photoReferences(String path);
 
+    @Select("SELECT (SELECT COUNT(*) FROM counselors WHERE photo_path = #{path}) + (SELECT COUNT(*) FROM users WHERE photo_path = #{path})")
+    int imageReferencesForCleanup(String path);
+
     String FILTER = """
             <where>
               <if test="keyword != null and keyword != ''">

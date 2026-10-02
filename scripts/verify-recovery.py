@@ -156,6 +156,7 @@ def main():
             m.run(m.volume_command(source_volumes['uploads'], source_image, readonly=False) +
                   ['sh', '-c', 'cat > /data/orphan.png'], data=png())
             passed('source fixture: two accounts, Chinese counselor, status history, audit and private image plus orphan')
+            cli('cleanup-images.py', '--project', source.project, '--env-file', str(source.env_file), success=False)
             cli('backup.sh', '--project', source.project, '--env-file', str(source.env_file), '--output', str(bundle))
             source.require_stopped()
             manifest = m.validate_bundle(bundle)
@@ -165,6 +166,32 @@ def main():
             assert 'orphan.png' in manifest['uploads']
             assert all(p.stat().st_mode & 0o077 == 0 for p in [bundle, *bundle.iterdir()])
             passed('coordinated backup leaves application stopped and contains complete private checksummed bundle')
+            cleanup_args = ['--project', source.project, '--env-file', str(source.env_file)]
+            preview = json.loads(cli('cleanup-images.py', *cleanup_args))
+            assert preview['candidates'] == ['orphan.png'] and not preview['applied']
+            cli('cleanup-images.py', *cleanup_args, '--file', image_path[9:], '--apply', '--backup', str(bundle), success=False)
+            cli('cleanup-images.py', *cleanup_args, '--file', '../orphan.png', success=False)
+            cli('cleanup-images.py', *cleanup_args, '--file', 'orphan.png', '--apply', success=False)
+            source.sql(f"INSERT INTO users(username,note,dept_id,photo_path) VALUES ('legacy-image-guard','synthetic',{department},'/uploads/orphan.png')")
+            cli('cleanup-images.py', *cleanup_args, '--file', 'orphan.png', '--apply', '--backup', str(bundle), success=False)
+            source.sql("DELETE FROM users WHERE username='legacy-image-guard'")
+            m.run(m.volume_command(source_volumes['uploads'], source_image, readonly=False) + ['sh', '-c', 'cat > /data/orphan.png'], data=b'changed')
+            cli('cleanup-images.py', *cleanup_args, '--file', 'orphan.png', '--apply', '--backup', str(bundle), success=False)
+            m.run(m.volume_command(source_volumes['uploads'], source_image, readonly=False) + ['sh', '-c', 'cat > /data/orphan.png'], data=png())
+            passed('offline image preview rejects running app, active and legacy references, traversal, missing backup and changed bytes')
+            old_mode = m.run(m.volume_command(source_volumes['uploads'], source_image, readonly=False) + ['stat', '-c', '%a', '/data']).decode().strip()
+            try:
+                m.run(m.volume_command(source_volumes['uploads'], source_image, readonly=False) + ['chmod', '500', '/data'])
+                cli('cleanup-images.py', *cleanup_args, '--file', 'orphan.png', '--apply', '--backup', str(bundle), success=False)
+            finally:
+                m.run(m.volume_command(source_volumes['uploads'], source_image, readonly=False) + ['chmod', old_mode, '/data'])
+            deleted = json.loads(cli('cleanup-images.py', *cleanup_args, '--file', 'orphan.png', '--apply', '--backup', str(bundle)))
+            assert deleted['result'] == 'deleted' and deleted['applied']
+            repeated = json.loads(cli('cleanup-images.py', *cleanup_args, '--file', 'orphan.png', '--apply', '--backup', str(bundle)))
+            assert repeated['result'] == 'absent' and not repeated['applied']
+            assert m.validate_bundle(bundle)['uploads']['orphan.png'] == manifest['uploads']['orphan.png']
+            source.require_stopped()
+            passed('failed offline deletion is retryable and idempotent; original image remains recoverable in unchanged backup')
             # Verify the real server lock blocks writes, then releases on an exception.
             try:
                 with m.database_read_lock(source):

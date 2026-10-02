@@ -14,6 +14,8 @@ import org.springframework.core.annotation.Order;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.multipart.MultipartException;
 
 /** Records outcomes without request paths, query strings, headers, bodies or exception messages. */
 @Component
@@ -33,7 +35,7 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
         try {
             chain.doFilter(request, response);
         } catch (ServletException | RuntimeException failure) {
-            int status = causedByDataAccess(failure) ? 503 : 500;
+            int status = failureStatus(failure);
             // A message/stack from JDBC or template rendering may contain personal data.
             log.error("request_failed status={} type={}", status, failure.getClass().getSimpleName());
             if (response.isCommitted()) throw new ServletException("Request failed; reference " + requestId);
@@ -48,11 +50,13 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
         }
     }
 
-    private static boolean causedByDataAccess(Throwable failure) {
+    private static int failureStatus(Throwable failure) {
         for (int depth = 0; failure != null && depth < 16; depth++, failure = failure.getCause()) {
-            if (failure instanceof DataAccessException) return true;
+            if (failure instanceof MaxUploadSizeExceededException) return 413;
+            if (failure instanceof MultipartException) return 400;
+            if (failure instanceof DataAccessException) return 503;
         }
-        return false;
+        return 500;
     }
 
     private static String safeMethod(String method) {

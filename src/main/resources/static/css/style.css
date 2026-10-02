@@ -810,5 +810,26 @@ input[type="file"] {
 }
 
 .account-form { display: grid; gap: 20px; }
+.counselor-picker { border-top: 1px solid var(--slate-200); padding-top: 20px; min-width: 0; }
+.counselor-picker h2 { font-size: 1rem; }
+.counselor-picker p { overflow-wrap: anywhere; }
+.counselor-picker .field { margin-top: 18px; }
+.picker-search { display: flex; flex-wrap: wrap; gap: 10px; }
+.picker-search input { flex: 1; min-width: 140px; width: 100%; }
+.picker-results { list-style: none; padding: 0; display: grid; gap: 8px; }
+.picker-results button { width: 100%; justify-content: flex-start; text-align: left; white-space: normal; overflow-wrap: anywhere; }
 .nav-shell { flex-wrap: wrap; gap: 18px; }
 nav { flex-wrap: wrap; }
+
+.audit-filters .field { flex-basis: calc(25% - 12px); min-width: 160px; }
+.audit-filter-actions { display: flex; gap: 10px; flex: 1 0 calc(25% - 12px); min-width: 160px; }
+.audit-filter-actions .button { white-space: nowrap; }
+.audit-help { flex-basis: 100%; margin: 4px 0 0; font-size: .85rem; }
+.audit-table { min-width: 900px; font-size: .9rem; }
+.audit-table td { overflow-wrap: anywhere; }
+.audit-time { min-width: 160px; font-variant-numeric: tabular-nums; }
+.audit-actor { max-width: 180px; }
+.audit-target { display: block; color: var(--slate-600); }
+.audit-success { color: var(--green-700); background: var(--green-100); }
+.audit-failure { color: var(--red-700); background: var(--red-100); }
+@media (max-width: 680px) { .audit-filters .field { flex-basis: 100%; } }
