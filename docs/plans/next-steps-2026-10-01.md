@@ -6,15 +6,15 @@
 
 ## 执行记录（更新至 2026-10-02）
 
-- 4D.2 已落实小范围 MySQL 派生镜像：卸载已核实独立的 Shell 包，固定来源重编译 gosu；本机完整门禁通过，111 项 Java、32 项 Python、14／6／10 组真实 MySQL 验收通过。未改变服务端版本、V1–V4、备份格式或扫描阈值；见[修复记录](../verification/security-mysql-runtime-2026-10-02.md)。远程复验和合并状态以 [PR #1](https://github.com/GFLabandon/user-management/pull/1) 为准。
+- 4D.2 已落实小范围 MySQL 派生镜像：卸载已核实独立的 Shell 包，固定来源重编译 gosu；本机完整门禁通过，111 项 Java、32 项 Python、14／6／10 组真实 MySQL 验收通过。未改变服务端版本、V1–V4、备份格式或扫描阈值；见[修复记录](../verification/security-mysql-runtime-2026-10-02.md)。已通过 [PR #1](https://github.com/GFLabandon/user-management/pull/1) 合并到 main（97e309d），合并后的完整 CI 已通过。
 
-- 4D.1 已完成本轮有边界的核对：官方摘要未变化，发布继续阻断；组件分类和 Actions 维护待办见[安全处置记录](../verification/security-mysql-review-2026-10-01.md)。
-- 5A.1 已实现并在本机验收：81 项 Java、21 项 Python、11 组真实 MySQL 运行验收通过，含两个管理员争用同一档案；浏览器搜索／选择／保存／回显通过，见[验收记录](../acceptance/phase-5a1-account-picker.md)。提交 `e2f1689`，尚未推送或合并；5A.2 从该提交继续。
-- 5A.2 已完成统一错误页、正确状态码、表单保留与安全提示：91 项 Java、21 项 Python、11 组真实 MySQL 运行验收通过，见[验收记录](../acceptance/phase-5a2-error-feedback.md)。提交 `8f79615`，未推送或合并；5A.3 从该提交继续。
-- 5A.3 已完成中文说明、操作者／对象／日期／结果筛选及分页：99 项 Java、21 项 Python、12 组真实 MySQL 验收通过，见[验收记录](../acceptance/phase-5a3-audit-query.md)。提交 `0580c8b`，未推送或合并；已整理 [5A 演示路径](../guides/phase-5a-demo.md)及截图。
-- 5B 已完成事务完成清理、共享／历史引用保护、失败记录与停机备份后的受控单文件重试；111 项 Java、29 项 Python 及三套真实 MySQL 验收通过，见[5B 验收](../acceptance/phase-5b-image-cleanup.md)。提交 `0e2546e`，独立验收完成。未增加 V5 或自动重试队列，保留 11 张表及原备份格式。
-- 6 已完成三档合成数据、33 场景查询基线，保存实际 SQL、执行计划、SQL 数量及 30 次样本；本轮保留现有查询和索引，见[查询基线](../acceptance/phase-6-query-baseline.md)。当前分支 `codex/query-baseline`；本地阶段完成，随后提交候选 PR 进行远程验收。
-- 后续优先核对远程 CI、安全门禁及演示说明；性能修改须有实际负载目标和对照实验。Actions 运行时升级仍需独立提交及远程验收。
+- 4D.1 已完成本轮有边界的核对：当时官方摘要未变化且发布阻断，后续由 4D.2 解决；组件分类和 Actions 维护待办见[安全处置记录](../verification/security-mysql-review-2026-10-01.md)。
+- 5A.1 已实现并在本机验收：81 项 Java、21 项 Python、11 组真实 MySQL 运行验收通过，含两个管理员争用同一档案；浏览器搜索／选择／保存／回显通过，见[验收记录](../acceptance/phase-5a1-account-picker.md)。提交 `e2f1689`，已随 PR #1 合并。
+- 5A.2 已完成统一错误页、正确状态码、表单保留与安全提示：91 项 Java、21 项 Python、11 组真实 MySQL 运行验收通过，见[验收记录](../acceptance/phase-5a2-error-feedback.md)。提交 `8f79615`，已随 PR #1 合并。
+- 5A.3 已完成中文说明、操作者／对象／日期／结果筛选及分页：99 项 Java、21 项 Python、12 组真实 MySQL 验收通过，见[验收记录](../acceptance/phase-5a3-audit-query.md)。提交 `0580c8b`，已随 PR #1 合并；已整理 [5A 演示路径](../guides/phase-5a-demo.md)及截图。
+- 5B 已完成事务完成清理、共享／历史引用保护、失败记录与停机备份后的受控单文件重试；111 项 Java、29 项 Python 及三套真实 MySQL 验收通过，见[5B 验收](../acceptance/phase-5b-image-cleanup.md)。提交 `0e2546e`，独立验收完成并随 PR #1 合并。未增加 V5 或自动重试队列，保留 11 张表及原备份格式。
+- 6 已完成三档合成数据、33 场景查询基线，保存实际 SQL、执行计划、SQL 数量及 30 次样本；本轮保留现有查询和索引，见[查询基线](../acceptance/phase-6-query-baseline.md)。提交 `6253082`，已随 PR #1 合并。
+- 本轮转入维护收尾：清理可重建缓存、同步文档并独立升级 Actions 运行时；见[维护记录](../verification/maintenance-2026-10-02.md)。性能修改仍须有实际负载目标和对照实验。
 
 ## 当前依据（实施前快照）
 
