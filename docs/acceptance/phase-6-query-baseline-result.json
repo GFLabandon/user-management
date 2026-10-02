@@ -1,0 +1,3146 @@
+{
+  "passed": true,
+  "project": "counselor-baseline-dcf71f7691d0",
+  "at": "2026-10-02T04:51:59.742453+00:00",
+  "sourceCommit": "0e2546e8a9a3b86cbeb6aa60b06dd490e7694f6c",
+  "dirtyWorktree": true,
+  "docker": {
+    "NCPU": 8,
+    "MemTotal": 4106604544,
+    "Architecture": "aarch64",
+    "ServerVersion": "29.8.1"
+  },
+  "host": {
+    "system": "Darwin",
+    "machine": "arm64",
+    "cpu": "Apple M2",
+    "memoryBytes": 8589934592
+  },
+  "harnessImage": "sha256:2e6caab033a4f7b0bd3c15cf91d506bcfae121239e365365407598207bdb86e6",
+  "mysqlImage": "sha256:1bd43bad43e0de5959b98c4404e987046de21cd85b9e725849208db6539d3c2d",
+  "mysqlVersion": "8.4.11",
+  "dbTimeZone": "SYSTEM",
+  "collation": "utf8mb4_0900_ai_ci",
+  "bufferPoolBytes": "134217728",
+  "javaVersion": "17.0.20",
+  "warmups": 3,
+  "repeats": 30,
+  "timingScope": "service search + actual MyBatis/JDBC mapping on one existing connection; excludes connection acquisition, rollback, HTTP, authentication and templates; warm cache; sequential client",
+  "results": [
+    {
+      "counselors": 100,
+      "auditEvents": 1000,
+      "scenario": "counselor_first",
+      "filters": {
+        "departmentId": null,
+        "keyword": "",
+        "status": null
+      },
+      "page": 1,
+      "pageSize": 20,
+      "totalMatches": 100,
+      "returnedIds": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20
+      ],
+      "sqlPerSearch": 2,
+      "medianMs": 1.209625,
+      "p95Ms": 1.875375,
+      "minMs": 0.901458,
+      "maxMs": 2.081708,
+      "samplesMs": [
+        1.875375,
+        1.618875,
+        1.5615,
+        1.513417,
+        2.081708,
+        1.719959,
+        1.42225,
+        1.302708,
+        1.256,
+        1.187292,
+        1.245958,
+        1.260333,
+        1.1995,
+        1.17925,
+        1.203625,
+        1.187708,
+        1.358459,
+        1.513917,
+        1.275916,
+        1.141792,
+        1.165792,
+        1.215625,
+        1.136083,
+        1.061917,
+        0.987416,
+        1.002333,
+        0.901458,
+        0.976708,
+        1.087375,
+        0.913667
+      ],
+      "plans": [
+        {
+          "sql": "SELECT COUNT(*) FROM counselors c",
+          "explainAnalyze": [
+            "-> Count rows in c  (actual time=0.05..0.05 rows=1 loops=1)\n"
+          ],
+          "boundParameters": []
+        },
+        {
+          "sql": "SELECT c.*, d.name AS department_name FROM counselors c JOIN departments d ON d.id = c.department_id ORDER BY c.id LIMIT ? OFFSET ?",
+          "explainAnalyze": [
+            "-> Limit: 20 row(s)  (cost=27.4 rows=20) (actual time=0.0772..0.0924 rows=20 loops=1)\n    -> Nested loop inner join  (cost=27.4 rows=20) (actual time=0.0405..0.0549 rows=20 loops=1)\n        -> Index scan on c using PRIMARY  (cost=0.45 rows=20) (actual time=0.00617..0.0113 rows=20 loops=1)\n        -> Single-row index lookup on d using PRIMARY (id=c.department_id)  (cost=0.251 rows=1) (actual time=537e-6..554e-6 rows=1 loops=20)\n"
+          ],
+          "boundParameters": [
+            "20",
+            "0"
+          ]
+        }
+      ]
+    },
+    {
+      "counselors": 100,
+      "auditEvents": 1000,
+      "scenario": "counselor_deep",
+      "filters": {
+        "departmentId": null,
+        "keyword": "",
+        "status": null
+      },
+      "page": 5,
+      "pageSize": 20,
+      "totalMatches": 100,
+      "returnedIds": [
+        81,
+        82,
+        83,
+        84,
+        85,
+        86,
+        87,
+        88,
+        89,
+        90,
+        91,
+        92,
+        93,
+        94,
+        95,
+        96,
+        97,
+        98,
+        99,
+        100
+      ],
+      "sqlPerSearch": 2,
+      "medianMs": 0.863896,
+      "p95Ms": 1.083333,
+      "minMs": 0.763292,
+      "maxMs": 2.171541,
+      "samplesMs": [
+        1.083333,
+        0.967417,
+        0.910208,
+        0.923375,
+        0.854667,
+        0.89725,
+        0.904,
+        0.875209,
+        0.876583,
+        0.945042,
+        0.912709,
+        0.839125,
+        0.804666,
+        0.763292,
+        0.831083,
+        0.865334,
+        0.787916,
+        0.849542,
+        0.824708,
+        0.834791,
+        0.789208,
+        0.782375,
+        0.807083,
+        2.171541,
+        0.862458,
+        0.878916,
+        0.929,
+        0.89075,
+        0.801542,
+        0.823625
+      ],
+      "plans": [
+        {
+          "sql": "SELECT COUNT(*) FROM counselors c",
+          "explainAnalyze": [
+            "-> Count rows in c  (actual time=0.0273..0.0273 rows=1 loops=1)\n"
+          ],
+          "boundParameters": []
+        },
+        {
+          "sql": "SELECT c.*, d.name AS department_name FROM counselors c JOIN departments d ON d.id = c.department_id ORDER BY c.id LIMIT ? OFFSET ?",
+          "explainAnalyze": [
+            "-> Limit/Offset: 20/80 row(s)  (actual time=0.183..0.185 rows=20 loops=1)\n    -> Sort: c.id, limit input to 100 row(s) per chunk  (actual time=0.142..0.149 rows=100 loops=1)\n        -> Stream results  (cost=18.8 rows=100) (actual time=0.0203..0.116 rows=100 loops=1)\n            -> Nested loop inner join  (cost=18.8 rows=100) (actual time=0.0153..0.0736 rows=100 loops=1)\n                -> Covering index scan on d using name  (cost=1.25 rows=10) (actual time=0.00621..0.00708 rows=10 loops=1)\n                -> Index lookup on c using idx_counselors_department_status (department_id=d.id)  (cost=0.85 rows=10) (actual time=0.00223..0.00605 rows=10 loops=10)\n"
+          ],
+          "boundParameters": [
+            "20",
+            "80"
+          ]
+        }
+      ]
+    },
+    {
+      "counselors": 100,
+      "auditEvents": 1000,
+      "scenario": "counselor_department_status",
+      "filters": {
+        "departmentId": 2,
+        "keyword": "",
+        "status": "ACTIVE"
+      },
+      "page": 1,
+      "pageSize": 20,
+      "totalMatches": 10,
+      "returnedIds": [
+        1,
+        11,
+        21,
+        31,
+        41,
+        51,
+        61,
+        71,
+        81,
+        91
+      ],
+      "sqlPerSearch": 2,
+      "medianMs": 0.688313,
+      "p95Ms": 0.932667,
+      "minMs": 0.565875,
+      "maxMs": 1.018125,
+      "samplesMs": [
+        0.733625,
+        0.692459,
+        0.703459,
+        0.932667,
+        0.739833,
+        0.726291,
+        0.814791,
+        0.628166,
+        0.657584,
+        0.611875,
+        0.652,
+        1.018125,
+        0.851708,
+        0.72525,
+        0.719458,
+        0.649875,
+        0.713833,
+        0.700833,
+        0.601792,
+        0.606375,
+        0.6175,
+        0.628333,
+        0.775333,
+        0.606375,
+        0.683291,
+        0.702459,
+        0.572916,
+        0.565875,
+        0.60325,
+        0.684167
+      ],
+      "plans": [
+        {
+          "sql": "SELECT COUNT(*) FROM counselors c WHERE c.department_id = ? AND c.employment_status = ?",
+          "explainAnalyze": [
+            "-> Aggregate: count(0)  (cost=2.27 rows=1) (actual time=0.00588..0.00592 rows=1 loops=1)\n    -> Covering index lookup on c using idx_counselors_department_status (department_id=2, employment_status='ACTIVE')  (cost=1.27 rows=10) (actual time=0.00337..0.0045 rows=10 loops=1)\n"
+          ],
+          "boundParameters": [
+            "2",
+            "ACTIVE"
+          ]
+        },
+        {
+          "sql": "SELECT c.*, d.name AS department_name FROM counselors c JOIN departments d ON d.id = c.department_id WHERE c.department_id = ? AND c.employment_status = ? ORDER BY c.id LIMIT ? OFFSET ?",
+          "explainAnalyze": [
+            "-> Limit: 20 row(s)  (cost=1.75 rows=10) (actual time=0.00475..0.00967 rows=10 loops=1)\n    -> Index lookup on c using idx_counselors_department_status (department_id=2, employment_status='ACTIVE')  (cost=1.75 rows=10) (actual time=0.00463..0.00929 rows=10 loops=1)\n"
+          ],
+          "boundParameters": [
+            "2",
+            "ACTIVE",
+            "20",
+            "0"
+          ]
+        }
+      ]
+    },
+    {
+      "counselors": 100,
+      "auditEvents": 1000,
+      "scenario": "counselor_substring",
+      "filters": {
+        "departmentId": null,
+        "keyword": "001",
+        "status": null
+      },
+      "page": 1,
+      "pageSize": 20,
+      "totalMatches": 12,
+      "returnedIds": [
+        1,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        100
+      ],
+      "sqlPerSearch": 2,
+      "medianMs": 0.6598539999999999,
+      "p95Ms": 0.735083,
+      "minMs": 0.587709,
+      "maxMs": 0.749917,
+      "samplesMs": [
+        0.640292,
+        0.656292,
+        0.695375,
+        0.665542,
+        0.689166,
+        0.636625,
+        0.649583,
+        0.675042,
+        0.626042,
+        0.602167,
+        0.7325,
+        0.735083,
+        0.637333,
+        0.669667,
+        0.662792,
+        0.638,
+        0.617459,
+        0.658875,
+        0.715833,
+        0.725,
+        0.675416,
+        0.626375,
+        0.749917,
+        0.679708,
+        0.712458,
+        0.660833,
+        0.622583,
+        0.628375,
+        0.589,
+        0.587709
+      ],
+      "plans": [
+        {
+          "sql": "SELECT COUNT(*) FROM counselors c WHERE (LOCATE(LOWER(?), LOWER(c.employee_no)) > 0 OR LOCATE(LOWER(?), LOWER(c.name)) > 0)",
+          "explainAnalyze": [
+            "-> Aggregate: count(0)  (cost=20.2 rows=1) (actual time=0.052..0.0521 rows=1 loops=1)\n    -> Filter: ((locate(<cache>(lower('001')),lower(c.employee_no)) > 0) or (locate(<cache>(lower('001')),lower(c.`name`)) > 0))  (cost=10.2 rows=100) (actual time=0.013..0.051 rows=12 loops=1)\n        -> Table scan on c  (cost=10.2 rows=100) (actual time=0.00346..0.0143 rows=100 loops=1)\n"
+          ],
+          "boundParameters": [
+            "001",
+            "001"
+          ]
+        },
+        {
+          "sql": "SELECT c.*, d.name AS department_name FROM counselors c JOIN departments d ON d.id = c.department_id WHERE (LOCATE(LOWER(?), LOWER(c.employee_no)) > 0 OR LOCATE(LOWER(?), LOWER(c.name)) > 0) ORDER BY c.id LIMIT ? OFFSET ?",
+          "explainAnalyze": [
+            "-> Limit: 20 row(s)  (cost=27.4 rows=20) (actual time=0.00862..0.0653 rows=12 loops=1)\n    -> Nested loop inner join  (cost=27.4 rows=20) (actual time=0.00842..0.0646 rows=12 loops=1)\n        -> Filter: ((locate(<cache>(lower('001')),lower(c.employee_no)) > 0) or (locate(<cache>(lower('001')),lower(c.`name`)) > 0))  (cost=0.45 rows=20) (actual time=0.00592..0.0564 rows=12 loops=1)\n            -> Index scan on c using PRIMARY  (cost=0.45 rows=20) (actual time=0.00417..0.0286 rows=100 loops=1)\n        -> Single-row index lookup on d using PRIMARY (id=c.department_id)  (cost=0.251 rows=1) (actual time=507e-6..528e-6 rows=1 loops=12)\n"
+          ],
+          "boundParameters": [
+            "001",
+            "001",
+            "20",
+            "0"
+          ]
+        }
+      ]
+    },
+    {
+      "counselors": 100,
+      "auditEvents": 1000,
+      "scenario": "counselor_empty",
+      "filters": {
+        "departmentId": null,
+        "keyword": "no-synthetic-match",
+        "status": null
+      },
+      "page": 1,
+      "pageSize": 20,
+      "totalMatches": 0,
+      "returnedIds": [],
+      "sqlPerSearch": 2,
+      "medianMs": 0.4280205,
+      "p95Ms": 0.492583,
+      "minMs": 0.38925,
+      "maxMs": 0.49675,
+      "samplesMs": [
+        0.476625,
+        0.455125,
+        0.492583,
+        0.444625,
+        0.420209,
+        0.45975,
+        0.42725,
+        0.422958,
+        0.433792,
+        0.425417,
+        0.412333,
+        0.400791,
+        0.411125,
+        0.421084,
+        0.391417,
+        0.437709,
+        0.471875,
+        0.49675,
+        0.467833,
+        0.418125,
+        0.488833,
+        0.466041,
+        0.425333,
+        0.38925,
+        0.443041,
+        0.428791,
+        0.433417,
+        0.423458,
+        0.427,
+        0.39475
+      ],
+      "plans": [
+        {
+          "sql": "SELECT COUNT(*) FROM counselors c WHERE (LOCATE(LOWER(?), LOWER(c.employee_no)) > 0 OR LOCATE(LOWER(?), LOWER(c.name)) > 0)",
+          "explainAnalyze": [
+            "-> Aggregate: count(0)  (cost=20.2 rows=1) (actual time=0.027..0.0272 rows=1 loops=1)\n    -> Filter: ((locate(<cache>(lower('no-synthetic-match')),lower(c.employee_no)) > 0) or (locate(<cache>(lower('no-synthetic-match')),lower(c.`name`)) > 0))  (cost=10.2 rows=100) (actual time=0.0262..0.0262 rows=0 loops=1)\n        -> Table scan on c  (cost=10.2 rows=100) (actual time=0.003..0.0136 rows=100 loops=1)\n"
+          ],
+          "boundParameters": [
+            "no-synthetic-match",
+            "no-synthetic-match"
+          ]
+        },
+        {
+          "sql": "SELECT c.*, d.name AS department_name FROM counselors c JOIN departments d ON d.id = c.department_id WHERE (LOCATE(LOWER(?), LOWER(c.employee_no)) > 0 OR LOCATE(LOWER(?), LOWER(c.name)) > 0) ORDER BY c.id LIMIT ? OFFSET ?",
+          "explainAnalyze": [
+            "-> Limit: 20 row(s)  (cost=27.4 rows=20) (actual time=0.0413..0.0413 rows=0 loops=1)\n    -> Nested loop inner join  (cost=27.4 rows=20) (actual time=0.041..0.041 rows=0 loops=1)\n        -> Filter: ((locate(<cache>(lower('no-synthetic-match')),lower(c.employee_no)) > 0) or (locate(<cache>(lower('no-synthetic-match')),lower(c.`name`)) > 0))  (cost=0.45 rows=20) (actual time=0.0408..0.0408 rows=0 loops=1)\n            -> Index scan on c using PRIMARY  (cost=0.45 rows=20) (actual time=0.00417..0.0282 rows=100 loops=1)\n        -> Single-row index lookup on d using PRIMARY (id=c.department_id)  (cost=0.251 rows=1) (never executed)\n"
+          ],
+          "boundParameters": [
+            "no-synthetic-match",
+            "no-synthetic-match",
+            "20",
+            "0"
+          ]
+        }
+      ]
+    },
+    {
+      "counselors": 100,
+      "auditEvents": 1000,
+      "scenario": "audit_first",
+      "filters": {
+        "actor": "",
+        "targetId": "",
+        "start": "",
+        "targetType": "",
+        "end": "",
+        "outcome": ""
+      },
+      "page": 1,
+      "pageSize": 20,
+      "totalMatches": 1000,
+      "returnedIds": [
+        1000,
+        999,
+        998,
+        997,
+        996,
+        995,
+        994,
+        993,
+        992,
+        991,
+        990,
+        989,
+        988,
+        987,
+        986,
+        985,
+        984,
+        983,
+        982,
+        981
+      ],
+      "sqlPerSearch": 3,
+      "medianMs": 0.8131044999999999,
+      "p95Ms": 1.381083,
+      "minMs": 0.616959,
+      "maxMs": 2.037709,
+      "samplesMs": [
+        0.910958,
+        0.904334,
+        0.967666,
+        1.381083,
+        0.87725,
+        0.760917,
+        0.810375,
+        0.924834,
+        0.985333,
+        0.871959,
+        0.890333,
+        0.867584,
+        0.822167,
+        0.8725,
+        0.815834,
+        0.829833,
+        0.748291,
+        0.755334,
+        0.701875,
+        0.660708,
+        2.037709,
+        0.733958,
+        0.616959,
+        0.735334,
+        0.684583,
+        0.681042,
+        0.675083,
+        0.796083,
+        0.660167,
+        0.7195
+      ],
+      "plans": [
+        {
+          "sql": "SELECT COUNT(*) FROM audit_events",
+          "explainAnalyze": [
+            "-> Count rows in audit_events  (actual time=0.0558..0.0558 rows=1 loops=1)\n"
+          ],
+          "boundParameters": []
+        },
+        {
+          "sql": "SELECT * FROM audit_events ORDER BY id DESC LIMIT ? OFFSET ?",
+          "explainAnalyze": [
+            "-> Limit: 20 row(s)  (cost=0.08 rows=20) (actual time=0.0396..0.0457 rows=20 loops=1)\n    -> Index scan on audit_events using PRIMARY (reverse)  (cost=0.08 rows=20) (actual time=0.00546..0.0105 rows=20 loops=1)\n"
+          ],
+          "boundParameters": [
+            "20",
+            "0"
+          ]
+        },
+        {
+          "sql": "SELECT CASE WHEN @@session.time_zone = 'SYSTEM' THEN CONCAT('SYSTEM / ', @@system_time_zone) ELSE @@session.time_zone END",
+          "explainAnalyze": [
+            "-> Rows fetched before execution  (cost=0..0 rows=1) (actual time=42e-6..84e-6 rows=1 loops=1)\n"
+          ],
+          "boundParameters": []
+        }
+      ]
+    },
+    {
+      "counselors": 100,
+      "auditEvents": 1000,
+      "scenario": "audit_deep",
+      "filters": {
+        "actor": "",
+        "targetId": "",
+        "start": "",
+        "targetType": "",
+        "end": "",
+        "outcome": ""
+      },
+      "page": 50,
+      "pageSize": 20,
+      "totalMatches": 1000,
+      "returnedIds": [
+        20,
+        19,
+        18,
+        17,
+        16,
+        15,
+        14,
+        13,
+        12,
+        11,
+        10,
+        9,
+        8,
+        7,
+        6,
+        5,
+        4,
+        3,
+        2,
+        1
+      ],
+      "sqlPerSearch": 3,
+      "medianMs": 0.790833,
+      "p95Ms": 1.087,
+      "minMs": 0.705875,
+      "maxMs": 2.255375,
+      "samplesMs": [
+        0.760792,
+        0.860375,
+        0.793833,
+        0.850209,
+        1.087,
+        0.820125,
+        0.759542,
+        0.713666,
+        0.735791,
+        0.858,
+        0.761292,
+        0.729958,
+        0.73,
+        0.71375,
+        0.705875,
+        0.789583,
+        0.79375,
+        0.912917,
+        0.835875,
+        0.805584,
+        0.748291,
+        0.870541,
+        0.764375,
+        0.806459,
+        2.255375,
+        0.90125,
+        0.774084,
+        0.792083,
+        0.747,
+        0.7425
+      ],
+      "plans": [
+        {
+          "sql": "SELECT COUNT(*) FROM audit_events",
+          "explainAnalyze": [
+            "-> Count rows in audit_events  (actual time=0.0593..0.0593 rows=1 loops=1)\n"
+          ],
+          "boundParameters": []
+        },
+        {
+          "sql": "SELECT * FROM audit_events ORDER BY id DESC LIMIT ? OFFSET ?",
+          "explainAnalyze": [
+            "-> Limit/Offset: 20/980 row(s)  (cost=102 rows=20) (actual time=0.239..0.243 rows=20 loops=1)\n    -> Index scan on audit_events using PRIMARY (reverse)  (cost=102 rows=1000) (actual time=0.0198..0.219 rows=1000 loops=1)\n"
+          ],
+          "boundParameters": [
+            "20",
+            "980"
+          ]
+        },
+        {
+          "sql": "SELECT CASE WHEN @@session.time_zone = 'SYSTEM' THEN CONCAT('SYSTEM / ', @@system_time_zone) ELSE @@session.time_zone END",
+          "explainAnalyze": [
+            "-> Rows fetched before execution  (cost=0..0 rows=1) (actual time=84e-6..126e-6 rows=1 loops=1)\n"
+          ],
+          "boundParameters": []
+        }
+      ]
+    },
+    {
+      "counselors": 100,
+      "auditEvents": 1000,
+      "scenario": "audit_actor",
+      "filters": {
+        "actor": "SYNTHETIC_ACTOR_7",
+        "targetId": "",
+        "start": "",
+        "targetType": "",
+        "end": "",
+        "outcome": ""
+      },
+      "page": 1,
+      "pageSize": 20,
+      "totalMatches": 20,
+      "returnedIds": [
+        957,
+        907,
+        857,
+        807,
+        757,
+        707,
+        657,
+        607,
+        557,
+        507,
+        457,
+        407,
+        357,
+        307,
+        257,
+        207,
+        157,
+        107,
+        57,
+        7
+      ],
+      "sqlPerSearch": 3,
+      "medianMs": 1.087375,
+      "p95Ms": 1.238333,
+      "minMs": 1.004333,
+      "maxMs": 2.19675,
+      "samplesMs": [
+        1.191958,
+        1.032167,
+        1.185666,
+        1.047333,
+        1.078584,
+        1.029875,
+        1.039875,
+        1.026125,
+        1.238333,
+        1.140791,
+        1.120291,
+        1.236709,
+        1.219959,
+        1.197458,
+        1.140041,
+        1.06075,
+        1.035708,
+        1.004333,
+        1.094292,
+        1.080458,
+        1.118083,
+        1.108292,
+        1.154958,
+        1.019333,
+        1.136667,
+        1.0475,
+        1.026875,
+        2.19675,
+        1.016958,
+        1.070667
+      ],
+      "plans": [
+        {
+          "sql": "SELECT COUNT(*) FROM audit_events WHERE LOWER(actor) = LOWER(?)",
+          "explainAnalyze": [
+            "-> Aggregate: count(0)  (cost=202 rows=1) (actual time=0.246..0.246 rows=1 loops=1)\n    -> Filter: (lower(audit_events.actor) = <cache>(lower('SYNTHETIC_ACTOR_7')))  (cost=102 rows=1000) (actual time=0.0174..0.245 rows=20 loops=1)\n        -> Table scan on audit_events  (cost=102 rows=1000) (actual time=0.0136..0.0999 rows=1000 loops=1)\n"
+          ],
+          "boundParameters": [
+            "SYNTHETIC_ACTOR_7"
+          ]
+        },
+        {
+          "sql": "SELECT * FROM audit_events WHERE LOWER(actor) = LOWER(?) ORDER BY id DESC LIMIT ? OFFSET ?",
+          "explainAnalyze": [
+            "-> Limit: 20 row(s)  (cost=0.08 rows=20) (actual time=0.0196..0.353 rows=20 loops=1)\n    -> Filter: (lower(audit_events.actor) = <cache>(lower('SYNTHETIC_ACTOR_7')))  (cost=0.08 rows=20) (actual time=0.0194..0.351 rows=20 loops=1)\n        -> Index scan on audit_events using PRIMARY (reverse)  (cost=0.08 rows=20) (actual time=0.00254..0.217 rows=994 loops=1)\n"
+          ],
+          "boundParameters": [
+            "SYNTHETIC_ACTOR_7",
+            "20",
+            "0"
+          ]
+        },
+        {
+          "sql": "SELECT CASE WHEN @@session.time_zone = 'SYSTEM' THEN CONCAT('SYSTEM / ', @@system_time_zone) ELSE @@session.time_zone END",
+          "explainAnalyze": [
+            "-> Rows fetched before execution  (cost=0..0 rows=1) (actual time=125e-6..125e-6 rows=1 loops=1)\n"
+          ],
+          "boundParameters": []
+        }
+      ]
+    },
+    {
+      "counselors": 100,
+      "auditEvents": 1000,
+      "scenario": "audit_date_outcome",
+      "filters": {
+        "actor": "",
+        "targetId": "",
+        "start": "2026-01-10",
+        "targetType": "COUNSELOR",
+        "end": "2026-01-20",
+        "outcome": "FAILURE"
+      },
+      "page": 1,
+      "pageSize": 20,
+      "totalMatches": 34,
+      "returnedIds": [
+        976,
+        972,
+        916,
+        912,
+        856,
+        852,
+        796,
+        792,
+        736,
+        732,
+        676,
+        672,
+        616,
+        612,
+        556,
+        552,
+        496,
+        492,
+        436,
+        432
+      ],
+      "sqlPerSearch": 3,
+      "medianMs": 0.9765415,
+      "p95Ms": 1.129292,
+      "minMs": 0.857666,
+      "maxMs": 2.151417,
+      "samplesMs": [
+        1.129292,
+        1.06275,
+        1.071542,
+        1.11475,
+        1.107333,
+        1.015125,
+        0.944708,
+        1.007542,
+        0.985333,
+        0.886708,
+        0.949167,
+        1.005709,
+        0.951917,
+        0.906792,
+        0.96775,
+        1.018333,
+        0.954458,
+        1.055292,
+        0.935541,
+        0.954417,
+        0.924709,
+        1.05525,
+        1.00175,
+        0.937209,
+        0.857666,
+        0.934,
+        2.151417,
+        1.014375,
+        0.862041,
+        0.912125
+      ],
+      "plans": [
+        {
+          "sql": "SELECT COUNT(*) FROM audit_events WHERE target_type = ? AND outcome = ? AND occurred_at >= ? AND occurred_at < ?",
+          "explainAnalyze": [
+            "-> Aggregate: count(0)  (cost=84.6 rows=1) (actual time=0.135..0.135 rows=1 loops=1)\n    -> Filter: ((audit_events.outcome = 'FAILURE') and (audit_events.target_type = 'COUNSELOR'))  (cost=84.4 rows=1.87) (actual time=0.0478..0.133 rows=34 loops=1)\n        -> Index range scan on audit_events using idx_audit_occurred over ('2026-01-10 00:00:00' <= occurred_at < '2026-01-21 00:00:00'), with index condition: ((audit_events.occurred_at >= TIMESTAMP'2026-01-10 00:00:00') and (audit_events.occurred_at < TIMESTAMP'2026-01-21 00:00:00'))  (cost=84.4 rows=187) (actual time=0.021..0.121 rows=187 loops=1)\n"
+          ],
+          "boundParameters": [
+            "COUNSELOR",
+            "FAILURE",
+            "2026-01-10T00:00",
+            "2026-01-21T00:00"
+          ]
+        },
+        {
+          "sql": "SELECT * FROM audit_events WHERE target_type = ? AND outcome = ? AND occurred_at >= ? AND occurred_at < ? ORDER BY id DESC LIMIT ? OFFSET ?",
+          "explainAnalyze": [
+            "-> Limit: 20 row(s)  (cost=8.93 rows=0.198) (actual time=0.0133..0.174 rows=20 loops=1)\n    -> Filter: ((audit_events.outcome = 'FAILURE') and (audit_events.target_type = 'COUNSELOR') and (audit_events.occurred_at >= TIMESTAMP'2026-01-10 00:00:00') and (audit_events.occurred_at < TIMESTAMP'2026-01-21 00:00:00'))  (cost=8.93 rows=0.198) (actual time=0.0131..0.173 rows=20 loops=1)\n        -> Index scan on audit_events using PRIMARY (reverse)  (cost=8.93 rows=106) (actual time=0.00425..0.123 rows=569 loops=1)\n"
+          ],
+          "boundParameters": [
+            "COUNSELOR",
+            "FAILURE",
+            "2026-01-10T00:00",
+            "2026-01-21T00:00",
+            "20",
+            "0"
+          ]
+        },
+        {
+          "sql": "SELECT CASE WHEN @@session.time_zone = 'SYSTEM' THEN CONCAT('SYSTEM / ', @@system_time_zone) ELSE @@session.time_zone END",
+          "explainAnalyze": [
+            "-> Rows fetched before execution  (cost=0..0 rows=1) (actual time=83e-6..125e-6 rows=1 loops=1)\n"
+          ],
+          "boundParameters": []
+        }
+      ]
+    },
+    {
+      "counselors": 100,
+      "auditEvents": 1000,
+      "scenario": "audit_target",
+      "filters": {
+        "actor": "",
+        "targetId": "11",
+        "start": "",
+        "targetType": "COUNSELOR",
+        "end": "",
+        "outcome": ""
+      },
+      "page": 1,
+      "pageSize": 20,
+      "totalMatches": 10,
+      "returnedIds": [
+        910,
+        810,
+        710,
+        610,
+        510,
+        410,
+        310,
+        210,
+        110,
+        10
+      ],
+      "sqlPerSearch": 3,
+      "medianMs": 0.7782709999999999,
+      "p95Ms": 0.903083,
+      "minMs": 0.722375,
+      "maxMs": 0.910459,
+      "samplesMs": [
+        0.785083,
+        0.757333,
+        0.846458,
+        0.774375,
+        0.87475,
+        0.894166,
+        0.910459,
+        0.832209,
+        0.794792,
+        0.752667,
+        0.804541,
+        0.903083,
+        0.87925,
+        0.87575,
+        0.738917,
+        0.734042,
+        0.74675,
+        0.747708,
+        0.73,
+        0.722375,
+        0.764875,
+        0.820459,
+        0.882833,
+        0.768333,
+        0.755292,
+        0.749291,
+        0.782167,
+        0.741959,
+        0.739,
+        0.782458
+      ],
+      "plans": [
+        {
+          "sql": "SELECT COUNT(*) FROM audit_events WHERE target_type = ? AND target_id = ?",
+          "explainAnalyze": [
+            "-> Aggregate: count(0)  (cost=103 rows=1) (actual time=0.157..0.157 rows=1 loops=1)\n    -> Filter: ((audit_events.target_id = '11') and (audit_events.target_type = 'COUNSELOR'))  (cost=102 rows=10) (actual time=0.0146..0.156 rows=10 loops=1)\n        -> Table scan on audit_events  (cost=102 rows=1000) (actual time=0.0127..0.111 rows=1000 loops=1)\n"
+          ],
+          "boundParameters": [
+            "COUNSELOR",
+            "11"
+          ]
+        },
+        {
+          "sql": "SELECT * FROM audit_events WHERE target_type = ? AND target_id = ? ORDER BY id DESC LIMIT ? OFFSET ?",
+          "explainAnalyze": [
+            "-> Limit: 20 row(s)  (cost=2.02 rows=0.2) (actual time=0.0271..0.278 rows=10 loops=1)\n    -> Filter: ((audit_events.target_id = '11') and (audit_events.target_type = 'COUNSELOR'))  (cost=2.02 rows=0.2) (actual time=0.0268..0.277 rows=10 loops=1)\n        -> Index scan on audit_events using PRIMARY (reverse)  (cost=2.02 rows=20) (actual time=0.00267..0.218 rows=1000 loops=1)\n"
+          ],
+          "boundParameters": [
+            "COUNSELOR",
+            "11",
+            "20",
+            "0"
+          ]
+        },
+        {
+          "sql": "SELECT CASE WHEN @@session.time_zone = 'SYSTEM' THEN CONCAT('SYSTEM / ', @@system_time_zone) ELSE @@session.time_zone END",
+          "explainAnalyze": [
+            "-> Rows fetched before execution  (cost=0..0 rows=1) (actual time=84e-6..84e-6 rows=1 loops=1)\n"
+          ],
+          "boundParameters": []
+        }
+      ]
+    },
+    {
+      "counselors": 100,
+      "auditEvents": 1000,
+      "scenario": "audit_empty",
+      "filters": {
+        "actor": "absent_actor",
+        "targetId": "",
+        "start": "",
+        "targetType": "",
+        "end": "",
+        "outcome": ""
+      },
+      "page": 1,
+      "pageSize": 20,
+      "totalMatches": 0,
+      "returnedIds": [],
+      "sqlPerSearch": 3,
+      "medianMs": 0.7675835,
+      "p95Ms": 0.944209,
+      "minMs": 0.731042,
+      "maxMs": 2.053667,
+      "samplesMs": [
+        2.053667,
+        0.767375,
+        0.747334,
+        0.739916,
+        0.738417,
+        0.746541,
+        0.741166,
+        0.797042,
+        0.763208,
+        0.751041,
+        0.754291,
+        0.731042,
+        0.762458,
+        0.767792,
+        0.780833,
+        0.7465,
+        0.765334,
+        0.76825,
+        0.769542,
+        0.875167,
+        0.871625,
+        0.884333,
+        0.944209,
+        0.805167,
+        0.743834,
+        0.83275,
+        0.789916,
+        0.753667,
+        0.886334,
+        0.803833
+      ],
+      "plans": [
+        {
+          "sql": "SELECT COUNT(*) FROM audit_events WHERE LOWER(actor) = LOWER(?)",
+          "explainAnalyze": [
+            "-> Aggregate: count(0)  (cost=202 rows=1) (actual time=0.177..0.177 rows=1 loops=1)\n    -> Filter: (lower(audit_events.actor) = <cache>(lower('absent_actor')))  (cost=102 rows=1000) (actual time=0.176..0.176 rows=0 loops=1)\n        -> Table scan on audit_events  (cost=102 rows=1000) (actual time=0.0138..0.101 rows=1000 loops=1)\n"
+          ],
+          "boundParameters": [
+            "absent_actor"
+          ]
+        },
+        {
+          "sql": "SELECT * FROM audit_events WHERE LOWER(actor) = LOWER(?) ORDER BY id DESC LIMIT ? OFFSET ?",
+          "explainAnalyze": [
+            "-> Limit: 20 row(s)  (cost=0.08 rows=20) (actual time=0.291..0.291 rows=0 loops=1)\n    -> Filter: (lower(audit_events.actor) = <cache>(lower('absent_actor')))  (cost=0.08 rows=20) (actual time=0.291..0.291 rows=0 loops=1)\n        -> Index scan on audit_events using PRIMARY (reverse)  (cost=0.08 rows=20) (actual time=0.00292..0.214 rows=1000 loops=1)\n"
+          ],
+          "boundParameters": [
+            "absent_actor",
+            "20",
+            "0"
+          ]
+        },
+        {
+          "sql": "SELECT CASE WHEN @@session.time_zone = 'SYSTEM' THEN CONCAT('SYSTEM / ', @@system_time_zone) ELSE @@session.time_zone END",
+          "explainAnalyze": [
+            "-> Rows fetched before execution  (cost=0..0 rows=1) (actual time=42e-6..84e-6 rows=1 loops=1)\n"
+          ],
+          "boundParameters": []
+        }
+      ]
+    },
+    {
+      "counselors": 1000,
+      "auditEvents": 10000,
+      "scenario": "counselor_first",
+      "filters": {
+        "departmentId": null,
+        "keyword": "",
+        "status": null
+      },
+      "page": 1,
+      "pageSize": 20,
+      "totalMatches": 1000,
+      "returnedIds": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20
+      ],
+      "sqlPerSearch": 2,
+      "medianMs": 0.3682085,
+      "p95Ms": 0.515917,
+      "minMs": 0.277334,
+      "maxMs": 0.620208,
+      "samplesMs": [
+        0.313666,
+        0.288708,
+        0.359875,
+        0.367083,
+        0.312333,
+        0.362167,
+        0.408375,
+        0.380458,
+        0.409417,
+        0.403875,
+        0.42775,
+        0.374875,
+        0.420084,
+        0.466792,
+        0.40075,
+        0.401875,
+        0.38825,
+        0.449291,
+        0.620208,
+        0.515917,
+        0.3285,
+        0.315834,
+        0.292541,
+        0.287333,
+        0.294958,
+        0.277334,
+        0.277709,
+        0.281792,
+        0.298792,
+        0.369334
+      ],
+      "plans": [
+        {
+          "sql": "SELECT COUNT(*) FROM counselors c",
+          "explainAnalyze": [
+            "-> Count rows in c  (actual time=0.0546..0.0547 rows=1 loops=1)\n"
+          ],
+          "boundParameters": []
+        },
+        {
+          "sql": "SELECT c.*, d.name AS department_name FROM counselors c JOIN departments d ON d.id = c.department_id ORDER BY c.id LIMIT ? OFFSET ?",
+          "explainAnalyze": [
+            "-> Limit: 20 row(s)  (cost=252 rows=20) (actual time=0.00833..0.0233 rows=20 loops=1)\n    -> Nested loop inner join  (cost=252 rows=20) (actual time=0.00788..0.0218 rows=20 loops=1)\n        -> Index scan on c using PRIMARY  (cost=0.075 rows=20) (actual time=0.00496..0.00983 rows=20 loops=1)\n        -> Single-row index lookup on d using PRIMARY (id=c.department_id)  (cost=0.25 rows=1) (actual time=444e-6..465e-6 rows=1 loops=20)\n"
+          ],
+          "boundParameters": [
+            "20",
+            "0"
+          ]
+        }
+      ]
+    },
+    {
+      "counselors": 1000,
+      "auditEvents": 10000,
+      "scenario": "counselor_deep",
+      "filters": {
+        "departmentId": null,
+        "keyword": "",
+        "status": null
+      },
+      "page": 50,
+      "pageSize": 20,
+      "totalMatches": 1000,
+      "returnedIds": [
+        981,
+        982,
+        983,
+        984,
+        985,
+        986,
+        987,
+        988,
+        989,
+        990,
+        991,
+        992,
+        993,
+        994,
+        995,
+        996,
+        997,
+        998,
+        999,
+        1000
+      ],
+      "sqlPerSearch": 2,
+      "medianMs": 1.332792,
+      "p95Ms": 1.406166,
+      "minMs": 1.299708,
+      "maxMs": 1.409042,
+      "samplesMs": [
+        1.335458,
+        1.334917,
+        1.396875,
+        1.386,
+        1.406166,
+        1.329208,
+        1.321917,
+        1.30375,
+        1.330667,
+        1.327541,
+        1.312958,
+        1.312958,
+        1.319417,
+        1.314625,
+        1.350125,
+        1.304292,
+        1.341667,
+        1.350541,
+        1.335125,
+        1.32175,
+        1.375333,
+        1.409042,
+        1.329209,
+        1.33725,
+        1.359625,
+        1.341,
+        1.314583,
+        1.299708,
+        1.3585,
+        1.311166
+      ],
+      "plans": [
+        {
+          "sql": "SELECT COUNT(*) FROM counselors c",
+          "explainAnalyze": [
+            "-> Count rows in c  (actual time=0.0553..0.0553 rows=1 loops=1)\n"
+          ],
+          "boundParameters": []
+        },
+        {
+          "sql": "SELECT c.*, d.name AS department_name FROM counselors c JOIN departments d ON d.id = c.department_id ORDER BY c.id LIMIT ? OFFSET ?",
+          "explainAnalyze": [
+            "-> Limit/Offset: 20/980 row(s)  (actual time=1.2..1.21 rows=20 loops=1)\n    -> Sort: c.id, limit input to 1000 row(s) per chunk  (actual time=1.12..1.18 rows=1000 loops=1)\n        -> Stream results  (cost=154 rows=1000) (actual time=0.0225..1 rows=1000 loops=1)\n            -> Nested loop inner join  (cost=154 rows=1000) (actual time=0.018..0.625 rows=1000 loops=1)\n                -> Covering index scan on d using name  (cost=1.25 rows=10) (actual time=0.00325..0.00475 rows=10 loops=1)\n                -> Index lookup on c using idx_counselors_department_status (department_id=d.id)  (cost=6.25 rows=100) (actual time=0.00684..0.0578 rows=100 loops=10)\n"
+          ],
+          "boundParameters": [
+            "20",
+            "980"
+          ]
+        }
+      ]
+    },
+    {
+      "counselors": 1000,
+      "auditEvents": 10000,
+      "scenario": "counselor_department_status",
+      "filters": {
+        "departmentId": 2,
+        "keyword": "",
+        "status": "ACTIVE"
+      },
+      "page": 1,
+      "pageSize": 20,
+      "totalMatches": 100,
+      "returnedIds": [
+        1,
+        11,
+        21,
+        31,
+        41,
+        51,
+        61,
+        71,
+        81,
+        91,
+        101,
+        111,
+        121,
+        131,
+        141,
+        151,
+        161,
+        171,
+        181,
+        191
+      ],
+      "sqlPerSearch": 2,
+      "medianMs": 0.335646,
+      "p95Ms": 0.405125,
+      "minMs": 0.304125,
+      "maxMs": 1.017542,
+      "samplesMs": [
+        0.31975,
+        0.305625,
+        1.017542,
+        0.326541,
+        0.347584,
+        0.351291,
+        0.329916,
+        0.321667,
+        0.349834,
+        0.35275,
+        0.339458,
+        0.392542,
+        0.338792,
+        0.3325,
+        0.329833,
+        0.311667,
+        0.314334,
+        0.309083,
+        0.311417,
+        0.304375,
+        0.304125,
+        0.385417,
+        0.405125,
+        0.341083,
+        0.314916,
+        0.310917,
+        0.381208,
+        0.365583,
+        0.402125,
+        0.389041
+      ],
+      "plans": [
+        {
+          "sql": "SELECT COUNT(*) FROM counselors c WHERE c.department_id = ? AND c.employment_status = ?",
+          "explainAnalyze": [
+            "-> Aggregate: count(0)  (cost=20.5 rows=1) (actual time=0.0244..0.0245 rows=1 loops=1)\n    -> Covering index lookup on c using idx_counselors_department_status (department_id=2, employment_status='ACTIVE')  (cost=10.5 rows=100) (actual time=0.00329..0.0199 rows=100 loops=1)\n"
+          ],
+          "boundParameters": [
+            "2",
+            "ACTIVE"
+          ]
+        },
+        {
+          "sql": "SELECT c.*, d.name AS department_name FROM counselors c JOIN departments d ON d.id = c.department_id WHERE c.department_id = ? AND c.employment_status = ? ORDER BY c.id LIMIT ? OFFSET ?",
+          "explainAnalyze": [
+            "-> Limit: 20 row(s)  (cost=15.2 rows=20) (actual time=0.00862..0.0172 rows=20 loops=1)\n    -> Index lookup on c using idx_counselors_department_status (department_id=2, employment_status='ACTIVE')  (cost=15.2 rows=100) (actual time=0.0085..0.0163 rows=20 loops=1)\n"
+          ],
+          "boundParameters": [
+            "2",
+            "ACTIVE",
+            "20",
+            "0"
+          ]
+        }
+      ]
+    },
+    {
+      "counselors": 1000,
+      "auditEvents": 10000,
+      "scenario": "counselor_substring",
+      "filters": {
+        "departmentId": null,
+        "keyword": "001",
+        "status": null
+      },
+      "page": 1,
+      "pageSize": 20,
+      "totalMatches": 112,
+      "returnedIds": [
+        1,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        100,
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108
+      ],
+      "sqlPerSearch": 2,
+      "medianMs": 0.66,
+      "p95Ms": 0.749,
+      "minMs": 0.602,
+      "maxMs": 1.145833,
+      "samplesMs": [
+        0.65125,
+        0.65625,
+        0.687792,
+        0.652792,
+        0.647542,
+        0.656541,
+        0.723542,
+        0.681084,
+        0.69175,
+        0.68525,
+        0.672875,
+        0.665583,
+        0.649292,
+        0.66875,
+        0.661958,
+        0.66,
+        0.653375,
+        0.749,
+        0.708,
+        0.645083,
+        0.660333,
+        0.637583,
+        0.602,
+        0.627375,
+        0.641458,
+        0.624375,
+        0.641667,
+        1.145833,
+        0.66,
+        0.692416
+      ],
+      "plans": [
+        {
+          "sql": "SELECT COUNT(*) FROM counselors c WHERE (LOCATE(LOWER(?), LOWER(c.employee_no)) > 0 OR LOCATE(LOWER(?), LOWER(c.name)) > 0)",
+          "explainAnalyze": [
+            "-> Aggregate: count(0)  (cost=202 rows=1) (actual time=0.379..0.379 rows=1 loops=1)\n    -> Filter: ((locate(<cache>(lower('001')),lower(c.employee_no)) > 0) or (locate(<cache>(lower('001')),lower(c.`name`)) > 0))  (cost=102 rows=1000) (actual time=0.0131..0.375 rows=112 loops=1)\n        -> Table scan on c  (cost=102 rows=1000) (actual time=0.00971..0.105 rows=1000 loops=1)\n"
+          ],
+          "boundParameters": [
+            "001",
+            "001"
+          ]
+        },
+        {
+          "sql": "SELECT c.*, d.name AS department_name FROM counselors c JOIN departments d ON d.id = c.department_id WHERE (LOCATE(LOWER(?), LOWER(c.employee_no)) > 0 OR LOCATE(LOWER(?), LOWER(c.name)) > 0) ORDER BY c.id LIMIT ? OFFSET ?",
+          "explainAnalyze": [
+            "-> Limit: 20 row(s)  (cost=252 rows=20) (actual time=0.00737..0.071 rows=20 loops=1)\n    -> Nested loop inner join  (cost=252 rows=20) (actual time=0.00717..0.0701 rows=20 loops=1)\n        -> Filter: ((locate(<cache>(lower('001')),lower(c.employee_no)) > 0) or (locate(<cache>(lower('001')),lower(c.`name`)) > 0))  (cost=0.075 rows=20) (actual time=0.00496..0.0587 rows=20 loops=1)\n            -> Index scan on c using PRIMARY  (cost=0.075 rows=20) (actual time=0.00375..0.0297 rows=108 loops=1)\n        -> Single-row index lookup on d using PRIMARY (id=c.department_id)  (cost=0.25 rows=1) (actual time=406e-6..423e-6 rows=1 loops=20)\n"
+          ],
+          "boundParameters": [
+            "001",
+            "001",
+            "20",
+            "0"
+          ]
+        }
+      ]
+    },
+    {
+      "counselors": 1000,
+      "auditEvents": 10000,
+      "scenario": "counselor_empty",
+      "filters": {
+        "departmentId": null,
+        "keyword": "no-synthetic-match",
+        "status": null
+      },
+      "page": 1,
+      "pageSize": 20,
+      "totalMatches": 0,
+      "returnedIds": [],
+      "sqlPerSearch": 2,
+      "medianMs": 0.7054374999999999,
+      "p95Ms": 0.782208,
+      "minMs": 0.665875,
+      "maxMs": 0.865458,
+      "samplesMs": [
+        0.753667,
+        0.703667,
+        0.709666,
+        0.735666,
+        0.702625,
+        0.695417,
+        0.684542,
+        0.70575,
+        0.697833,
+        0.69325,
+        0.730042,
+        0.703334,
+        0.700709,
+        0.701916,
+        0.685625,
+        0.713625,
+        0.762209,
+        0.705125,
+        0.699708,
+        0.693333,
+        0.740375,
+        0.730084,
+        0.725084,
+        0.750083,
+        0.865458,
+        0.782208,
+        0.771,
+        0.69325,
+        0.720542,
+        0.665875
+      ],
+      "plans": [
+        {
+          "sql": "SELECT COUNT(*) FROM counselors c WHERE (LOCATE(LOWER(?), LOWER(c.employee_no)) > 0 OR LOCATE(LOWER(?), LOWER(c.name)) > 0)",
+          "explainAnalyze": [
+            "-> Aggregate: count(0)  (cost=202 rows=1) (actual time=0.212..0.213 rows=1 loops=1)\n    -> Filter: ((locate(<cache>(lower('no-synthetic-match')),lower(c.employee_no)) > 0) or (locate(<cache>(lower('no-synthetic-match')),lower(c.`name`)) > 0))  (cost=102 rows=1000) (actual time=0.211..0.211 rows=0 loops=1)\n        -> Table scan on c  (cost=102 rows=1000) (actual time=0.00804..0.103 rows=1000 loops=1)\n"
+          ],
+          "boundParameters": [
+            "no-synthetic-match",
+            "no-synthetic-match"
+          ]
+        },
+        {
+          "sql": "SELECT c.*, d.name AS department_name FROM counselors c JOIN departments d ON d.id = c.department_id WHERE (LOCATE(LOWER(?), LOWER(c.employee_no)) > 0 OR LOCATE(LOWER(?), LOWER(c.name)) > 0) ORDER BY c.id LIMIT ? OFFSET ?",
+          "explainAnalyze": [
+            "-> Limit: 20 row(s)  (cost=252 rows=20) (actual time=0.355..0.355 rows=0 loops=1)\n    -> Nested loop inner join  (cost=252 rows=20) (actual time=0.355..0.355 rows=0 loops=1)\n        -> Filter: ((locate(<cache>(lower('no-synthetic-match')),lower(c.employee_no)) > 0) or (locate(<cache>(lower('no-synthetic-match')),lower(c.`name`)) > 0))  (cost=0.075 rows=20) (actual time=0.355..0.355 rows=0 loops=1)\n            -> Index scan on c using PRIMARY  (cost=0.075 rows=20) (actual time=0.00258..0.239 rows=1000 loops=1)\n        -> Single-row index lookup on d using PRIMARY (id=c.department_id)  (cost=0.25 rows=1) (never executed)\n"
+          ],
+          "boundParameters": [
+            "no-synthetic-match",
+            "no-synthetic-match",
+            "20",
+            "0"
+          ]
+        }
+      ]
+    },
+    {
+      "counselors": 1000,
+      "auditEvents": 10000,
+      "scenario": "audit_first",
+      "filters": {
+        "actor": "",
+        "targetId": "",
+        "start": "",
+        "targetType": "",
+        "end": "",
+        "outcome": ""
+      },
+      "page": 1,
+      "pageSize": 20,
+      "totalMatches": 10000,
+      "returnedIds": [
+        10000,
+        9999,
+        9998,
+        9997,
+        9996,
+        9995,
+        9994,
+        9993,
+        9992,
+        9991,
+        9990,
+        9989,
+        9988,
+        9987,
+        9986,
+        9985,
+        9984,
+        9983,
+        9982,
+        9981
+      ],
+      "sqlPerSearch": 3,
+      "medianMs": 0.9159165,
+      "p95Ms": 1.102125,
+      "minMs": 0.794083,
+      "maxMs": 1.577792,
+      "samplesMs": [
+        0.891834,
+        0.981333,
+        0.898666,
+        0.991917,
+        0.936791,
+        0.99325,
+        0.958417,
+        0.963375,
+        0.907,
+        0.98375,
+        0.990875,
+        0.939667,
+        0.908542,
+        0.923292,
+        0.914708,
+        0.914833,
+        0.885416,
+        0.872917,
+        0.913708,
+        0.893958,
+        0.900459,
+        0.917667,
+        1.102125,
+        0.928916,
+        0.794083,
+        0.87475,
+        0.917,
+        0.907667,
+        1.577792,
+        0.883542
+      ],
+      "plans": [
+        {
+          "sql": "SELECT COUNT(*) FROM audit_events",
+          "explainAnalyze": [
+            "-> Count rows in audit_events  (actual time=0.53..0.53 rows=1 loops=1)\n"
+          ],
+          "boundParameters": []
+        },
+        {
+          "sql": "SELECT * FROM audit_events ORDER BY id DESC LIMIT ? OFFSET ?",
+          "explainAnalyze": [
+            "-> Limit: 20 row(s)  (cost=0.0523 rows=20) (actual time=0.00525..0.0119 rows=20 loops=1)\n    -> Index scan on audit_events using PRIMARY (reverse)  (cost=0.0523 rows=20) (actual time=0.00496..0.0107 rows=20 loops=1)\n"
+          ],
+          "boundParameters": [
+            "20",
+            "0"
+          ]
+        },
+        {
+          "sql": "SELECT CASE WHEN @@session.time_zone = 'SYSTEM' THEN CONCAT('SYSTEM / ', @@system_time_zone) ELSE @@session.time_zone END",
+          "explainAnalyze": [
+            "-> Rows fetched before execution  (cost=0..0 rows=1) (actual time=84e-6..84e-6 rows=1 loops=1)\n"
+          ],
+          "boundParameters": []
+        }
+      ]
+    },
+    {
+      "counselors": 1000,
+      "auditEvents": 10000,
+      "scenario": "audit_deep",
+      "filters": {
+        "actor": "",
+        "targetId": "",
+        "start": "",
+        "targetType": "",
+        "end": "",
+        "outcome": ""
+      },
+      "page": 500,
+      "pageSize": 20,
+      "totalMatches": 10000,
+      "returnedIds": [
+        20,
+        19,
+        18,
+        17,
+        16,
+        15,
+        14,
+        13,
+        12,
+        11,
+        10,
+        9,
+        8,
+        7,
+        6,
+        5,
+        4,
+        3,
+        2,
+        1
+      ],
+      "sqlPerSearch": 3,
+      "medianMs": 2.7193335000000003,
+      "p95Ms": 2.846,
+      "minMs": 2.631125,
+      "maxMs": 2.851125,
+      "samplesMs": [
+        2.710916,
+        2.793375,
+        2.800166,
+        2.770875,
+        2.73125,
+        2.838667,
+        2.769375,
+        2.687208,
+        2.705875,
+        2.829667,
+        2.812916,
+        2.846,
+        2.718042,
+        2.851125,
+        2.731625,
+        2.704833,
+        2.681292,
+        2.720625,
+        2.710333,
+        2.708,
+        2.698583,
+        2.744167,
+        2.749875,
+        2.659375,
+        2.687792,
+        2.678875,
+        2.733375,
+        2.697,
+        2.713375,
+        2.631125
+      ],
+      "plans": [
+        {
+          "sql": "SELECT COUNT(*) FROM audit_events",
+          "explainAnalyze": [
+            "-> Count rows in audit_events  (actual time=0.492..0.492 rows=1 loops=1)\n"
+          ],
+          "boundParameters": []
+        },
+        {
+          "sql": "SELECT * FROM audit_events ORDER BY id DESC LIMIT ? OFFSET ?",
+          "explainAnalyze": [
+            "-> Limit/Offset: 20/9980 row(s)  (cost=1021 rows=20) (actual time=2.32..2.32 rows=20 loops=1)\n    -> Index scan on audit_events using PRIMARY (reverse)  (cost=1021 rows=10000) (actual time=0.0145..2.08 rows=10000 loops=1)\n"
+          ],
+          "boundParameters": [
+            "20",
+            "9980"
+          ]
+        },
+        {
+          "sql": "SELECT CASE WHEN @@session.time_zone = 'SYSTEM' THEN CONCAT('SYSTEM / ', @@system_time_zone) ELSE @@session.time_zone END",
+          "explainAnalyze": [
+            "-> Rows fetched before execution  (cost=0..0 rows=1) (actual time=42e-6..84e-6 rows=1 loops=1)\n"
+          ],
+          "boundParameters": []
+        }
+      ]
+    },
+    {
+      "counselors": 1000,
+      "auditEvents": 10000,
+      "scenario": "audit_actor",
+      "filters": {
+        "actor": "SYNTHETIC_ACTOR_7",
+        "targetId": "",
+        "start": "",
+        "targetType": "",
+        "end": "",
+        "outcome": ""
+      },
+      "page": 1,
+      "pageSize": 20,
+      "totalMatches": 200,
+      "returnedIds": [
+        9957,
+        9907,
+        9857,
+        9807,
+        9757,
+        9707,
+        9657,
+        9607,
+        9557,
+        9507,
+        9457,
+        9407,
+        9357,
+        9307,
+        9257,
+        9207,
+        9157,
+        9107,
+        9057,
+        9007
+      ],
+      "sqlPerSearch": 3,
+      "medianMs": 2.4668124999999996,
+      "p95Ms": 2.648042,
+      "minMs": 2.411125,
+      "maxMs": 3.095875,
+      "samplesMs": [
+        2.497667,
+        2.446292,
+        2.435,
+        2.446625,
+        2.563167,
+        2.624542,
+        2.454708,
+        2.613125,
+        2.458,
+        2.41675,
+        2.437458,
+        2.433334,
+        2.460542,
+        2.437375,
+        3.095875,
+        2.539667,
+        2.648042,
+        2.478625,
+        2.550875,
+        2.473083,
+        2.535125,
+        2.451833,
+        2.411125,
+        2.522125,
+        2.448625,
+        2.424833,
+        2.54125,
+        2.479791,
+        2.498958,
+        2.426417
+      ],
+      "plans": [
+        {
+          "sql": "SELECT COUNT(*) FROM audit_events WHERE LOWER(actor) = LOWER(?)",
+          "explainAnalyze": [
+            "-> Aggregate: count(0)  (cost=2031 rows=1) (actual time=2.24..2.24 rows=1 loops=1)\n    -> Filter: (lower(audit_events.actor) = <cache>(lower('SYNTHETIC_ACTOR_7')))  (cost=1027 rows=10032) (actual time=0.021..2.24 rows=200 loops=1)\n        -> Table scan on audit_events  (cost=1027 rows=10032) (actual time=0.0165..0.934 rows=10000 loops=1)\n"
+          ],
+          "boundParameters": [
+            "SYNTHETIC_ACTOR_7"
+          ]
+        },
+        {
+          "sql": "SELECT * FROM audit_events WHERE LOWER(actor) = LOWER(?) ORDER BY id DESC LIMIT ? OFFSET ?",
+          "explainAnalyze": [
+            "-> Limit: 20 row(s)  (cost=0.0523 rows=20) (actual time=0.0201..0.352 rows=20 loops=1)\n    -> Filter: (lower(audit_events.actor) = <cache>(lower('SYNTHETIC_ACTOR_7')))  (cost=0.0523 rows=20) (actual time=0.0199..0.351 rows=20 loops=1)\n        -> Index scan on audit_events using PRIMARY (reverse)  (cost=0.0523 rows=20) (actual time=0.00329..0.218 rows=994 loops=1)\n"
+          ],
+          "boundParameters": [
+            "SYNTHETIC_ACTOR_7",
+            "20",
+            "0"
+          ]
+        },
+        {
+          "sql": "SELECT CASE WHEN @@session.time_zone = 'SYSTEM' THEN CONCAT('SYSTEM / ', @@system_time_zone) ELSE @@session.time_zone END",
+          "explainAnalyze": [
+            "-> Rows fetched before execution  (cost=0..0 rows=1) (actual time=42e-6..84e-6 rows=1 loops=1)\n"
+          ],
+          "boundParameters": []
+        }
+      ]
+    },
+    {
+      "counselors": 1000,
+      "auditEvents": 10000,
+      "scenario": "audit_date_outcome",
+      "filters": {
+        "actor": "",
+        "targetId": "",
+        "start": "2026-01-10",
+        "targetType": "COUNSELOR",
+        "end": "2026-01-20",
+        "outcome": "FAILURE"
+      },
+      "page": 1,
+      "pageSize": 20,
+      "totalMatches": 334,
+      "returnedIds": [
+        9976,
+        9972,
+        9916,
+        9912,
+        9856,
+        9852,
+        9796,
+        9792,
+        9736,
+        9732,
+        9676,
+        9672,
+        9616,
+        9612,
+        9556,
+        9552,
+        9496,
+        9492,
+        9436,
+        9432
+      ],
+      "sqlPerSearch": 3,
+      "medianMs": 1.8853330000000001,
+      "p95Ms": 2.166375,
+      "minMs": 1.765667,
+      "maxMs": 2.418292,
+      "samplesMs": [
+        1.869209,
+        1.831125,
+        1.994917,
+        1.947125,
+        1.982458,
+        1.970166,
+        1.82525,
+        1.788,
+        1.77675,
+        1.946458,
+        2.011125,
+        1.973542,
+        1.8785,
+        1.855709,
+        1.799542,
+        1.765667,
+        1.768291,
+        1.7815,
+        1.818791,
+        1.820375,
+        2.156583,
+        2.015208,
+        1.892166,
+        2.166375,
+        2.418292,
+        2.044167,
+        1.950542,
+        1.854833,
+        1.816375,
+        1.96525
+      ],
+      "plans": [
+        {
+          "sql": "SELECT COUNT(*) FROM audit_events WHERE target_type = ? AND outcome = ? AND occurred_at >= ? AND occurred_at < ?",
+          "explainAnalyze": [
+            "-> Aggregate: count(0)  (cost=829 rows=1) (actual time=1.32..1.32 rows=1 loops=1)\n    -> Filter: ((audit_events.outcome = 'FAILURE') and (audit_events.target_type = 'COUNSELOR'))  (cost=827 rows=18.4) (actual time=0.385..1.31 rows=334 loops=1)\n        -> Index range scan on audit_events using idx_audit_occurred over ('2026-01-10 00:00:00' <= occurred_at < '2026-01-21 00:00:00'), with index condition: ((audit_events.occurred_at >= TIMESTAMP'2026-01-10 00:00:00') and (audit_events.occurred_at < TIMESTAMP'2026-01-21 00:00:00'))  (cost=827 rows=1837) (actual time=0.0575..1.21 rows=1837 loops=1)\n"
+          ],
+          "boundParameters": [
+            "COUNSELOR",
+            "FAILURE",
+            "2026-01-10T00:00",
+            "2026-01-21T00:00"
+          ]
+        },
+        {
+          "sql": "SELECT * FROM audit_events WHERE target_type = ? AND outcome = ? AND occurred_at >= ? AND occurred_at < ? ORDER BY id DESC LIMIT ? OFFSET ?",
+          "explainAnalyze": [
+            "-> Limit: 20 row(s)  (cost=8.96 rows=0.2) (actual time=0.012..0.179 rows=20 loops=1)\n    -> Filter: ((audit_events.outcome = 'FAILURE') and (audit_events.target_type = 'COUNSELOR') and (audit_events.occurred_at >= TIMESTAMP'2026-01-10 00:00:00') and (audit_events.occurred_at < TIMESTAMP'2026-01-21 00:00:00'))  (cost=8.96 rows=0.2) (actual time=0.0118..0.178 rows=20 loops=1)\n        -> Index scan on audit_events using PRIMARY (reverse)  (cost=8.96 rows=109) (actual time=0.00337..0.126 rows=569 loops=1)\n"
+          ],
+          "boundParameters": [
+            "COUNSELOR",
+            "FAILURE",
+            "2026-01-10T00:00",
+            "2026-01-21T00:00",
+            "20",
+            "0"
+          ]
+        },
+        {
+          "sql": "SELECT CASE WHEN @@session.time_zone = 'SYSTEM' THEN CONCAT('SYSTEM / ', @@system_time_zone) ELSE @@session.time_zone END",
+          "explainAnalyze": [
+            "-> Rows fetched before execution  (cost=0..0 rows=1) (actual time=42e-6..84e-6 rows=1 loops=1)\n"
+          ],
+          "boundParameters": []
+        }
+      ]
+    },
+    {
+      "counselors": 1000,
+      "auditEvents": 10000,
+      "scenario": "audit_target",
+      "filters": {
+        "actor": "",
+        "targetId": "11",
+        "start": "",
+        "targetType": "COUNSELOR",
+        "end": "",
+        "outcome": ""
+      },
+      "page": 1,
+      "pageSize": 20,
+      "totalMatches": 10,
+      "returnedIds": [
+        9010,
+        8010,
+        7010,
+        6010,
+        5010,
+        4010,
+        3010,
+        2010,
+        1010,
+        10
+      ],
+      "sqlPerSearch": 3,
+      "medianMs": 3.5926665,
+      "p95Ms": 3.840917,
+      "minMs": 3.399833,
+      "maxMs": 3.873209,
+      "samplesMs": [
+        3.562458,
+        3.550541,
+        3.627166,
+        3.873209,
+        3.82025,
+        3.738083,
+        3.771334,
+        3.687625,
+        3.680042,
+        3.840917,
+        3.505041,
+        3.399833,
+        3.551584,
+        3.594458,
+        3.615667,
+        3.779584,
+        3.483334,
+        3.492292,
+        3.484334,
+        3.529917,
+        3.518459,
+        3.634041,
+        3.715167,
+        3.658709,
+        3.541083,
+        3.486792,
+        3.577833,
+        3.590875,
+        3.564792,
+        3.596625
+      ],
+      "plans": [
+        {
+          "sql": "SELECT COUNT(*) FROM audit_events WHERE target_type = ? AND target_id = ?",
+          "explainAnalyze": [
+            "-> Aggregate: count(0)  (cost=1037 rows=1) (actual time=1.43..1.43 rows=1 loops=1)\n    -> Filter: ((audit_events.target_id = '11') and (audit_events.target_type = 'COUNSELOR'))  (cost=1027 rows=100) (actual time=0.0125..1.43 rows=10 loops=1)\n        -> Table scan on audit_events  (cost=1027 rows=10032) (actual time=0.0105..1.01 rows=10000 loops=1)\n"
+          ],
+          "boundParameters": [
+            "COUNSELOR",
+            "11"
+          ]
+        },
+        {
+          "sql": "SELECT * FROM audit_events WHERE target_type = ? AND target_id = ? ORDER BY id DESC LIMIT ? OFFSET ?",
+          "explainAnalyze": [
+            "-> Limit: 20 row(s)  (cost=2.03 rows=0.2) (actual time=0.253..2.47 rows=10 loops=1)\n    -> Filter: ((audit_events.target_id = '11') and (audit_events.target_type = 'COUNSELOR'))  (cost=2.03 rows=0.2) (actual time=0.253..2.47 rows=10 loops=1)\n        -> Index scan on audit_events using PRIMARY (reverse)  (cost=2.03 rows=20) (actual time=0.00317..2.06 rows=10000 loops=1)\n"
+          ],
+          "boundParameters": [
+            "COUNSELOR",
+            "11",
+            "20",
+            "0"
+          ]
+        },
+        {
+          "sql": "SELECT CASE WHEN @@session.time_zone = 'SYSTEM' THEN CONCAT('SYSTEM / ', @@system_time_zone) ELSE @@session.time_zone END",
+          "explainAnalyze": [
+            "-> Rows fetched before execution  (cost=0..0 rows=1) (actual time=209e-6..209e-6 rows=1 loops=1)\n"
+          ],
+          "boundParameters": []
+        }
+      ]
+    },
+    {
+      "counselors": 1000,
+      "auditEvents": 10000,
+      "scenario": "audit_empty",
+      "filters": {
+        "actor": "absent_actor",
+        "targetId": "",
+        "start": "",
+        "targetType": "",
+        "end": "",
+        "outcome": ""
+      },
+      "page": 1,
+      "pageSize": 20,
+      "totalMatches": 0,
+      "returnedIds": [],
+      "sqlPerSearch": 3,
+      "medianMs": 4.1485835,
+      "p95Ms": 5.266583,
+      "minMs": 3.909042,
+      "maxMs": 11.486458,
+      "samplesMs": [
+        3.936792,
+        4.00975,
+        4.099875,
+        3.960958,
+        3.909042,
+        4.167541,
+        3.982958,
+        3.911583,
+        4.121083,
+        3.989292,
+        4.089542,
+        4.499042,
+        4.233708,
+        4.146625,
+        3.996542,
+        4.141417,
+        4.464125,
+        4.508,
+        4.264667,
+        4.328666,
+        4.140167,
+        4.114667,
+        4.150542,
+        4.28875,
+        4.210625,
+        4.467292,
+        11.486458,
+        4.30225,
+        5.266583,
+        4.2935
+      ],
+      "plans": [
+        {
+          "sql": "SELECT COUNT(*) FROM audit_events WHERE LOWER(actor) = LOWER(?)",
+          "explainAnalyze": [
+            "-> Aggregate: count(0)  (cost=2031 rows=1) (actual time=1.67..1.67 rows=1 loops=1)\n    -> Filter: (lower(audit_events.actor) = <cache>(lower('absent_actor')))  (cost=1027 rows=10032) (actual time=1.67..1.67 rows=0 loops=1)\n        -> Table scan on audit_events  (cost=1027 rows=10032) (actual time=0.0175..0.916 rows=10000 loops=1)\n"
+          ],
+          "boundParameters": [
+            "absent_actor"
+          ]
+        },
+        {
+          "sql": "SELECT * FROM audit_events WHERE LOWER(actor) = LOWER(?) ORDER BY id DESC LIMIT ? OFFSET ?",
+          "explainAnalyze": [
+            "-> Limit: 20 row(s)  (cost=0.0523 rows=20) (actual time=2.79..2.79 rows=0 loops=1)\n    -> Filter: (lower(audit_events.actor) = <cache>(lower('absent_actor')))  (cost=0.0523 rows=20) (actual time=2.79..2.79 rows=0 loops=1)\n        -> Index scan on audit_events using PRIMARY (reverse)  (cost=0.0523 rows=20) (actual time=0.00288..2.08 rows=10000 loops=1)\n"
+          ],
+          "boundParameters": [
+            "absent_actor",
+            "20",
+            "0"
+          ]
+        },
+        {
+          "sql": "SELECT CASE WHEN @@session.time_zone = 'SYSTEM' THEN CONCAT('SYSTEM / ', @@system_time_zone) ELSE @@session.time_zone END",
+          "explainAnalyze": [
+            "-> Rows fetched before execution  (cost=0..0 rows=1) (actual time=84e-6..126e-6 rows=1 loops=1)\n"
+          ],
+          "boundParameters": []
+        }
+      ]
+    },
+    {
+      "counselors": 10000,
+      "auditEvents": 100000,
+      "scenario": "counselor_first",
+      "filters": {
+        "departmentId": null,
+        "keyword": "",
+        "status": null
+      },
+      "page": 1,
+      "pageSize": 20,
+      "totalMatches": 10000,
+      "returnedIds": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20
+      ],
+      "sqlPerSearch": 2,
+      "medianMs": 0.7648539999999999,
+      "p95Ms": 0.846959,
+      "minMs": 0.669958,
+      "maxMs": 0.902041,
+      "samplesMs": [
+        0.746542,
+        0.686792,
+        0.669958,
+        0.722042,
+        0.698209,
+        0.696791,
+        0.698834,
+        0.684084,
+        0.727417,
+        0.902041,
+        0.743,
+        0.759958,
+        0.744916,
+        0.77225,
+        0.766083,
+        0.739791,
+        0.771209,
+        0.774833,
+        0.806833,
+        0.775666,
+        0.797375,
+        0.768833,
+        0.76625,
+        0.763625,
+        0.774958,
+        0.7515,
+        0.77875,
+        0.81675,
+        0.846959,
+        0.813708
+      ],
+      "plans": [
+        {
+          "sql": "SELECT COUNT(*) FROM counselors c",
+          "explainAnalyze": [
+            "-> Count rows in c  (actual time=0.5..0.5 rows=1 loops=1)\n"
+          ],
+          "boundParameters": []
+        },
+        {
+          "sql": "SELECT c.*, d.name AS department_name FROM counselors c JOIN departments d ON d.id = c.department_id ORDER BY c.id LIMIT ? OFFSET ?",
+          "explainAnalyze": [
+            "-> Limit: 20 row(s)  (cost=2492 rows=20) (actual time=0.0308..0.0464 rows=20 loops=1)\n    -> Nested loop inner join  (cost=2492 rows=20) (actual time=0.0287..0.0436 rows=20 loops=1)\n        -> Index scan on c using PRIMARY  (cost=0.0527 rows=20) (actual time=0.0113..0.0165 rows=20 loops=1)\n        -> Single-row index lookup on d using PRIMARY (id=c.department_id)  (cost=0.25 rows=1) (actual time=673e-6..687e-6 rows=1 loops=20)\n"
+          ],
+          "boundParameters": [
+            "20",
+            "0"
+          ]
+        }
+      ]
+    },
+    {
+      "counselors": 10000,
+      "auditEvents": 100000,
+      "scenario": "counselor_deep",
+      "filters": {
+        "departmentId": null,
+        "keyword": "",
+        "status": null
+      },
+      "page": 500,
+      "pageSize": 20,
+      "totalMatches": 10000,
+      "returnedIds": [
+        9981,
+        9982,
+        9983,
+        9984,
+        9985,
+        9986,
+        9987,
+        9988,
+        9989,
+        9990,
+        9991,
+        9992,
+        9993,
+        9994,
+        9995,
+        9996,
+        9997,
+        9998,
+        9999,
+        10000
+      ],
+      "sqlPerSearch": 2,
+      "medianMs": 11.134125000000001,
+      "p95Ms": 14.823917,
+      "minMs": 10.722708,
+      "maxMs": 15.806334,
+      "samplesMs": [
+        11.000084,
+        11.15675,
+        11.1115,
+        10.979166,
+        11.014792,
+        10.906833,
+        11.568708,
+        10.979958,
+        11.177583,
+        10.93425,
+        11.658375,
+        11.978334,
+        11.910708,
+        11.331167,
+        10.982584,
+        11.765167,
+        10.722708,
+        14.645208,
+        10.867625,
+        10.799333,
+        11.538416,
+        10.843083,
+        10.827834,
+        10.793208,
+        13.928666,
+        15.806334,
+        14.823917,
+        12.990209,
+        11.079541,
+        12.273334
+      ],
+      "plans": [
+        {
+          "sql": "SELECT COUNT(*) FROM counselors c",
+          "explainAnalyze": [
+            "-> Count rows in c  (actual time=0.489..0.489 rows=1 loops=1)\n"
+          ],
+          "boundParameters": []
+        },
+        {
+          "sql": "SELECT c.*, d.name AS department_name FROM counselors c JOIN departments d ON d.id = c.department_id ORDER BY c.id LIMIT ? OFFSET ?",
+          "explainAnalyze": [
+            "-> Limit/Offset: 20/9980 row(s)  (actual time=12.7..12.7 rows=20 loops=1)\n    -> Sort: c.id, limit input to 10000 row(s) per chunk  (actual time=11.8..12.5 rows=10000 loops=1)\n        -> Stream results  (cost=1725 rows=9960) (actual time=0.0663..9.62 rows=10000 loops=1)\n            -> Nested loop inner join  (cost=1725 rows=9960) (actual time=0.0535..6.1 rows=10000 loops=1)\n                -> Covering index scan on d using name  (cost=1.25 rows=10) (actual time=0.00475..0.00662 rows=10 loops=1)\n                -> Index lookup on c using idx_counselors_department_status (department_id=d.id)  (cost=82.7 rows=996) (actual time=0.0291..0.567 rows=1000 loops=10)\n"
+          ],
+          "boundParameters": [
+            "20",
+            "9980"
+          ]
+        }
+      ]
+    },
+    {
+      "counselors": 10000,
+      "auditEvents": 100000,
+      "scenario": "counselor_department_status",
+      "filters": {
+        "departmentId": 2,
+        "keyword": "",
+        "status": "ACTIVE"
+      },
+      "page": 1,
+      "pageSize": 20,
+      "totalMatches": 1000,
+      "returnedIds": [
+        1,
+        11,
+        21,
+        31,
+        41,
+        51,
+        61,
+        71,
+        81,
+        91,
+        101,
+        111,
+        121,
+        131,
+        141,
+        151,
+        161,
+        171,
+        181,
+        191
+      ],
+      "sqlPerSearch": 2,
+      "medianMs": 0.4327295,
+      "p95Ms": 0.500916,
+      "minMs": 0.4085,
+      "maxMs": 0.50425,
+      "samplesMs": [
+        0.424208,
+        0.452791,
+        0.429792,
+        0.441208,
+        0.460041,
+        0.442,
+        0.416292,
+        0.430542,
+        0.428458,
+        0.432334,
+        0.409666,
+        0.445667,
+        0.436542,
+        0.433125,
+        0.42325,
+        0.50425,
+        0.459959,
+        0.500916,
+        0.410125,
+        0.461583,
+        0.430709,
+        0.492792,
+        0.455584,
+        0.456792,
+        0.431542,
+        0.4085,
+        0.430541,
+        0.420709,
+        0.411542,
+        0.440375
+      ],
+      "plans": [
+        {
+          "sql": "SELECT COUNT(*) FROM counselors c WHERE c.department_id = ? AND c.employment_status = ?",
+          "explainAnalyze": [
+            "-> Aggregate: count(0)  (cost=203 rows=1) (actual time=0.151..0.151 rows=1 loops=1)\n    -> Covering index lookup on c using idx_counselors_department_status (department_id=2, employment_status='ACTIVE')  (cost=103 rows=1000) (actual time=0.0124..0.126 rows=1000 loops=1)\n"
+          ],
+          "boundParameters": [
+            "2",
+            "ACTIVE"
+          ]
+        },
+        {
+          "sql": "SELECT c.*, d.name AS department_name FROM counselors c JOIN departments d ON d.id = c.department_id WHERE c.department_id = ? AND c.employment_status = ? ORDER BY c.id LIMIT ? OFFSET ?",
+          "explainAnalyze": [
+            "-> Limit: 20 row(s)  (cost=173 rows=20) (actual time=0.0312..0.0335 rows=20 loops=1)\n    -> Index lookup on c using idx_counselors_department_status (department_id=2, employment_status='ACTIVE')  (cost=173 rows=1000) (actual time=0.0311..0.0327 rows=20 loops=1)\n"
+          ],
+          "boundParameters": [
+            "2",
+            "ACTIVE",
+            "20",
+            "0"
+          ]
+        }
+      ]
+    },
+    {
+      "counselors": 10000,
+      "auditEvents": 100000,
+      "scenario": "counselor_substring",
+      "filters": {
+        "departmentId": null,
+        "keyword": "001",
+        "status": null
+      },
+      "page": 1,
+      "pageSize": 20,
+      "totalMatches": 1119,
+      "returnedIds": [
+        1,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        100,
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108
+      ],
+      "sqlPerSearch": 2,
+      "medianMs": 3.6458125,
+      "p95Ms": 4.460791,
+      "minMs": 3.292084,
+      "maxMs": 4.937167,
+      "samplesMs": [
+        4.937167,
+        3.825125,
+        3.797333,
+        3.604333,
+        3.653458,
+        3.897791,
+        4.2715,
+        3.838417,
+        4.460791,
+        3.917042,
+        3.795291,
+        3.660375,
+        3.52975,
+        3.482666,
+        3.610708,
+        3.654666,
+        3.389208,
+        3.350334,
+        3.61275,
+        3.459292,
+        3.692459,
+        3.591791,
+        3.638167,
+        3.355292,
+        3.292084,
+        3.667834,
+        3.567,
+        3.794292,
+        3.4255,
+        3.516625
+      ],
+      "plans": [
+        {
+          "sql": "SELECT COUNT(*) FROM counselors c WHERE (LOCATE(LOWER(?), LOWER(c.employee_no)) > 0 OR LOCATE(LOWER(?), LOWER(c.name)) > 0)",
+          "explainAnalyze": [
+            "-> Aggregate: count(0)  (cost=2016 rows=1) (actual time=3.6..3.6 rows=1 loops=1)\n    -> Filter: ((locate(<cache>(lower('001')),lower(c.employee_no)) > 0) or (locate(<cache>(lower('001')),lower(c.`name`)) > 0))  (cost=1020 rows=9960) (actual time=0.0452..3.56 rows=1119 loops=1)\n        -> Table scan on c  (cost=1020 rows=9960) (actual time=0.0336..1.03 rows=10000 loops=1)\n"
+          ],
+          "boundParameters": [
+            "001",
+            "001"
+          ]
+        },
+        {
+          "sql": "SELECT c.*, d.name AS department_name FROM counselors c JOIN departments d ON d.id = c.department_id WHERE (LOCATE(LOWER(?), LOWER(c.employee_no)) > 0 OR LOCATE(LOWER(?), LOWER(c.name)) > 0) ORDER BY c.id LIMIT ? OFFSET ?",
+          "explainAnalyze": [
+            "-> Limit: 20 row(s)  (cost=2492 rows=20) (actual time=0.00958..0.0728 rows=20 loops=1)\n    -> Nested loop inner join  (cost=2492 rows=20) (actual time=0.00921..0.0716 rows=20 loops=1)\n        -> Filter: ((locate(<cache>(lower('001')),lower(c.employee_no)) > 0) or (locate(<cache>(lower('001')),lower(c.`name`)) > 0))  (cost=0.0527 rows=20) (actual time=0.00604..0.0592 rows=20 loops=1)\n            -> Index scan on c using PRIMARY  (cost=0.0527 rows=20) (actual time=0.00458..0.0303 rows=108 loops=1)\n        -> Single-row index lookup on d using PRIMARY (id=c.department_id)  (cost=0.25 rows=1) (actual time=458e-6..477e-6 rows=1 loops=20)\n"
+          ],
+          "boundParameters": [
+            "001",
+            "001",
+            "20",
+            "0"
+          ]
+        }
+      ]
+    },
+    {
+      "counselors": 10000,
+      "auditEvents": 100000,
+      "scenario": "counselor_empty",
+      "filters": {
+        "departmentId": null,
+        "keyword": "no-synthetic-match",
+        "status": null
+      },
+      "page": 1,
+      "pageSize": 20,
+      "totalMatches": 0,
+      "returnedIds": [],
+      "sqlPerSearch": 2,
+      "medianMs": 5.235688,
+      "p95Ms": 6.049208,
+      "minMs": 4.763333,
+      "maxMs": 6.107084,
+      "samplesMs": [
+        4.917416,
+        5.129959,
+        5.711542,
+        5.299666,
+        5.778166,
+        6.049208,
+        5.690792,
+        5.074375,
+        6.107084,
+        5.564,
+        6.030125,
+        5.383666,
+        5.696709,
+        5.643625,
+        5.767,
+        5.838958,
+        5.26425,
+        5.141042,
+        5.209667,
+        5.1355,
+        5.199542,
+        5.035916,
+        5.149792,
+        5.16175,
+        5.170916,
+        4.968208,
+        4.771833,
+        4.763333,
+        4.869625,
+        5.261709
+      ],
+      "plans": [
+        {
+          "sql": "SELECT COUNT(*) FROM counselors c WHERE (LOCATE(LOWER(?), LOWER(c.employee_no)) > 0 OR LOCATE(LOWER(?), LOWER(c.name)) > 0)",
+          "explainAnalyze": [
+            "-> Aggregate: count(0)  (cost=2016 rows=1) (actual time=2.15..2.15 rows=1 loops=1)\n    -> Filter: ((locate(<cache>(lower('no-synthetic-match')),lower(c.employee_no)) > 0) or (locate(<cache>(lower('no-synthetic-match')),lower(c.`name`)) > 0))  (cost=1020 rows=9960) (actual time=2.14..2.14 rows=0 loops=1)\n        -> Table scan on c  (cost=1020 rows=9960) (actual time=0.0275..1.02 rows=10000 loops=1)\n"
+          ],
+          "boundParameters": [
+            "no-synthetic-match",
+            "no-synthetic-match"
+          ]
+        },
+        {
+          "sql": "SELECT c.*, d.name AS department_name FROM counselors c JOIN departments d ON d.id = c.department_id WHERE (LOCATE(LOWER(?), LOWER(c.employee_no)) > 0 OR LOCATE(LOWER(?), LOWER(c.name)) > 0) ORDER BY c.id LIMIT ? OFFSET ?",
+          "explainAnalyze": [
+            "-> Limit: 20 row(s)  (cost=2492 rows=20) (actual time=3.55..3.55 rows=0 loops=1)\n    -> Nested loop inner join  (cost=2492 rows=20) (actual time=3.55..3.55 rows=0 loops=1)\n        -> Filter: ((locate(<cache>(lower('no-synthetic-match')),lower(c.employee_no)) > 0) or (locate(<cache>(lower('no-synthetic-match')),lower(c.`name`)) > 0))  (cost=0.0527 rows=20) (actual time=3.55..3.55 rows=0 loops=1)\n            -> Index scan on c using PRIMARY  (cost=0.0527 rows=20) (actual time=0.004..2.42 rows=10000 loops=1)\n        -> Single-row index lookup on d using PRIMARY (id=c.department_id)  (cost=0.25 rows=1) (never executed)\n"
+          ],
+          "boundParameters": [
+            "no-synthetic-match",
+            "no-synthetic-match",
+            "20",
+            "0"
+          ]
+        }
+      ]
+    },
+    {
+      "counselors": 10000,
+      "auditEvents": 100000,
+      "scenario": "audit_first",
+      "filters": {
+        "actor": "",
+        "targetId": "",
+        "start": "",
+        "targetType": "",
+        "end": "",
+        "outcome": ""
+      },
+      "page": 1,
+      "pageSize": 20,
+      "totalMatches": 100000,
+      "returnedIds": [
+        100000,
+        99999,
+        99998,
+        99997,
+        99996,
+        99995,
+        99994,
+        99993,
+        99992,
+        99991,
+        99990,
+        99989,
+        99988,
+        99987,
+        99986,
+        99985,
+        99984,
+        99983,
+        99982,
+        99981
+      ],
+      "sqlPerSearch": 3,
+      "medianMs": 5.227229,
+      "p95Ms": 5.772458,
+      "minMs": 5.004125,
+      "maxMs": 5.915125,
+      "samplesMs": [
+        5.146375,
+        5.409,
+        5.511667,
+        5.28875,
+        5.410083,
+        5.301041,
+        5.062834,
+        5.428834,
+        5.659708,
+        5.772458,
+        5.616083,
+        5.915125,
+        5.61675,
+        5.004125,
+        5.201041,
+        5.142083,
+        5.115459,
+        5.224833,
+        5.419417,
+        5.309375,
+        5.076875,
+        5.172625,
+        5.13925,
+        5.096625,
+        5.148,
+        5.343375,
+        5.229625,
+        5.174792,
+        5.118375,
+        5.085875
+      ],
+      "plans": [
+        {
+          "sql": "SELECT COUNT(*) FROM audit_events",
+          "explainAnalyze": [
+            "-> Count rows in audit_events  (actual time=5.13..5.13 rows=1 loops=1)\n"
+          ],
+          "boundParameters": []
+        },
+        {
+          "sql": "SELECT * FROM audit_events ORDER BY id DESC LIMIT ? OFFSET ?",
+          "explainAnalyze": [
+            "-> Limit: 20 row(s)  (cost=0.0343 rows=20) (actual time=0.0153..0.0206 rows=20 loops=1)\n    -> Index scan on audit_events using PRIMARY (reverse)  (cost=0.0343 rows=20) (actual time=0.0131..0.0176 rows=20 loops=1)\n"
+          ],
+          "boundParameters": [
+            "20",
+            "0"
+          ]
+        },
+        {
+          "sql": "SELECT CASE WHEN @@session.time_zone = 'SYSTEM' THEN CONCAT('SYSTEM / ', @@system_time_zone) ELSE @@session.time_zone END",
+          "explainAnalyze": [
+            "-> Rows fetched before execution  (cost=0..0 rows=1) (actual time=83e-6..83e-6 rows=1 loops=1)\n"
+          ],
+          "boundParameters": []
+        }
+      ]
+    },
+    {
+      "counselors": 10000,
+      "auditEvents": 100000,
+      "scenario": "audit_deep",
+      "filters": {
+        "actor": "",
+        "targetId": "",
+        "start": "",
+        "targetType": "",
+        "end": "",
+        "outcome": ""
+      },
+      "page": 5000,
+      "pageSize": 20,
+      "totalMatches": 100000,
+      "returnedIds": [
+        20,
+        19,
+        18,
+        17,
+        16,
+        15,
+        14,
+        13,
+        12,
+        11,
+        10,
+        9,
+        8,
+        7,
+        6,
+        5,
+        4,
+        3,
+        2,
+        1
+      ],
+      "sqlPerSearch": 3,
+      "medianMs": 22.461541500000003,
+      "p95Ms": 23.545875,
+      "minMs": 21.986917,
+      "maxMs": 40.349,
+      "samplesMs": [
+        40.349,
+        22.950333,
+        23.056917,
+        22.478292,
+        22.326917,
+        22.062542,
+        22.342625,
+        22.21725,
+        22.01825,
+        22.535417,
+        22.2375,
+        22.582292,
+        22.820792,
+        22.79225,
+        23.321333,
+        23.085208,
+        22.623709,
+        22.373334,
+        22.166208,
+        22.912167,
+        22.06375,
+        22.01125,
+        22.144791,
+        22.953541,
+        22.393584,
+        22.454083,
+        22.469,
+        22.148,
+        21.986917,
+        23.545875
+      ],
+      "plans": [
+        {
+          "sql": "SELECT COUNT(*) FROM audit_events",
+          "explainAnalyze": [
+            "-> Count rows in audit_events  (actual time=4.75..4.75 rows=1 loops=1)\n"
+          ],
+          "boundParameters": []
+        },
+        {
+          "sql": "SELECT * FROM audit_events ORDER BY id DESC LIMIT ? OFFSET ?",
+          "explainAnalyze": [
+            "-> Limit/Offset: 20/99980 row(s)  (cost=10098 rows=0) (actual time=23.2..23.2 rows=20 loops=1)\n    -> Index scan on audit_events using PRIMARY (reverse)  (cost=10098 rows=99300) (actual time=0.0199..20.8 rows=100000 loops=1)\n"
+          ],
+          "boundParameters": [
+            "20",
+            "99980"
+          ]
+        },
+        {
+          "sql": "SELECT CASE WHEN @@session.time_zone = 'SYSTEM' THEN CONCAT('SYSTEM / ', @@system_time_zone) ELSE @@session.time_zone END",
+          "explainAnalyze": [
+            "-> Rows fetched before execution  (cost=0..0 rows=1) (actual time=42e-6..84e-6 rows=1 loops=1)\n"
+          ],
+          "boundParameters": []
+        }
+      ]
+    },
+    {
+      "counselors": 10000,
+      "auditEvents": 100000,
+      "scenario": "audit_actor",
+      "filters": {
+        "actor": "SYNTHETIC_ACTOR_7",
+        "targetId": "",
+        "start": "",
+        "targetType": "",
+        "end": "",
+        "outcome": ""
+      },
+      "page": 1,
+      "pageSize": 20,
+      "totalMatches": 2000,
+      "returnedIds": [
+        99957,
+        99907,
+        99857,
+        99807,
+        99757,
+        99707,
+        99657,
+        99607,
+        99557,
+        99507,
+        99457,
+        99407,
+        99357,
+        99307,
+        99257,
+        99207,
+        99157,
+        99107,
+        99057,
+        99007
+      ],
+      "sqlPerSearch": 3,
+      "medianMs": 17.650833,
+      "p95Ms": 18.541041,
+      "minMs": 17.519792,
+      "maxMs": 18.676584,
+      "samplesMs": [
+        17.644917,
+        17.621542,
+        17.532125,
+        17.570041,
+        17.524875,
+        17.757541,
+        17.766708,
+        18.467834,
+        17.841917,
+        17.759958,
+        17.596042,
+        17.879417,
+        17.639959,
+        17.572708,
+        17.645583,
+        17.519792,
+        18.05525,
+        17.796875,
+        18.1425,
+        18.541041,
+        18.500209,
+        18.676584,
+        18.010709,
+        17.639291,
+        17.585375,
+        17.576083,
+        17.984667,
+        17.5785,
+        17.550459,
+        17.656083
+      ],
+      "plans": [
+        {
+          "sql": "SELECT COUNT(*) FROM audit_events WHERE LOWER(actor) = LOWER(?)",
+          "explainAnalyze": [
+            "-> Aggregate: count(0)  (cost=20028 rows=1) (actual time=21.8..21.8 rows=1 loops=1)\n    -> Filter: (lower(audit_events.actor) = <cache>(lower('SYNTHETIC_ACTOR_7')))  (cost=10098 rows=99300) (actual time=0.0287..21.8 rows=2000 loops=1)\n        -> Table scan on audit_events  (cost=10098 rows=99300) (actual time=0.0241..8.87 rows=100000 loops=1)\n"
+          ],
+          "boundParameters": [
+            "SYNTHETIC_ACTOR_7"
+          ]
+        },
+        {
+          "sql": "SELECT * FROM audit_events WHERE LOWER(actor) = LOWER(?) ORDER BY id DESC LIMIT ? OFFSET ?",
+          "explainAnalyze": [
+            "-> Limit: 20 row(s)  (cost=0.0343 rows=20) (actual time=0.0193..0.34 rows=20 loops=1)\n    -> Filter: (lower(audit_events.actor) = <cache>(lower('SYNTHETIC_ACTOR_7')))  (cost=0.0343 rows=20) (actual time=0.019..0.339 rows=20 loops=1)\n        -> Index scan on audit_events using PRIMARY (reverse)  (cost=0.0343 rows=20) (actual time=0.00396..0.215 rows=994 loops=1)\n"
+          ],
+          "boundParameters": [
+            "SYNTHETIC_ACTOR_7",
+            "20",
+            "0"
+          ]
+        },
+        {
+          "sql": "SELECT CASE WHEN @@session.time_zone = 'SYSTEM' THEN CONCAT('SYSTEM / ', @@system_time_zone) ELSE @@session.time_zone END",
+          "explainAnalyze": [
+            "-> Rows fetched before execution  (cost=0..0 rows=1) (actual time=41e-6..41e-6 rows=1 loops=1)\n"
+          ],
+          "boundParameters": []
+        }
+      ]
+    },
+    {
+      "counselors": 10000,
+      "auditEvents": 100000,
+      "scenario": "audit_date_outcome",
+      "filters": {
+        "actor": "",
+        "targetId": "",
+        "start": "2026-01-10",
+        "targetType": "COUNSELOR",
+        "end": "2026-01-20",
+        "outcome": "FAILURE"
+      },
+      "page": 1,
+      "pageSize": 20,
+      "totalMatches": 3334,
+      "returnedIds": [
+        99976,
+        99972,
+        99916,
+        99912,
+        99856,
+        99852,
+        99796,
+        99792,
+        99736,
+        99732,
+        99676,
+        99672,
+        99616,
+        99612,
+        99556,
+        99552,
+        99496,
+        99492,
+        99436,
+        99432
+      ],
+      "sqlPerSearch": 3,
+      "medianMs": 15.629542,
+      "p95Ms": 16.717917,
+      "minMs": 15.401334,
+      "maxMs": 16.861166,
+      "samplesMs": [
+        15.596167,
+        16.684291,
+        16.861166,
+        16.717917,
+        16.477541,
+        16.001,
+        15.744167,
+        15.493583,
+        16.145125,
+        15.401334,
+        15.546875,
+        15.661125,
+        15.600375,
+        15.672042,
+        15.6325,
+        15.537458,
+        15.626584,
+        15.695958,
+        15.581291,
+        15.51525,
+        15.519416,
+        15.686584,
+        15.66525,
+        15.641792,
+        15.611417,
+        15.625542,
+        15.568333,
+        15.519917,
+        15.476416,
+        15.679709
+      ],
+      "plans": [
+        {
+          "sql": "SELECT COUNT(*) FROM audit_events WHERE target_type = ? AND outcome = ? AND occurred_at >= ? AND occurred_at < ?",
+          "explainAnalyze": [
+            "-> Aggregate: count(0)  (cost=10132 rows=1) (actual time=19.1..19.1 rows=1 loops=1)\n    -> Filter: ((audit_events.outcome = 'FAILURE') and (audit_events.target_type = 'COUNSELOR') and (audit_events.occurred_at >= TIMESTAMP'2026-01-10 00:00:00') and (audit_events.occurred_at < TIMESTAMP'2026-01-21 00:00:00'))  (cost=10098 rows=338) (actual time=0.048..19 rows=3334 loops=1)\n        -> Table scan on audit_events  (cost=10098 rows=99300) (actual time=0.0147..10.7 rows=100000 loops=1)\n"
+          ],
+          "boundParameters": [
+            "COUNSELOR",
+            "FAILURE",
+            "2026-01-10T00:00",
+            "2026-01-21T00:00"
+          ]
+        },
+        {
+          "sql": "SELECT * FROM audit_events WHERE target_type = ? AND outcome = ? AND occurred_at >= ? AND occurred_at < ? ORDER BY id DESC LIMIT ? OFFSET ?",
+          "explainAnalyze": [
+            "-> Limit: 20 row(s)  (cost=5.88 rows=0.198) (actual time=0.0123..0.166 rows=20 loops=1)\n    -> Filter: ((audit_events.outcome = 'FAILURE') and (audit_events.target_type = 'COUNSELOR') and (audit_events.occurred_at >= TIMESTAMP'2026-01-10 00:00:00') and (audit_events.occurred_at < TIMESTAMP'2026-01-21 00:00:00'))  (cost=5.88 rows=0.198) (actual time=0.012..0.165 rows=20 loops=1)\n        -> Index scan on audit_events using PRIMARY (reverse)  (cost=5.88 rows=58) (actual time=0.00396..0.117 rows=569 loops=1)\n"
+          ],
+          "boundParameters": [
+            "COUNSELOR",
+            "FAILURE",
+            "2026-01-10T00:00",
+            "2026-01-21T00:00",
+            "20",
+            "0"
+          ]
+        },
+        {
+          "sql": "SELECT CASE WHEN @@session.time_zone = 'SYSTEM' THEN CONCAT('SYSTEM / ', @@system_time_zone) ELSE @@session.time_zone END",
+          "explainAnalyze": [
+            "-> Rows fetched before execution  (cost=0..0 rows=1) (actual time=42e-6..84e-6 rows=1 loops=1)\n"
+          ],
+          "boundParameters": []
+        }
+      ]
+    },
+    {
+      "counselors": 10000,
+      "auditEvents": 100000,
+      "scenario": "audit_target",
+      "filters": {
+        "actor": "",
+        "targetId": "11",
+        "start": "",
+        "targetType": "COUNSELOR",
+        "end": "",
+        "outcome": ""
+      },
+      "page": 1,
+      "pageSize": 20,
+      "totalMatches": 10,
+      "returnedIds": [
+        90010,
+        80010,
+        70010,
+        60010,
+        50010,
+        40010,
+        30010,
+        20010,
+        10010,
+        10
+      ],
+      "sqlPerSearch": 3,
+      "medianMs": 30.240458500000003,
+      "p95Ms": 32.509375,
+      "minMs": 29.627292,
+      "maxMs": 33.365626,
+      "samplesMs": [
+        29.72725,
+        31.278459,
+        29.891542,
+        29.663875,
+        29.64075,
+        30.52325,
+        29.627292,
+        29.951083,
+        29.672416,
+        30.361625,
+        30.265834,
+        30.860708,
+        29.827708,
+        29.749875,
+        29.711333,
+        29.88925,
+        32.219625,
+        30.814084,
+        30.355917,
+        30.215083,
+        32.301416,
+        32.509375,
+        33.365626,
+        31.023584,
+        30.736458,
+        31.118625,
+        30.350959,
+        29.880333,
+        30.153417,
+        30.085708
+      ],
+      "plans": [
+        {
+          "sql": "SELECT COUNT(*) FROM audit_events WHERE target_type = ? AND target_id = ?",
+          "explainAnalyze": [
+            "-> Aggregate: count(0)  (cost=10198 rows=1) (actual time=13.5..13.5 rows=1 loops=1)\n    -> Filter: ((audit_events.target_id = '11') and (audit_events.target_type = 'COUNSELOR'))  (cost=10098 rows=993) (actual time=0.0146..13.5 rows=10 loops=1)\n        -> Table scan on audit_events  (cost=10098 rows=99300) (actual time=0.0128..9.68 rows=100000 loops=1)\n"
+          ],
+          "boundParameters": [
+            "COUNSELOR",
+            "11"
+          ]
+        },
+        {
+          "sql": "SELECT * FROM audit_events WHERE target_type = ? AND target_id = ? ORDER BY id DESC LIMIT ? OFFSET ?",
+          "explainAnalyze": [
+            "-> Limit: 20 row(s)  (cost=2.01 rows=0.2) (actual time=2.38..24.5 rows=10 loops=1)\n    -> Filter: ((audit_events.target_id = '11') and (audit_events.target_type = 'COUNSELOR'))  (cost=2.01 rows=0.2) (actual time=2.37..24.5 rows=10 loops=1)\n        -> Index scan on audit_events using PRIMARY (reverse)  (cost=2.01 rows=20) (actual time=0.00242..20.5 rows=100000 loops=1)\n"
+          ],
+          "boundParameters": [
+            "COUNSELOR",
+            "11",
+            "20",
+            "0"
+          ]
+        },
+        {
+          "sql": "SELECT CASE WHEN @@session.time_zone = 'SYSTEM' THEN CONCAT('SYSTEM / ', @@system_time_zone) ELSE @@session.time_zone END",
+          "explainAnalyze": [
+            "-> Rows fetched before execution  (cost=0..0 rows=1) (actual time=84e-6..125e-6 rows=1 loops=1)\n"
+          ],
+          "boundParameters": []
+        }
+      ]
+    },
+    {
+      "counselors": 10000,
+      "auditEvents": 100000,
+      "scenario": "audit_empty",
+      "filters": {
+        "actor": "absent_actor",
+        "targetId": "",
+        "start": "",
+        "targetType": "",
+        "end": "",
+        "outcome": ""
+      },
+      "page": 1,
+      "pageSize": 20,
+      "totalMatches": 0,
+      "returnedIds": [],
+      "sqlPerSearch": 3,
+      "medianMs": 40.046687500000004,
+      "p95Ms": 55.442375,
+      "minMs": 34.723125,
+      "maxMs": 76.904333,
+      "samplesMs": [
+        34.784875,
+        34.939625,
+        34.80075,
+        34.9425,
+        34.723125,
+        40.188208,
+        42.853833,
+        37.956875,
+        37.178125,
+        37.7885,
+        38.475667,
+        38.834666,
+        37.598291,
+        36.933333,
+        38.340208,
+        51.294084,
+        51.914917,
+        39.905167,
+        41.4685,
+        55.442375,
+        48.547125,
+        49.203334,
+        50.265166,
+        43.724292,
+        37.768417,
+        44.7505,
+        45.929875,
+        76.904333,
+        50.632334,
+        42.281167
+      ],
+      "plans": [
+        {
+          "sql": "SELECT COUNT(*) FROM audit_events WHERE LOWER(actor) = LOWER(?)",
+          "explainAnalyze": [
+            "-> Aggregate: count(0)  (cost=20028 rows=1) (actual time=16..16 rows=1 loops=1)\n    -> Filter: (lower(audit_events.actor) = <cache>(lower('absent_actor')))  (cost=10098 rows=99300) (actual time=16..16 rows=0 loops=1)\n        -> Table scan on audit_events  (cost=10098 rows=99300) (actual time=0.0188..8.75 rows=100000 loops=1)\n"
+          ],
+          "boundParameters": [
+            "absent_actor"
+          ]
+        },
+        {
+          "sql": "SELECT * FROM audit_events WHERE LOWER(actor) = LOWER(?) ORDER BY id DESC LIMIT ? OFFSET ?",
+          "explainAnalyze": [
+            "-> Limit: 20 row(s)  (cost=0.0343 rows=20) (actual time=27..27 rows=0 loops=1)\n    -> Filter: (lower(audit_events.actor) = <cache>(lower('absent_actor')))  (cost=0.0343 rows=20) (actual time=27..27 rows=0 loops=1)\n        -> Index scan on audit_events using PRIMARY (reverse)  (cost=0.0343 rows=20) (actual time=0.00296..20 rows=100000 loops=1)\n"
+          ],
+          "boundParameters": [
+            "absent_actor",
+            "20",
+            "0"
+          ]
+        },
+        {
+          "sql": "SELECT CASE WHEN @@session.time_zone = 'SYSTEM' THEN CONCAT('SYSTEM / ', @@system_time_zone) ELSE @@session.time_zone END",
+          "explainAnalyze": [
+            "-> Rows fetched before execution  (cost=0..0 rows=1) (actual time=84e-6..125e-6 rows=1 loops=1)\n"
+          ],
+          "boundParameters": []
+        }
+      ]
+    }
+  ],
+  "resourcesCleaned": true
+}

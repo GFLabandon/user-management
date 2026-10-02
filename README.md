@@ -114,6 +114,8 @@ flowchart LR
 
 ## 测试与验收
 
+2026-10-02：第 6 阶段完成三档合成数据查询基线，实际 Mapper／Service 的 33 个场景通过结果和 SQL 数量校验；最大档为 1 万份档案和 10 万条操作记录。本轮保留现有查询和索引，完整方法、执行计划、耗时与边界见[查询基线](docs/acceptance/phase-6-query-baseline.md)。当前在 `codex/query-baseline`，远程验收以候选 PR 为准。本机 Docker 清理及保留内容见[资源说明](docs/guides/docker-resources.md)。
+
 2026-10-02：5B 图片清理通过 111 项 Java、29 项 Python 测试及真实 MySQL 运行／迁移／恢复验收。新增事务完成清理、共享及历史引用保护和停机备份后的单文件重试，见[5B 验收](docs/acceptance/phase-5b-image-cleanup.md)与[维护指南](docs/guides/image-cleanup.md)。当前分支 `codex/image-cleanup`，未推送／合并；没有新增表或改变备份格式。
 
 2026-10-02：5A.3 操作记录查询通过本机及最终 Linux arm64 镜像内 99 项 Java、21 项 Python 测试、12 组真实 MySQL 运行验收和浏览器检查；见[5A.3 验收](docs/acceptance/phase-5a3-audit-query.md)。5A 演示路径已整理，仍未推送／合并，安全发布阻断保持不变。

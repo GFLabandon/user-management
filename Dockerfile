@@ -25,6 +25,12 @@ RUN mkdir /workspace/migration-runtime \
 WORKDIR /workspace/migration-runtime
 ENTRYPOINT ["java", "-cp", ".:BOOT-INF/lib/*:BOOT-INF/classes", "MysqlMigrationVerification"]
 
+# Optional synthetic query baseline; never included in the application runtime image.
+FROM migration-verification AS query-verification
+COPY --chown=builder:builder docker/QueryBaseline.java /workspace/verification/
+RUN javac -cp 'BOOT-INF/lib/*:BOOT-INF/classes' -d . /workspace/verification/QueryBaseline.java
+ENTRYPOINT ["java", "-cp", ".:BOOT-INF/lib/*:BOOT-INF/classes", "QueryBaseline"]
+
 FROM eclipse-temurin:17.0.20_8-jre-jammy@sha256:ec72ba5962b45ae4e7f96bfb5ebf6eeb34a488b967f937c8e14f0aaec688954f
 # Ubuntu USN-8847-1: keep the native TLS libraries at the verified patched version.
 RUN apt-get update \

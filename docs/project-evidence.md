@@ -1,6 +1,6 @@
 # 项目证据与表述边界
 
-核验日期：2026-10-02。第一至 4D 阶段已整合到 `main`，基线 `7706eaa`；5A.1 提交为 `e2f1689`，5A.2 提交为 `8f79615`，5A.3 提交为 `0580c8b`；5B 在 `codex/image-cleanup` 完成本地验收，尚未推送或合并。Boot 升级基线为 `96507d8`，4D 另补 Tomcat／Jackson／OpenSSL 与 MySQL 镜像摘要修复。产品名称：高校辅导员信息管理系统（Campus Counselor Management）。仓库目录仍为 `user-management`。
+核验日期：2026-10-02。第一至 4D 阶段已整合到 `main`，基线 `7706eaa`；5A.1 提交为 `e2f1689`，5A.2 提交为 `8f79615`，5A.3 提交为 `0580c8b`；5B 提交为 `0e2546e`。第 6 阶段在 `codex/query-baseline` 完成本地查询基线，推送、远程验收与合并以候选 PR 为准。Boot 升级基线为 `96507d8`，4D 另补 Tomcat／Jackson／OpenSSL 与 MySQL 镜像摘要修复。产品名称：高校辅导员信息管理系统（Campus Counselor Management）。仓库目录仍为 `user-management`。
 
 ## 当前实现
 
@@ -26,6 +26,7 @@
 | 备份恢复 | 停应用并持有数据库读锁；SQL、头像、清单和摘要；仅恢复到全新项目；见 scripts/maintenance.py |
 | 测试 | 5B 本机重跑：111 项 Java、29 项 Python；真实 MySQL 运行 13 组、迁移 5 组、恢复 10 组通过 |
 | CI 与扫描 | 分离快速测试、MySQL、安全扫描任务；扫描实际运行镜像与 Java 依赖；远程 CI 状态以 GitHub Actions 为准，扫描结论见 4D 核对记录 |
+| 查询基线 | 三档合成数据、33 场景，实际 Service／Mapper，绑定 SQL／执行计划、结果断言和重复样本；保留现有索引，见第 6 阶段验收 |
 | MySQL 验收 | 第二阶段迁移、重启和备份恢复；第三阶段另验证 V3→V4、首次凭据、CSRF multipart 和权限；4A 新增专用数据库账号启动及重启验收；详见各阶段验收记录 |
 
 Java 代码位于 `src/main/java/io/github/gflabandon/counselor/`，Java 迁移位于 `src/main/java/db/migration/`。自动化报告位于本地 `target/surefire-reports/`，不提交构建产物。
@@ -45,6 +46,8 @@ Java 代码位于 `src/main/java/io/github/gflabandon/counselor/`，Java 迁移�
 5B 将文件清理移到事务完成回调，删除前在单实例锁内读取已提交引用，保护共享图片和旧迁移表引用。故障注入覆盖部分写入、数据库失败、删除失败、引用查询失败、结果不明及两种引用竞争顺序。离线工具要求停机、同项目有效备份和未变化文件，支持失败后逐项重试及重复执行；未新增自动重试队列、多实例协调或数据库迁移。见[5B 验收](acceptance/phase-5b-image-cleanup.md)与[维护指南](guides/image-cleanup.md)。
 
 ## 可解释的项目描述
+
+第 6 阶段在最多 1 万份档案／10 万条操作记录下记录单客户端查询基线，包含实际执行计划及 30 次采样；确认审计部分筛选全表扫描与深分页成本。未修改业务查询或增加索引，未测试 HTTP 端到端或并发容量，不声称性能提升。见[基线记录](acceptance/phase-6-query-baseline.md)。
 
 用于演示高校辅导员档案维护的 Java Web 项目，支持工号与姓名检索、院系归属、任职状态、头像上传和状态记录。按 Controller、Service、Mapper 分层实现，采用 Flyway 管理数据库变化，以版本号检查避免过期编辑覆盖。
 
