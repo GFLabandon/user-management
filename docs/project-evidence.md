@@ -1,8 +1,8 @@
 # 项目证据与表述边界
 
-最新补充：2026-10-02 的 MySQL 派生镜像修复本机通过 111 项 Java、32 项 Python、14 组运行、6 组迁移／镜像切换、10 组恢复验收；应用与数据库 HIGH／CRITICAL 均为 0，仍保留中低危／未知发现。没有修改数据库服务端、V1–V4 或备份格式；见[修复证据](verification/security-mysql-runtime-2026-10-02.md)。远程与合并状态以 [PR #1](https://github.com/GFLabandon/user-management/pull/1) 为准。
+最新补充：2026-10-02 的 MySQL 派生镜像修复本机通过 111 项 Java、32 项 Python、14 组运行、6 组迁移／镜像切换、10 组恢复验收；应用与数据库 HIGH／CRITICAL 均为 0，仍保留中低危／未知发现。没有修改数据库服务端、V1–V4 或备份格式；见[修复证据](verification/security-mysql-runtime-2026-10-02.md)。已通过 [PR #1](https://github.com/GFLabandon/user-management/pull/1) 合并，[main CI](https://github.com/GFLabandon/user-management/actions/runs/37022219263) 三项任务全部通过。
 
-核验日期：2026-10-02。第一至 4D 阶段已整合到 `main`，基线 `7706eaa`；5A.1 提交为 `e2f1689`，5A.2 提交为 `8f79615`，5A.3 提交为 `0580c8b`；5B 提交为 `0e2546e`。第 6 阶段在 `codex/query-baseline` 完成本地查询基线，推送、远程验收与合并以候选 PR 为准。Boot 升级基线为 `96507d8`，4D 另补 Tomcat／Jackson／OpenSSL 与 MySQL 镜像摘要修复。产品名称：高校辅导员信息管理系统（Campus Counselor Management）。仓库目录仍为 `user-management`。
+核验日期：2026-10-02。第一至第 6 阶段已整合到 `main`，合并基线 `97e309d`。5A.1 提交 `e2f1689`、5A.2 `8f79615`、5A.3 `0580c8b`、5B `0e2546e`、查询基线 `6253082`、MySQL 安全修复 `a9c776e` 均保留在历史中。产品名称：高校辅导员信息管理系统（Campus Counselor Management）。仓库目录仍为 `user-management`。
 
 ## 当前实现
 
@@ -26,8 +26,8 @@
 | 容器运行 | 非 root 应用、只读根文件系统、MySQL 8.4.11 与头像独立卷、回环 HTTP；见 Dockerfile / compose.yaml |
 | 健康与日志 | 独立无状态探针授权、readiness 检查 DB、liveness 不依赖 DB；请求编号与脱敏日志、Docker 日志保留限制 |
 | 备份恢复 | 停应用并持有数据库读锁；SQL、头像、清单和摘要；仅恢复到全新项目；见 scripts/maintenance.py |
-| 测试 | 5B 本机重跑：111 项 Java、29 项 Python；真实 MySQL 运行 13 组、迁移 5 组、恢复 10 组通过 |
-| CI 与扫描 | 分离快速测试、MySQL、安全扫描任务；扫描实际运行镜像与 Java 依赖；远程 CI 状态以 GitHub Actions 为准，扫描结论见 4D 核对记录 |
+| 测试 | 4D.2 本机及 main CI：111 项 Java、32 项 Python；真实 MySQL 运行 14 组、迁移／镜像切换 6 组、恢复 10 组通过 |
+| CI 与扫描 | 分离快速测试、MySQL、安全扫描任务；扫描实际运行镜像与 Java 依赖；合并基线三项远程任务通过，后续每次变更仍须复验 |
 | 查询基线 | 三档合成数据、33 场景，实际 Service／Mapper，绑定 SQL／执行计划、结果断言和重复样本；保留现有索引，见第 6 阶段验收 |
 | MySQL 验收 | 第二阶段迁移、重启和备份恢复；第三阶段另验证 V3→V4、首次凭据、CSRF multipart 和权限；4A 新增专用数据库账号启动及重启验收；详见各阶段验收记录 |
 
