@@ -308,6 +308,53 @@ try:
     assert sql(f"SELECT counselor_id IS NULL AND version=1 FROM system_accounts WHERE id={owner_id}") == "1"
     assert winner.request(query)[2]["Location"] == "/login?expired"
     passed("account picker limits and projects MySQL results; concurrent association, forged IDs, stale edits and viewer access are guarded")
+    # Audit fixtures are synthetic and live only in this disposable database.
+    sql("INSERT INTO audit_events(actor,action,target_type,target_id,outcome,reason,occurred_at) VALUES "
+        + ",".join(f"('audit_fixture','ACCOUNT_UPDATE','ACCOUNT','{i}','SUCCESS','OK','2026-01-01 12:00:00')" for i in range(105)))
+    audit_ids = [int(row) for row in sql("SELECT id FROM audit_events WHERE actor='audit_fixture' ORDER BY id DESC").splitlines()]
+    def audit_page(**params):
+        code, body, _ = admin.request("/audit?" + urllib.parse.urlencode(params))
+        return code, body.decode()
+    def row_ids(html):
+        return [int(value) for value in re.findall(r'data-event-id="(\d+)"', html)]
+    code, page = audit_page(actor="audit_fixture", size=10)
+    assert code == 200 and "共 105 条" in page and row_ids(page) == audit_ids[:10]
+    assert "更新账号" in page and "操作完成" in page and "当前数据库时区：SYSTEM / UTC" in page
+    code, page = audit_page(actor="audit_fixture", size=10, page=11)
+    assert code == 200 and row_ids(page) == audit_ids[100:]
+    code, page = audit_page(actor="audit_fixture", size=10, page=2147483647)
+    assert code == 200 and "页码超出范围" in page and row_ids(page) == audit_ids[100:]
+    sql("INSERT INTO audit_events(actor,action,target_type,target_id,outcome,reason,occurred_at) VALUES "
+        "('audit_boundary','ACCOUNT_UPDATE','ACCOUNT','42','SUCCESS','OK','2026-02-01 00:00:00'),"
+        "('audit_boundary','ACCOUNT_UPDATE','ACCOUNT','42','SUCCESS','OK','2026-02-02 23:59:59'),"
+        "('audit_boundary','ACCOUNT_UPDATE','ACCOUNT','42','SUCCESS','OK','2026-01-31 23:59:59'),"
+        "('audit_boundary','ACCOUNT_UPDATE','ACCOUNT','42','SUCCESS','OK','2026-02-03 00:00:00'),"
+        "('audit_boundary','ACCOUNT_UPDATE','ACCOUNT','42','FAILURE','VALIDATION','2026-02-01 12:00:00'),"
+        "('audit_boundary','DEPARTMENT_UPDATE','DEPARTMENT','42','SUCCESS','OK','2026-02-01 12:00:00'),"
+        "('audit_boundary','ACCOUNT_UPDATE','ACCOUNT','420','SUCCESS','OK','2026-02-01 12:00:00')")
+    code, page = audit_page(actor=" AUDIT_BOUNDARY ", targetType="ACCOUNT", targetId="42", outcome="SUCCESS",
+                            startDate="2026-02-01", endDate="2026-02-02")
+    expected_ids = [int(row) for row in sql("SELECT id FROM audit_events WHERE actor='audit_boundary' AND target_type='ACCOUNT' "
+        "AND target_id='42' AND outcome='SUCCESS' AND occurred_at >= '2026-02-01' AND occurred_at < '2026-02-03' ORDER BY id DESC").splitlines()]
+    assert code == 200 and "共 2 条" in page and row_ids(page) == expected_ids
+    for term in ["%", "_", "' OR 1=1 --", "missing_audit_actor"]:
+        code, page = audit_page(actor=term)
+        assert code == 200 and "共 0 条" in page and "没有匹配的操作记录" in page
+    for params in [dict(startDate="2026-02-30"), dict(startDate="2026-02-02", endDate="2026-02-01"),
+                   dict(page=0), dict(page="abc"), dict(size=101), dict(targetType="FORGED"), dict(outcome="FORGED")]:
+        code, page = audit_page(actor="audit_fixture", **params)
+        assert code == 400 and "筛选条件有误" in page and not row_ids(page)
+    sql("INSERT INTO audit_events(actor,action,target_type,target_id,outcome,reason) "
+        "VALUES ('audit_unknown','NEW_ACTION','NEW_TARGET',NULL,'FAILURE','private-unknown-reason')")
+    code, page = audit_page(actor="audit_unknown")
+    assert code == 200 and all(label in page for label in ["未知操作", "未知对象", "原因未分类"])
+    assert "private-unknown-reason" not in page
+    winner.login(owner_name, VIEWER_PASSWORD)
+    code, body, _ = winner.request("/audit?actor=audit_fixture&page=2")
+    assert code == 403 and b"audit_fixture" not in body
+    assert anon.request("/audit?actor=audit_fixture")[0] == 302
+    assert sql("SELECT COUNT(*) FROM audit_events WHERE actor='audit_fixture' AND action='ACCOUNT_UPDATE' AND reason='OK'") == "105"
+    passed("audit queries reach events beyond 100 with bound filters, inclusive dates, Chinese labels, safe validation and admin-only pagination")
     before = snapshot()
     app_id = compose("ps", "--quiet", "app").stdout.strip()
     details = json.loads(command(["docker", "inspect", app_id]).stdout)[0]

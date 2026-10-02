@@ -1,6 +1,40 @@
 <!DOCTYPE html>
 <html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{layout :: head(title='操作记录')}"></head>
-<body><header th:replace="~{layout :: header}"></header><main class="page-shell">
-<section class="page-heading"><div><p class="eyebrow">操作追溯</p><h1>操作记录</h1><p class="muted">最近 100 条账号、档案、院系及访问记录。</p></div></section>
-<div class="card table-scroll"><table><thead><tr><th>时间</th><th>操作人</th><th>操作</th><th>对象</th><th>结果</th><th>原因</th></tr></thead><tbody><tr th:each="e : ${events}"><td th:text="${#temporals.format(e.occurredAt, 'yyyy-MM-dd HH:mm:ss')}"></td><td th:text="${e.actor}"></td><td th:text="${e.action}"></td><td th:text="${e.targetType + (e.targetId == null ? '' : ' #' + e.targetId)}"></td><td th:text="${e.outcome}"></td><td th:text="${e.reason}"></td></tr></tbody></table></div></main><footer th:replace="~{layout :: footer}"></footer></body></html>
+<body><header th:replace="~{layout :: header}"></header>
+<main class="page-shell" th:object="${auditQuery}">
+<section class="page-heading"><div><p class="eyebrow">操作追溯</p><h1>操作记录</h1>
+<p class="muted">查找账号、档案、院系和访问记录，按记录编号从新到旧排列。</p></div></section>
+<div class="alert alert-error" role="alert" th:if="${#fields.hasAnyErrors()}">
+<strong>筛选条件有误，请修改后重新查询。</strong><ul><li th:each="message : ${#fields.allErrors()}" th:text="${message}"></li></ul></div>
+<div class="alert alert-success" role="status" th:if="${pageNotice}" th:text="${pageNotice}"></div>
+<section class="card directory-card">
+<form class="filter-form audit-filters" th:action="@{/audit}" method="get" aria-label="操作记录筛选">
+<label class="field"><span>操作者</span><input th:field="*{actor}" maxlength="255" placeholder="完整账号，不区分大小写"></label>
+<label class="field"><span>对象类型</span><select th:field="*{targetType}"><option value="">全部对象</option>
+<option value="ACCOUNT">账号</option><option value="COUNSELOR">辅导员档案</option><option value="DEPARTMENT">院系</option><option value="REQUEST">访问请求</option></select></label>
+<label class="field"><span>对象编号</span><input th:field="*{targetId}" maxlength="64" placeholder="完整编号，例如 12"></label>
+<label class="field"><span>结果</span><select th:field="*{outcome}"><option value="">全部结果</option>
+<option value="SUCCESS">成功</option><option value="FAILURE">失败</option><option value="DENIED">已拒绝</option></select></label>
+<label class="field"><span>开始日期</span><input th:field="*{startDate}" maxlength="10" placeholder="yyyy-MM-dd" aria-describedby="audit-date-help"></label>
+<label class="field"><span>结束日期</span><input th:field="*{endDate}" maxlength="10" placeholder="yyyy-MM-dd" aria-describedby="audit-date-help"></label>
+<label class="field"><span>每页条数</span><select th:field="*{size}"><option th:each="n : ${ {10,20,50,100} }" th:value="${n}" th:text="${n}"></option></select></label>
+<div class="audit-filter-actions"><button class="button button-primary" type="submit">查询</button><a class="button button-ghost" th:href="@{/audit}">重置</a></div>
+<p id="audit-date-help" class="muted audit-help">日期包含起止当天，留空表示不限；查询与显示均使用数据库时间，不随浏览器时区转换。<span th:if="${timeZone}" th:text="${'当前数据库时区：' + timeZone + '。'}"></span></p>
+</form>
+<th:block th:if="${result != null}">
+<div class="table-scroll" tabindex="0" role="region" aria-label="操作记录表格，窄屏可左右滚动" th:unless="${result.items.isEmpty()}"><table class="audit-table"><thead><tr><th>记录编号</th><th>时间</th><th>操作者</th><th>操作</th><th>对象</th><th>结果</th><th>说明</th></tr></thead>
+<tbody><tr th:each="e : ${result.items}" th:attr="data-event-id=${e.id}">
+<td th:text="${'#' + e.id}"></td><td class="audit-time" th:text="${#temporals.format(e.occurredAt, 'yyyy-MM-dd HH:mm:ss')}"></td>
+<td class="audit-actor" th:text="${e.actor}"></td><td th:text="${e.actionLabel}"></td>
+<td><span th:text="${e.targetLabel}"></span><small class="audit-target" th:text="${e.targetId == null ? '未指定编号' : '#' + e.targetId}"></small></td>
+<td><span class="tag" th:classappend="${e.outcome == 'SUCCESS' ? 'audit-success' : 'audit-failure'}" th:text="${e.outcomeLabel}"></span></td>
+<td th:text="${e.reasonLabel}"></td></tr></tbody></table></div>
+<div class="empty-state" th:if="${result.items.isEmpty()}"><h2>没有匹配的操作记录</h2><p>请检查完整账号或对象编号，或放宽日期和结果条件。</p><a th:href="@{/audit}">清除筛选</a></div>
+<nav class="pagination" aria-label="操作记录分页"><span th:text="${'共 ' + result.total + ' 条 · 第 ' + result.page + ' / ' + result.totalPages + ' 页'}"></span>
+<a class="button button-ghost" th:if="${result.hasPrevious()}" th:href="@{/audit(actor=${auditQuery.actor},targetType=${auditQuery.targetType},targetId=${auditQuery.targetId},outcome=${auditQuery.outcome},startDate=${auditQuery.startDate},endDate=${auditQuery.endDate},size=${result.size},page=1)}">首页</a>
+<a class="button button-ghost" th:if="${result.hasPrevious()}" th:href="@{/audit(actor=${auditQuery.actor},targetType=${auditQuery.targetType},targetId=${auditQuery.targetId},outcome=${auditQuery.outcome},startDate=${auditQuery.startDate},endDate=${auditQuery.endDate},size=${result.size},page=${result.page - 1})}">上一页</a>
+<a class="button button-ghost" th:if="${result.hasNext()}" th:href="@{/audit(actor=${auditQuery.actor},targetType=${auditQuery.targetType},targetId=${auditQuery.targetId},outcome=${auditQuery.outcome},startDate=${auditQuery.startDate},endDate=${auditQuery.endDate},size=${result.size},page=${result.page + 1})}">下一页</a>
+<a class="button button-ghost" th:if="${result.hasNext()}" th:href="@{/audit(actor=${auditQuery.actor},targetType=${auditQuery.targetType},targetId=${auditQuery.targetId},outcome=${auditQuery.outcome},startDate=${auditQuery.startDate},endDate=${auditQuery.endDate},size=${result.size},page=${result.totalPages})}">末页</a>
+</nav></th:block>
+</section></main><footer th:replace="~{layout :: footer}"></footer></body></html>

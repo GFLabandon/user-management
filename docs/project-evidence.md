@@ -1,6 +1,6 @@
 # 项目证据与表述边界
 
-核验日期：2026-10-01。第一至 4D 阶段已整合到 `main`，基线 `7706eaa`；5A.1 提交为 `e2f1689`，5A.2 在 `codex/error-feedback` 完成本地验收，尚未推送或合并。Boot 升级基线为 `96507d8`，4D 另补 Tomcat／Jackson／OpenSSL 与 MySQL 镜像摘要修复。产品名称：高校辅导员信息管理系统（Campus Counselor Management）。仓库目录仍为 `user-management`。
+核验日期：2026-10-02。第一至 4D 阶段已整合到 `main`，基线 `7706eaa`；5A.1 提交为 `e2f1689`，5A.2 提交为 `8f79615`，5A.3 在 `codex/audit-query` 完成本地验收，尚未推送或合并。Boot 升级基线为 `96507d8`，4D 另补 Tomcat／Jackson／OpenSSL 与 MySQL 镜像摘要修复。产品名称：高校辅导员信息管理系统（Campus Counselor Management）。仓库目录仍为 `user-management`。
 
 ## 当前实现
 
@@ -17,14 +17,14 @@
 | 登录与权限 | Spring Security 表单与 CSRF；独立账号、bcrypt、ADMIN／VIEWER，账号版本变化撤销旧会话 |
 | 账号关联选择 | 工号／姓名搜索，最多 20 条，仅返回选择所需字段；编辑回显、取消关联、JOIN 列表；真实 MySQL 双管理员争用与版本冲突验收 |
 | 错误反馈 | MVC 与过滤器中文错误页，400／403／404／409／413／500／503 等状态、请求编号；表单保留与密码不回填，真实 HTTP 上传边界验收 |
-| 操作记录 | 登录结果、访问拒绝、账号／档案／院系成功与已处理失败；成功记录与业务同事务 |
+| 操作记录 | 登录结果、访问拒绝、账号／档案／院系成功与已处理失败；成功记录与业务同事务；中文说明，操作者／对象／日期／结果筛选，固定 ID 倒序分页（每页上限 100），管理员可见 |
 | 数据库 | H2 演示；MySQL 持久化；Flyway V1–V4 和显式旧数据工号映射 |
 | 部署配置 | deploy 启动入口、数据库连接前的配置与目录校验；非 root 数据库账号验收 |
 | 依赖核对 | Boot 4.0.8 / Security 7.0.7 / MyBatis Starter 4.0.1，H2 2.5.250 修复迁移回归；见 verification 目录 |
 | 容器运行 | 非 root 应用、只读根文件系统、MySQL 8.4.11 与头像独立卷、回环 HTTP；见 Dockerfile / compose.yaml |
 | 健康与日志 | 独立无状态探针授权、readiness 检查 DB、liveness 不依赖 DB；请求编号与脱敏日志、Docker 日志保留限制 |
 | 备份恢复 | 停应用并持有数据库读锁；SQL、头像、清单和摘要；仅恢复到全新项目；见 scripts/maintenance.py |
-| 测试 | 5A.2 本机重跑：91 项 Java、21 项 Python、真实 MySQL 运行 11 组通过；迁移 5 组、恢复 8 组沿用基线远程 CI 证据 |
+| 测试 | 5A.3 本机重跑：99 项 Java、21 项 Python、真实 MySQL 运行 12 组通过；迁移 5 组、恢复 8 组沿用基线远程 CI 证据 |
 | CI 与扫描 | 分离快速测试、MySQL、安全扫描任务；扫描实际运行镜像与 Java 依赖；远程 CI 状态以 GitHub Actions 为准，扫描结论见 4D 核对记录 |
 | MySQL 验收 | 第二阶段迁移、重启和备份恢复；第三阶段另验证 V3→V4、首次凭据、CSRF multipart 和权限；4A 新增专用数据库账号启动及重启验收；详见各阶段验收记录 |
 
@@ -39,6 +39,8 @@ Java 代码位于 `src/main/java/io/github/gflabandon/counselor/`，Java 迁移�
 5A.1 通过工号／姓名选择档案，保持服务端存在性、唯一关联、账号版本检查和旧会话撤销。新增查询不暴露备注、照片路径、密码或其他账号信息；截图、命令、并发与权限结果见[5A.1 验收](acceptance/phase-5a1-account-picker.md)。没有修改迁移、备份契约或镜像依赖。
 
 5A.2 补齐失败状态与操作入口，区分 CSRF、权限、编辑冲突、上传校验和存储故障。新增真实 Tomcat 测试发现并修复上传超限响应被截断的问题；请求体清理有上限，未放宽上传接受限制。见[5A.2 验收](acceptance/phase-5a2-error-feedback.md)。
+
+5A.3 保留历史事件代码，为操作记录增加中文说明与组合筛选、分页，覆盖超过 100 条的历史记录、日期边界、非法参数、未知代码与权限；见[5A.3 验收](acceptance/phase-5a3-audit-query.md)。数据库时间按页面显示的会话时区解释，跨请求翻页不提供固定快照；未增加索引或声称性能提升。完整讲解顺序见[5A 演示路径](guides/phase-5a-demo.md)。
 
 ## 可解释的项目描述
 
