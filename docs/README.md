@@ -1,6 +1,6 @@
 # 文档导航
 
-当前进展：阶段成果已整合到 `main`，代码基线 `7706eaa`。更新时间：2026-10-02。该提交的远程 CI 中 Java/Python 与真实 MySQL 运行、迁移、恢复验收通过；安全扫描仍有 MySQL 镜像阻断项，尚未发布。5A.1–5A.3 已通过本机验收，当前在 `codex/audit-query`，尚未推送／合并；见[5A.3 验收](acceptance/phase-5a3-audit-query.md)与[演示路径](guides/phase-5a-demo.md)。具体证据与后续安排见[下一阶段实施方案](plans/next-steps-2026-10-01.md)。
+当前进展：阶段成果已整合到 `main`，代码基线 `7706eaa`。更新时间：2026-10-02。该提交的远程 CI 中 Java/Python 与真实 MySQL 运行、迁移、恢复验收通过；安全扫描仍有 MySQL 镜像阻断项，尚未发布。5A.1–5A.3 及 5B 已通过本机验收，当前在 `codex/image-cleanup`，尚未推送／合并；见[5B 验收](acceptance/phase-5b-image-cleanup.md)与[演示路径](guides/phase-5a-demo.md)。具体证据与后续安排见[下一阶段实施方案](plans/next-steps-2026-10-01.md)。
 
 ## 从这里开始
 
@@ -12,6 +12,7 @@
 | 原始阶段划分与历史计划 | [后续优化方案（2026-09-06）](plans/next-optimization-plan-2026-09-06.md) |
 | 数据库迁移与恢复 | [迁移指南](guides/counselor-migration.md) |
 | 维护窗口备份、校验与空环境恢复 | [备份恢复指南](guides/backup-and-restore.md) |
+| 图片清理失败核查与受控重试 | [图片清理指南](guides/image-cleanup.md) |
 | deploy、容器、健康检查与运行维护 | [部署指南](guides/deployment.md) |
 | 实际依赖、已修复项和发布遗留项 | [依赖核对](verification/dependencies-2026-09-13.md)、[4D 补丁依赖树](verification/dependency-tree-4d-2026-09-30.txt) |
 | 候选版本检查与回退 | [发布指南](guides/release.md)、[安全核对](verification/security-2026-09-30.md) |
@@ -32,6 +33,7 @@
 | 5A.1：账号关联档案搜索选择 | 独立分支，本机验收 | [5A.1 验收](acceptance/phase-5a1-account-picker.md) |
 | 5A.2：错误与失败提示 | 独立分支，本机验收 | [5A.2 验收](acceptance/phase-5a2-error-feedback.md) |
 | 5A.3：操作记录中文说明、筛选与分页 | 独立分支，本机验收 | [5A.3 验收](acceptance/phase-5a3-audit-query.md) |
+| 5B：图片事务协调、失败保护与离线重试 | 独立分支，本机验收 | [5B 验收](acceptance/phase-5b-image-cleanup.md) |
 | 重构前的 MySQL 验收 | 历史版本 | [2026-08-07 记录](acceptance/2026-08-07-mysql.md) |
 
 第一至 4D 阶段均已快进整合到 `main`；阶段分支不再作为维护入口，阶段提交及全部历史仍保留。旧记录中的分支名、登录方式和功能边界描述当时状态；以当前 README 和项目证据为准。

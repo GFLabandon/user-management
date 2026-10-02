@@ -244,6 +244,34 @@ try:
     assert anon.request(photo)[0] == 302
     assert "容器验收档案" in admin.request("/counselors?keyword=CONTAINER-001")[1].decode()
     passed("real multipart CSRF, counselor create/search and private PNG upload/read")
+    # An old imported image may have multiple active archive references.
+    sql(f"INSERT INTO counselors(employee_no,name,department_id,employment_status,photo_path) VALUES ('IMAGE-SHARED','共享图片验收',{department},'ACTIVE','{photo}')")
+    shared_id = sql("SELECT id FROM counselors WHERE employee_no='IMAGE-SHARED'")
+    old_photo = photo
+    fields.update(_csrf=admin.csrf(record + "/edit"), version="0")
+    body, content_type = multipart(fields)
+    assert admin.request(record, body, content_type)[0] == 302
+    photo = sql("SELECT photo_path FROM counselors WHERE employee_no='CONTAINER-001'")
+    assert photo != old_photo and admin.request(old_photo)[0] == 200
+    def upload_names():
+        return compose("exec", "-T", "app", "find", "/app/uploads", "-maxdepth", "1", "-type", "f").stdout.splitlines()
+    before_failed_upload = sorted(upload_names())
+    fields['_csrf'] = admin.csrf(record + "/edit")
+    body, content_type = multipart(fields)
+    assert admin.request(record, body, content_type)[0] == 409
+    assert sorted(upload_names()) == before_failed_upload
+    assert sql("SELECT photo_path FROM counselors WHERE employee_no='CONTAINER-001'") == photo
+    fields.update(_csrf=admin.csrf("/counselors/new"), version="0")
+    body, content_type = multipart(fields)
+    assert admin.request("/counselors", body, content_type)[0] == 409
+    assert sorted(upload_names()) == before_failed_upload
+    fields.update(_csrf=admin.csrf(f"/counselors/{shared_id}/edit"), employeeNo="IMAGE-SHARED", name="共享图片验收")
+    body, content_type = multipart(fields)
+    assert admin.request(f"/counselors/{shared_id}", body, content_type)[0] == 302
+    assert admin.request(old_photo)[0] == 404
+    assert "/app/uploads/" + old_photo[9:] not in upload_names()
+    assert admin.request(photo)[0] == 200
+    passed("image replacement protects shared references; stale and database-rejected uploads roll back cleanly; last old reference cleanup succeeds")
     assert admin.request("/accounts", {"_csrf": admin.csrf("/accounts/new"), "username": "acceptance_viewer",
                                       "password": VIEWER_PASSWORD, "role": "VIEWER", "enabled": "true", "version": "0"})[0] == 302
     viewer.login("acceptance_viewer", VIEWER_PASSWORD)

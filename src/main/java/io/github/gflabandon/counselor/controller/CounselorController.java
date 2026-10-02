@@ -25,8 +25,9 @@ public class CounselorController {
     private final AuditService audit;
     private final DepartmentService departments;
     private final FileStorageService storage;
-    public CounselorController(CounselorService service, DepartmentService departments, FileStorageService storage, AuditService audit) {
-        this.service = service; this.departments = departments; this.storage = storage; this.audit = audit;
+    private final ImageLifecycle images;
+    public CounselorController(CounselorService service, DepartmentService departments, FileStorageService storage, AuditService audit, ImageLifecycle images) {
+        this.service = service; this.departments = departments; this.storage = storage; this.audit = audit; this.images = images;
     }
 
     @InitBinder("counselorForm")
@@ -100,14 +101,13 @@ public class CounselorController {
         }
         String newImage = null;
         int savedId;
-        String oldImage = null;
         try {
             if (photo != null && !photo.isEmpty()) newImage = storage.storeImage(photo);
             String actor = principal.getName();
             if (id == null) savedId = service.create(input, newImage, actor);
-            else { oldImage = service.update(id, input, newImage, actor); savedId = id; }
+            else { service.update(id, input, newImage, actor); savedId = id; }
         } catch (IOException | BusinessException | DataIntegrityViolationException exception) {
-            storage.delete(newImage);
+            images.retainForReview(newImage);
             if (exception instanceof RecordNotFoundException missing) throw missing;
             response.setStatus(exception instanceof EditConflictException || exception instanceof DataIntegrityViolationException ? 409
                     : exception instanceof IOException && !(exception instanceof UploadValidationException) ? 500 : 400);
@@ -120,12 +120,10 @@ public class CounselorController {
             model.addAttribute("uploadRetry", photo != null && !photo.isEmpty());
             return form(model, id);
         } catch (RuntimeException exception) {
-            storage.delete(newImage);
+            images.retainForReview(newImage);
             failure(id, "SAVE_FAILED");
             throw exception;
         }
-        // Service transaction has committed. A stale request never deletes the winning update's image.
-        storage.delete(oldImage);
         redirect.addFlashAttribute("success", id == null ? "辅导员档案已建立。" : "辅导员档案已更新。");
         return "redirect:/counselors/" + savedId;
     }

@@ -12,7 +12,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
@@ -62,16 +61,20 @@ public class FileStorageService {
         } catch (IOException invalid) {
             throw new UploadValidationException("图片内容无法解码，请重新选择有效的 JPG/PNG 图片。");
         }
+        requireUploadDirectory();
         Files.createDirectories(uploadDirectory);
         String storedName = UUID.randomUUID() + (format.equals("png") ? ".png" : ".jpg");
         Path destination = uploadDirectory.resolve(storedName);
-        try (var output = Files.newOutputStream(destination, java.nio.file.StandardOpenOption.CREATE_NEW)) {
+        boolean created = false;
+        try (var output = openImageOutput(destination)) {
+            created = true;
             if (!javax.imageio.ImageIO.write(decoded, format, output)) throw new IOException("图片无法重新编码。");
         } catch (IOException failure) {
-            try { Files.deleteIfExists(destination); }
-            catch (IOException cleanup) {
-                failure.addSuppressed(cleanup);
-                log.warn("Unable to clean partial upload {}", storedName, cleanup);
+            if (created) {
+                try { removeImage(destination); }
+                catch (IOException cleanup) {
+                    log.warn("image_cleanup file={} result=failed trigger=partial_write", storedName);
+                }
             }
             throw failure;
         }
@@ -79,27 +82,39 @@ public class FileStorageService {
     }
 
     public Path resolveImage(String name) {
-        if (!name.matches("[A-Za-z0-9_-]+\\.(?:png|jpg|jpeg)")) return null;
+        if (Files.isSymbolicLink(uploadDirectory) || !name.matches("[A-Za-z0-9_-]+\\.(?:png|jpg|jpeg)")) return null;
         Path candidate = uploadDirectory.resolve(name);
         return Files.isRegularFile(candidate, java.nio.file.LinkOption.NOFOLLOW_LINKS) ? candidate : null;
     }
 
-    public void delete(String storedPath) {
-        if (!StringUtils.hasText(storedPath)) {
-            return;
-        }
-
-        Path fileName = Path.of(storedPath).getFileName();
-        if (fileName == null) {
-            return;
-        }
-
-        try {
-            Files.deleteIfExists(uploadDirectory.resolve(fileName).normalize());
-        } catch (IOException failure) {
-            log.warn("Unable to delete stored image {}", fileName, failure);
-        }
+    static boolean validStoredPath(String path) {
+        return path != null && path.length() <= 200 && path.matches("/uploads/[A-Za-z0-9_-]+\\.(?:png|jpg|jpeg)");
     }
+
+    boolean isStoredImage(String path) {
+        return validStoredPath(path) && !Files.isSymbolicLink(uploadDirectory) && resolveImage(path.substring(9)) != null;
+    }
+
+    enum DeleteResult { DELETED, ABSENT, INVALID, FAILED }
+
+    // Only ImageLifecycle calls this after checking committed references while holding its gate.
+    DeleteResult deleteUnreferenced(String storedPath) {
+        if (!validStoredPath(storedPath) || Files.isSymbolicLink(uploadDirectory)) return DeleteResult.INVALID;
+        Path file = uploadDirectory.resolve(storedPath.substring(9));
+        if (Files.notExists(file, java.nio.file.LinkOption.NOFOLLOW_LINKS)) return DeleteResult.ABSENT;
+        if (!Files.isRegularFile(file, java.nio.file.LinkOption.NOFOLLOW_LINKS)) return DeleteResult.INVALID;
+        try { return removeImage(file) ? DeleteResult.DELETED : DeleteResult.ABSENT; }
+        catch (IOException failure) { return DeleteResult.FAILED; }
+    }
+
+    private void requireUploadDirectory() throws IOException {
+        if (Files.isSymbolicLink(uploadDirectory)) throw new IOException("Upload directory cannot be a symbolic link");
+    }
+
+    java.io.OutputStream openImageOutput(Path destination) throws IOException {
+        return Files.newOutputStream(destination, java.nio.file.StandardOpenOption.CREATE_NEW);
+    }
+    boolean removeImage(Path file) throws IOException { return Files.deleteIfExists(file); }
 
     private String extensionOf(String fileName) {
         int dot = fileName.lastIndexOf('.');

@@ -9,8 +9,9 @@
 - 4D.1 已完成本轮有边界的核对：官方摘要未变化，发布继续阻断；组件分类和 Actions 维护待办见[安全处置记录](../verification/security-mysql-review-2026-10-01.md)。
 - 5A.1 已实现并在本机验收：81 项 Java、21 项 Python、11 组真实 MySQL 运行验收通过，含两个管理员争用同一档案；浏览器搜索／选择／保存／回显通过，见[验收记录](../acceptance/phase-5a1-account-picker.md)。提交 `e2f1689`，尚未推送或合并；5A.2 从该提交继续。
 - 5A.2 已完成统一错误页、正确状态码、表单保留与安全提示：91 项 Java、21 项 Python、11 组真实 MySQL 运行验收通过，见[验收记录](../acceptance/phase-5a2-error-feedback.md)。提交 `8f79615`，未推送或合并；5A.3 从该提交继续。
-- 5A.3 已完成中文说明、操作者／对象／日期／结果筛选及分页：99 项 Java、21 项 Python、12 组真实 MySQL 验收通过，见[验收记录](../acceptance/phase-5a3-audit-query.md)。当前分支 `codex/audit-query`，未推送或合并；已整理 [5A 演示路径](../guides/phase-5a-demo.md)及截图。
-- 下一批次为 **5B 图片失败场景与清理可靠性**；6 尚未实施。Actions 运行时升级需独立提交及远程验收。
+- 5A.3 已完成中文说明、操作者／对象／日期／结果筛选及分页：99 项 Java、21 项 Python、12 组真实 MySQL 验收通过，见[验收记录](../acceptance/phase-5a3-audit-query.md)。提交 `0580c8b`，未推送或合并；已整理 [5A 演示路径](../guides/phase-5a-demo.md)及截图。
+- 5B 已完成事务完成清理、共享／历史引用保护、失败记录与停机备份后的受控单文件重试；111 项 Java、29 项 Python 及三套真实 MySQL 验收通过，见[5B 验收](../acceptance/phase-5b-image-cleanup.md)。当前分支 `codex/image-cleanup`，未推送或合并。未增加 V5 或自动重试队列，保留 11 张表及原备份格式。
+- 下一批次为 **6 有边界的性能基线**；先测量再决定是否优化，尚未实施。Actions 运行时升级需独立提交及远程验收。
 
 ## 当前依据（实施前快照）
 

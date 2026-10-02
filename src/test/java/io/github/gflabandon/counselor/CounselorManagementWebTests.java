@@ -159,6 +159,7 @@ class CounselorManagementWebTests {
         departments.delete(id, 1); assertThatThrownBy(() -> departments.get(id)).hasMessageContaining("不存在");
     }
 
+    @org.springframework.transaction.annotation.Transactional(propagation = org.springframework.transaction.annotation.Propagation.NOT_SUPPORTED)
     @Test void failedEditDeletesOnlyNewUploadAndRetainsWinningImage() throws Exception {
         Path oldImage = uploads.resolve("existing.png"); Files.write(oldImage, new byte[]{1});
         int id = service.create(input("IMAGE-1", "原始姓名"), "/uploads/existing.png", "admin");

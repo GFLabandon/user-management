@@ -1,0 +1,104 @@
+{
+  "date": "2026-10-02",
+  "scope": "local arm64 acceptance; not remote CI or release approval",
+  "baseCommit": "0580c8b505b5415f14e2a66eb2d8151959261504",
+  "branch": "codex/image-cleanup",
+  "java": {
+    "tests": 111,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "python": {
+    "tests": 29,
+    "passed": true
+  },
+  "mysqlRuntime": {
+    "project": "counselor-verify-8ef3757e2d7d",
+    "checks": [
+      "delayed database keeps application from starting early",
+      "empty database migrates V1-V4 but refuses startup without bootstrap credentials",
+      "fresh deploy has no demo records, administrator login works and management endpoints stay closed",
+      "real multipart CSRF, counselor create/search and private PNG upload/read",
+      "image replacement protects shared references; stale and database-rejected uploads roll back cleanly; last old reference cleanup succeeds",
+      "viewer cannot forge writes; disabling account revokes existing session",
+      "account picker limits and projects MySQL results; concurrent association, forged IDs, stale edits and viewer access are guarded",
+      "audit queries reach events beyond 100 with bound filters, inclusive dates, Chinese labels, safe validation and admin-only pagination",
+      "non-root app, read-only root filesystem, bounded logs, loopback HTTP and no published database port",
+      "database outage returns readiness 503 and business 503 while liveness remains UP, without app restart",
+      "database recovery restores readiness and existing login; request ID links sanitized error logs",
+      "application recreation preserves account hash, records, history and image after bootstrap secrets are removed",
+      "full Compose down/up retains database and uploads volumes"
+    ],
+    "passed": true
+  },
+  "mysqlMigrations": {
+    "passed": true,
+    "checks": [
+      "fresh",
+      "missing-mapping",
+      "mapped-legacy",
+      "v3-upgrade",
+      "unversioned"
+    ],
+    "project_prefix": "counselor-migration-84abbea3d64b",
+    "commit": "0580c8b505b5415f14e2a66eb2d8151959261504"
+  },
+  "mysqlRecovery": {
+    "passed": true,
+    "checks": [
+      "source fixture: two accounts, Chinese counselor, status history, audit and private image plus orphan",
+      "coordinated backup leaves application stopped and contains complete private checksummed bundle",
+      "offline image preview rejects running app, active and legacy references, traversal, missing backup and changed bytes",
+      "failed offline deletion is retryable and idempotent; original image remains recoverable in unchanged backup",
+      "real database lock blocks writes and releases when backup work raises an error",
+      "corrupt or missing backup refuses restore before creating target resources",
+      "fresh target restores all table rows, Flyway history, password hashes and exact upload inventory",
+      "restored HTTP login/search/edit/image and viewer permissions work; status history continues",
+      "existing nonempty target and original source are refused without stopping or changing target",
+      "missing referenced photo leaves backup incomplete, source stopped and database lock released"
+    ],
+    "restore_through_http_seconds": 18.3,
+    "restore_command_result": "Restore verified in 8.5s. Project: counselor-recovery-b767b0bae9-target. Application remains stopped; run docker compose start app, then verify login and images.",
+    "source_commit": "0580c8b505b5415f14e2a66eb2d8151959261504",
+    "app_image": "sha256:035064e11bc8050c5ba6577e3260564debc71780b7d85c2cc68db419bf0ca738",
+    "mysql": "8.4.11",
+    "counts_at_backup": {
+      "account_admin_guard": 1,
+      "audit_events": 6,
+      "counselor_status_history": 2,
+      "counselors": 1,
+      "departments": 1,
+      "flyway_schema_history": 4,
+      "legacy_counselor_mapping": 0,
+      "roles": 0,
+      "system_accounts": 2,
+      "user_roles": 0,
+      "users": 0
+    }
+  },
+  "mysqlSummary": {
+    "passed": true,
+    "suites": [
+      {
+        "suite": "verify-compose.py",
+        "exit_code": 0,
+        "seconds": 136.4
+      },
+      {
+        "suite": "verify-migrations.py",
+        "exit_code": 0,
+        "seconds": 39.1
+      },
+      {
+        "suite": "verify-recovery.py",
+        "exit_code": 0,
+        "seconds": 65.7
+      }
+    ]
+  },
+  "imageId": "sha256:035064e11bc8050c5ba6577e3260564debc71780b7d85c2cc68db419bf0ca738",
+  "schemaChanged": false,
+  "backupFormatChanged": false,
+  "automaticPersistentRetry": false
+}

@@ -5,7 +5,7 @@ Campus Counselor Management
 ![Java 17](https://img.shields.io/badge/Java-17-ED8B00?logo=openjdk&logoColor=white)
 ![Spring Boot 4.0](https://img.shields.io/badge/Spring_Boot-4.0-6DB33F?logo=springboot&logoColor=white)
 ![MyBatis](https://img.shields.io/badge/MyBatis-3-111827)
-![Tests](https://img.shields.io/badge/tests-99_passed-177454)
+![Tests](https://img.shields.io/badge/tests-111_passed-177454)
 
 由 `user-management` 演进而来的辅导员档案管理原型，采用 Java 17、Spring Boot、MyBatis、Thymeleaf 与 Flyway。支持建档、检索、院系维护、状态变更和头像上传。
 
@@ -26,7 +26,7 @@ Campus Counselor Management
 - 独立账号、bcrypt 密码哈希、管理员／只读权限；账号停用或变更后，旧会话在下一次请求失效。
 - 管理员可按工号／姓名搜索选择关联档案，展示院系、支持取消关联；保留唯一关联与并发修改保护。
 - 登录和写表单保留 CSRF；管理员可维护账号并按操作者、对象、日期和结果筛选操作记录，中文说明、固定倒序分页及每页最多 100 条。
-- 头像读取要求登录且被档案引用。上传校验 JPG/PNG 内容、5 MB、2048 像素边长和 400 万总像素，重新编码去除元数据及尾部内容；失败时清理新头像，事务提交后才删除旧头像。
+- 头像读取要求登录且被档案引用。上传校验 JPG/PNG 内容、5 MB、2048 像素边长和 400 万总像素，重新编码去除元数据及尾部内容；已确认回滚时清理新头像，提交后检查引用再清理旧头像；失败保留文件并支持停机备份后的逐项重试。
 - Flyway 管理表结构；旧资料迁移要求明确工号映射，保留原 ID、姓名、院系、照片路径与旧角色关系。
 
 ## 快速运行
@@ -103,7 +103,9 @@ flowchart LR
     Service --> Mapper[MyBatis 分页与参数化 SQL]
     Mapper --> DB[(H2 / MySQL)]
     Service --> History[状态记录]
-    Controller --> Storage[头像存储与失败清理]
+    Controller --> Storage[头像校验与存储]
+    Service --> Lifecycle[事务完成与引用协调]
+    Lifecycle --> Storage
 ```
 
 `Counselor` 保存业务档案，`Department` 保存院系信息。旧 `users/roles/user_roles` 仅用于迁移核对，不参与授权。`SystemAccount` 独立存入 `system_accounts`，可选择关联一份档案；建档不会自动开通账号。
@@ -111,6 +113,8 @@ flowchart LR
 档案、院系和头像由 Spring Security 统一保护；`/accounts` 与 `/audit` 仅管理员可访问。`/users/list` 保留只读跳转；旧新增、编辑、删除地址已退役。
 
 ## 测试与验收
+
+2026-10-02：5B 图片清理通过 111 项 Java、29 项 Python 测试及真实 MySQL 运行／迁移／恢复验收。新增事务完成清理、共享及历史引用保护和停机备份后的单文件重试，见[5B 验收](docs/acceptance/phase-5b-image-cleanup.md)与[维护指南](docs/guides/image-cleanup.md)。当前分支 `codex/image-cleanup`，未推送／合并；没有新增表或改变备份格式。
 
 2026-10-02：5A.3 操作记录查询通过本机及最终 Linux arm64 镜像内 99 项 Java、21 项 Python 测试、12 组真实 MySQL 运行验收和浏览器检查；见[5A.3 验收](docs/acceptance/phase-5a3-audit-query.md)。5A 演示路径已整理，仍未推送／合并，安全发布阻断保持不变。
 
@@ -183,7 +187,7 @@ docs/
 - 当前是两种固定角色，所有启用账号可读全部档案；尚无院系数据范围、MFA、登录限流、密码找回或 SSO。
 - 操作记录包含主要业务成功、表单失败、登录结果和权限拒绝；不保存密码或档案全文，也不提供字段前后值或防篡改存储。
 - 新上传图片重新编码；历史图片只增加读取权限，不自动重编码。尚无病毒扫描或对象存储。
-- 文件与数据库不在同一个事务中，当前提供同步失败补偿和清理失败日志，尚无持久化清理队列。
+- 文件与数据库不在同一个事务中，当前提供事务完成回调、引用协调、失败日志和停机备份后的受控重试；尚无跨重启自动补偿或多实例协调。
 - 没有学生／班级管理、审批、导入导出、AI 功能、生产部署或高并发证据。
 
-4D 的工作流与发布指南已落地，应用补丁后的高危／严重项已清除；MySQL 官方镜像仍有 28 个阻断项，安全门禁未通过。先处理这些发现并运行候选提交的远程 CI，之后再推进 5A 的错误页面、账号选择与操作记录体验。Flyway 的版本验证提示、HTTPS、登录限流仍需处理。[项目证据](docs/project-evidence.md)区分当前实现、历史记录与待开发能力。
+4D 的工作流与发布指南已落地；10 月 1 日基线远程扫描中 MySQL 官方镜像仍有 30 个阻断项，安全门禁未通过。本轮没有重跑扫描或远程 CI。5A 与 5B 已本地验收，后续开发安排见[下一阶段实施方案](docs/plans/next-steps-2026-10-01.md)。Flyway 的版本验证提示、HTTPS、登录限流仍需处理。[项目证据](docs/project-evidence.md)区分当前实现、历史记录与待开发能力。
