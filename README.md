@@ -116,17 +116,15 @@ flowchart LR
 
 ## 测试与验收
 
-2026-10-02：MySQL 安全修复本机通过 111 项 Java、32 项 Python、真实 MySQL 运行 14 组、迁移／镜像切换 6 组、恢复 10 组；应用与派生数据库镜像 HIGH／CRITICAL 均为 0，未降低门禁。见[修复验收](docs/verification/security-mysql-runtime-2026-10-02.md)。所有阶段成果汇集于 [PR #1](https://github.com/GFLabandon/user-management/pull/1)，远程 CI 与合并状态以候选提交为准。
+2026-10-02：所有阶段成果已通过 [PR #1](https://github.com/GFLabandon/user-management/pull/1) 合并到 `main`（`97e309d`）。[合并后的 CI](https://github.com/GFLabandon/user-management/actions/runs/37022219263) 三项任务全部通过：111 项 Java、32 项 Python、真实 MySQL 运行 14 组、迁移／镜像切换 6 组、恢复 10 组；应用与派生数据库镜像 HIGH／CRITICAL 均为 0，未降低门禁。见[安全修复验收](docs/verification/security-mysql-runtime-2026-10-02.md)及[空间清理与 CI 维护](docs/verification/maintenance-2026-10-02.md)。
 
-2026-10-02：第 6 阶段完成三档合成数据查询基线，实际 Mapper／Service 的 33 个场景通过结果和 SQL 数量校验；最大档为 1 万份档案和 10 万条操作记录。本轮保留现有查询和索引，完整方法、执行计划、耗时与边界见[查询基线](docs/acceptance/phase-6-query-baseline.md)。当前在 `codex/query-baseline`，远程验收以候选 PR 为准。本机 Docker 清理及保留内容见[资源说明](docs/guides/docker-resources.md)。
+第 6 阶段完成三档合成数据查询基线，实际 Mapper／Service 的 33 个场景通过结果和 SQL 数量校验；最大档为 1 万份档案和 10 万条操作记录。本轮保留现有查询和索引，完整方法、执行计划、耗时与边界见[查询基线](docs/acceptance/phase-6-query-baseline.md)。本机 Docker 清理及保留内容见[资源说明](docs/guides/docker-resources.md)。
 
-2026-10-02：5B 图片清理通过 111 项 Java、29 项 Python 测试及真实 MySQL 运行／迁移／恢复验收。新增事务完成清理、共享及历史引用保护和停机备份后的单文件重试，见[5B 验收](docs/acceptance/phase-5b-image-cleanup.md)与[维护指南](docs/guides/image-cleanup.md)。当前分支 `codex/image-cleanup`，未推送／合并；没有新增表或改变备份格式。
+5B 新增事务完成清理、共享及历史引用保护和停机备份后的单文件重试，见[5B 验收](docs/acceptance/phase-5b-image-cleanup.md)与[维护指南](docs/guides/image-cleanup.md)。没有新增表或改变备份格式。
 
-2026-10-02：5A.3 操作记录查询通过本机及最终 Linux arm64 镜像内 99 项 Java、21 项 Python 测试、12 组真实 MySQL 运行验收和浏览器检查；见[5A.3 验收](docs/acceptance/phase-5a3-audit-query.md)。5A 演示路径已整理，仍未推送／合并，安全发布阻断保持不变。
+5A.3 增加操作记录筛选与分页，见[5A.3 验收](docs/acceptance/phase-5a3-audit-query.md)；5A.2 补齐错误状态、页面和表单恢复，见[5A.2 验收](docs/acceptance/phase-5a2-error-feedback.md)；5A.1 增加工号／姓名搜索选择关联档案，见[5A.1 验收](docs/acceptance/phase-5a1-account-picker.md)。完整操作顺序见[5A 演示路径](docs/guides/phase-5a-demo.md)。
 
-2026-10-01：5A.2 错误反馈通过本机及 Linux arm64 镜像内 91 项 Java 测试（含真实 HTTP／multipart）、21 项 Python 测试、11 组真实 MySQL 运行验收和浏览器检查；见[5A.2 验收](docs/acceptance/phase-5a2-error-feedback.md)。未推送或执行新远程 CI，MySQL 发布阻断仍保留。
-
-2026-10-01：5A.1 账号关联选择已在本机通过 81 项 Java、21 项 Python 测试和 11 组真实 MySQL 运行验收，并完成浏览器操作检查。见[5A.1 验收](docs/acceptance/phase-5a1-account-picker.md)。同日[官方镜像核对](docs/verification/security-mysql-review-2026-10-01.md)没有发现新的同版本构建，发布继续阻断；本轮未执行新远程 CI。
+历史阶段记录中的测试数量、安全状态和分支描述对应当时快照，当前状态以上述合并验收为准。
 
 ```bash
 ./mvnw --batch-mode --no-transfer-progress clean verify
@@ -196,4 +194,4 @@ docs/
 - 文件与数据库不在同一个事务中，当前提供事务完成回调、引用协调、失败日志和停机备份后的受控重试；尚无跨重启自动补偿或多实例协调。
 - 没有学生／班级管理、审批、导入导出、AI 功能、生产部署或高并发证据。
 
-4D 的工作流与发布指南已落地，5A、5B 和查询基线已有验收证据。10 月 2 日增加 MySQL 派生镜像修复，原 30 项 HIGH／CRITICAL 阻断在本机复扫归零；远程候选检查见 [PR #1](https://github.com/GFLabandon/user-management/pull/1)。这不代表没有中低危发现或已具备公网生产条件。Flyway 的版本验证提示、HTTPS、登录限流和 Actions 运行时升级仍需处理。[项目证据](docs/project-evidence.md)区分当前实现、历史记录与待开发能力。
+4D 的工作流与发布指南已落地，5A、5B 和查询基线已有验收证据。10 月 2 日增加 MySQL 派生镜像修复，原 30 项 HIGH／CRITICAL 阻断在本机及合并后的 CI 复扫归零。这不代表没有中低危发现或已具备公网生产条件。Flyway 的版本验证提示、HTTPS、登录限流仍需处理。Actions 已改用 Node 24 并固定提交，验收状态见[维护记录](docs/verification/maintenance-2026-10-02.md)。[项目证据](docs/project-evidence.md)区分当前实现、历史记录与待开发能力。

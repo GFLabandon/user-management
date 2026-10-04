@@ -1,8 +1,8 @@
 # 文档导航
 
-最新安全修复：MySQL 8.4.11 派生镜像已通过本机 111 项 Java、32 项 Python、14／6／10 组真实 MySQL 验收及完整扫描；HIGH／CRITICAL 为 0。见[4D.2 验收](verification/security-mysql-runtime-2026-10-02.md)与[镜像维护指南](guides/mysql-runtime-image.md)。当前成果和远程检查汇集于 [PR #1](https://github.com/GFLabandon/user-management/pull/1)；下面的基线与阶段记录保留历史状态。
+当前基线：2026-10-02，4D.2、5A.1–5A.3、5B 和第 6 阶段已通过 [PR #1](https://github.com/GFLabandon/user-management/pull/1) 合并到 `main`（`97e309d`）。[main CI](https://github.com/GFLabandon/user-management/actions/runs/37022219263) 三项任务全部通过：111 项 Java、32 项 Python、14 组运行、6 组迁移／镜像切换、10 组恢复；应用与派生数据库镜像 HIGH／CRITICAL 均为 0。扫描结果描述当次报告，不代表生产部署或零风险。
 
-当前进展：第一至 4D 阶段已整合到 `main`，代码基线 `7706eaa`。更新时间：2026-10-02。该提交的远程 CI 中 Java/Python 与真实 MySQL 验收通过；安全扫描仍有 MySQL 镜像阻断项，尚未发布。5A.1–5A.3、5B 及第 6 阶段查询基线已通过本机验收，当前在 `codex/query-baseline`，推送与合并以候选 PR 为准；见[查询基线](acceptance/phase-6-query-baseline.md)与[演示路径](guides/phase-5a-demo.md)。具体安排见[下一阶段实施方案](plans/next-steps-2026-10-01.md)。
+后续维护见[空间清理与 CI 更新](verification/maintenance-2026-10-02.md)；功能演示见[演示路径](guides/phase-5a-demo.md)，原方案及执行记录见[下一阶段实施方案](plans/next-steps-2026-10-01.md)。历史验收文档保留当时分支和结果。
 
 ## 从这里开始
 
@@ -35,15 +35,15 @@
 | 4C：协调备份、恢复保护与真实 HTTP 验收 | `bf8a300` | [4C 验收](acceptance/phase-4c-backup-recovery.md) |
 | 4D：MySQL CI、扫描与发布流程 | `88e2f9c`、补丁 `61635f8` | [4D 验收](acceptance/phase-4d-ci-release.md) |
 | 4D.1：官方镜像处置核对 | 本地核对，发布仍阻断 | [4D.1 核对](verification/security-mysql-review-2026-10-01.md) |
-| 4D.2：数据库派生镜像安全修复 | 本机门禁通过；远程检查见 PR | [4D.2 验收](verification/security-mysql-runtime-2026-10-02.md) |
-| 5A.1：账号关联档案搜索选择 | 独立分支，本机验收 | [5A.1 验收](acceptance/phase-5a1-account-picker.md) |
-| 5A.2：错误与失败提示 | 独立分支，本机验收 | [5A.2 验收](acceptance/phase-5a2-error-feedback.md) |
-| 5A.3：操作记录中文说明、筛选与分页 | 独立分支，本机验收 | [5A.3 验收](acceptance/phase-5a3-audit-query.md) |
-| 5B：图片事务协调、失败保护与离线重试 | 独立分支，本机验收 | [5B 验收](acceptance/phase-5b-image-cleanup.md) |
+| 4D.2：数据库派生镜像安全修复 | `a9c776e`；已合并，远程通过 | [4D.2 验收](verification/security-mysql-runtime-2026-10-02.md) |
+| 5A.1：账号关联档案搜索选择 | `e2f1689`；已合并 | [5A.1 验收](acceptance/phase-5a1-account-picker.md) |
+| 5A.2：错误与失败提示 | `8f79615`；已合并 | [5A.2 验收](acceptance/phase-5a2-error-feedback.md) |
+| 5A.3：操作记录中文说明、筛选与分页 | `0580c8b`；已合并 | [5A.3 验收](acceptance/phase-5a3-audit-query.md) |
+| 5B：图片事务协调、失败保护与离线重试 | `0e2546e`；已合并 | [5B 验收](acceptance/phase-5b-image-cleanup.md) |
 | 6：三档查询基线 | 本机 33 场景；保留现有 SQL／索引 | [第 6 阶段](acceptance/phase-6-query-baseline.md) |
 | 重构前的 MySQL 验收 | 历史版本 | [2026-08-07 记录](acceptance/2026-08-07-mysql.md) |
 
-第一至 4D 阶段均已快进整合到 `main`；阶段分支不再作为维护入口，阶段提交及全部历史仍保留。旧记录中的分支名、登录方式和功能边界描述当时状态；以当前 README 和项目证据为准。
+第一至第 6 阶段均已整合到 `main`；阶段分支不再作为维护入口，阶段提交及全部历史仍保留。旧记录中的分支名、登录方式和功能边界描述当时状态；以当前 README 和项目证据为准。
 
 ## 目录约定
 
