@@ -20,7 +20,7 @@
 </select><small class="field-error" th:errors="*{departmentId}"></small></label>
 <label class="field"><span>任职状态</span><select th:field="*{employmentStatus}" required><option th:each="s : ${statuses}" th:value="${s}" th:text="${s.label}"></option></select><small class="field-error" th:errors="*{employmentStatus}"></small></label>
 <label class="field field-wide"><span>备注</span><textarea th:field="*{remark}" rows="3" maxlength="255"></textarea><small class="field-error" th:errors="*{remark}"></small></label>
-<label class="field field-wide"><span>头像</span><input name="photo" type="file" accept="image/png,image/jpeg"><small>支持 JPG/PNG，最大 5 MB；不选择则保留原头像。</small></label>
+<label class="field field-wide"><span>头像</span><input name="photo" type="file" accept="image/png,image/jpeg" aria-describedby="photo-help"><small id="photo-help">支持 JPG/PNG，最大 5 MB；宽、高均不超过 2048 像素，总像素不超过 400 万。编辑时不选择新图片则保留原头像。</small></label>
 <div th:if="${existing != null and existing.photoPath != null}"><img class="avatar avatar-large" th:src="${existing.photoPath}" alt="当前头像"></div>
 <small class="field-error" th:errors="*{version}"></small>
 </div><div class="form-actions"><a class="button button-ghost" th:href="@{/counselors}">取消</a><button class="button button-primary" type="submit" th:disabled="${conflict == true}">保存档案</button></div>

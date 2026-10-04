@@ -288,6 +288,19 @@ nav > a:not(.button) {
     overflow-x: auto;
 }
 
+.table-scroll:focus-visible {
+    outline: 2px solid var(--blue-600);
+    outline-offset: -3px;
+}
+
+.account-table {
+    min-width: 680px;
+}
+
+.account-table td {
+    overflow-wrap: anywhere;
+}
+
 table {
     width: 100%;
     border-collapse: collapse;
