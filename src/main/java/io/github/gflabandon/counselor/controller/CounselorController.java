@@ -5,6 +5,7 @@ import java.util.List;
 import io.github.gflabandon.counselor.entity.*;
 import io.github.gflabandon.counselor.service.*;
 import io.github.gflabandon.counselor.web.CounselorForm;
+import io.github.gflabandon.counselor.web.CounselorListContext;
 import java.security.Principal;
 import jakarta.validation.Valid;
 import jakarta.servlet.http.HttpServletResponse;
@@ -40,13 +41,24 @@ public class CounselorController {
     @ModelAttribute("statuses")
     EmploymentStatus[] statuses() { return EmploymentStatus.values(); }
 
+    @ModelAttribute("listContext")
+    CounselorListContext listContext(@RequestParam(defaultValue = "") String listKeyword,
+                                     @RequestParam(required = false) Integer listDepartmentId,
+                                     @RequestParam(required = false) EmploymentStatus listStatus,
+                                     @RequestParam(required = false) Integer listPage,
+                                     @RequestParam(defaultValue = "10") int listSize) {
+        return new CounselorListContext(listKeyword, listDepartmentId, listStatus, listPage, listSize);
+    }
+
     @GetMapping
     public String list(@RequestParam(defaultValue = "") String keyword,
                        @RequestParam(required = false) Integer departmentId,
                        @RequestParam(required = false) EmploymentStatus status,
                        @RequestParam(defaultValue = "1") int page,
                        @RequestParam(defaultValue = "10") int size, Model model) {
-        model.addAttribute("result", service.search(keyword, departmentId, status, page, size));
+        var result = service.search(keyword, departmentId, status, page, size);
+        model.addAttribute("result", result);
+        model.addAttribute("listContext", new CounselorListContext(keyword, departmentId, status, result.page(), result.size()));
         model.addAttribute("keyword", keyword.trim());
         model.addAttribute("departmentId", departmentId);
         model.addAttribute("status", status);
@@ -125,17 +137,17 @@ public class CounselorController {
             throw exception;
         }
         redirect.addFlashAttribute("success", id == null ? "辅导员档案已建立。" : "辅导员档案已更新。");
-        return "redirect:/counselors/" + savedId;
+        return "redirect:" + ((CounselorListContext) model.getAttribute("listContext")).detailUrl(savedId);
     }
 
     @PostMapping("/{id}/deactivate")
     public String deactivate(@PathVariable int id, @RequestParam int version, Principal principal,
-                             RedirectAttributes redirect) {
+                             RedirectAttributes redirect, Model model) {
         try {
             service.deactivate(id, version, principal.getName());
             redirect.addFlashAttribute("success", "档案已停用，原有资料和状态记录保留。");
         } catch (BusinessException exception) { failure(id, "DEACTIVATE_FAILED"); throw exception; }
-        return "redirect:/counselors/" + id;
+        return "redirect:" + ((CounselorListContext) model.getAttribute("listContext")).detailUrl(id);
     }
 
     private String form(Model model, Integer id) {
