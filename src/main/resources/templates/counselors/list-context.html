@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<body>
+<th:block th:fragment="fields" th:if="${listContext.present}">
+    <input type="hidden" name="listKeyword" th:value="${listContext.keyword}">
+    <input type="hidden" name="listDepartmentId" th:if="${listContext.departmentId != null}" th:value="${listContext.departmentId}">
+    <input type="hidden" name="listStatus" th:if="${listContext.status != null}" th:value="${listContext.status}">
+    <input type="hidden" name="listPage" th:value="${listContext.page}">
+    <input type="hidden" name="listSize" th:value="${listContext.size}">
+</th:block>
+</body>
+</html>

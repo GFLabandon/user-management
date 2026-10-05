@@ -5,7 +5,7 @@ Campus Counselor Management
 ![Java 17](https://img.shields.io/badge/Java-17-ED8B00?logo=openjdk&logoColor=white)
 ![Spring Boot 4.0](https://img.shields.io/badge/Spring_Boot-4.0-6DB33F?logo=springboot&logoColor=white)
 ![MyBatis](https://img.shields.io/badge/MyBatis-3-111827)
-![Tests](https://img.shields.io/badge/tests-111_passed-177454)
+![Tests](https://img.shields.io/badge/tests-118_passed-177454)
 
 由 `user-management` 演进而来的辅导员档案管理原型，采用 Java 17、Spring Boot、MyBatis、Thymeleaf 与 Flyway。支持建档、检索、院系维护、状态变更和头像上传。
 
@@ -17,6 +17,7 @@ Campus Counselor Management
 
 - 工号唯一且统一大写，姓名允许重复；支持院系、在职／停用、备注和头像。
 - 按工号或姓名检索，按院系、任职状态筛选；分页、稳定排序及页码越界处理。
+- 从筛选列表进入档案后，返回、取消、保存及冲突重开保留原筛选和页码；不同标签页互不覆盖。
 - 列表使用一次计数和一次关联分页查询，避免逐条查询院系。
 - 新增、编辑、停用档案；保留状态变化、操作者与时间。恢复在职可在编辑页完成。
 - 版本号检查：过期编辑和停用请求不能覆盖已保存的修改；冲突返回 409，保留输入并提供重新打开最新记录的入口。
@@ -115,6 +116,8 @@ flowchart LR
 档案、院系和头像由 Spring Security 统一保护；`/accounts` 与 `/audit` 仅管理员可访问。`/users/list` 保留只读跳转；旧新增、编辑、删除地址已退役。
 
 ## 测试与验收
+
+2026-10-05：列表条件保留通过 118 项 Java、32 项 Python 测试与浏览器保存／冲突／多标签页复验；见[验收记录](docs/acceptance/list-context-2026-10-05.md)。远程检查以对应 PR 为准，以下保留历史验收快照。
 
 2026-10-02：所有阶段成果已通过 [PR #1](https://github.com/GFLabandon/user-management/pull/1) 合并到 `main`（`97e309d`）。[合并后的 CI](https://github.com/GFLabandon/user-management/actions/runs/37022219263) 三项任务全部通过：111 项 Java、32 项 Python、真实 MySQL 运行 14 组、迁移／镜像切换 6 组、恢复 10 组；应用与派生数据库镜像 HIGH／CRITICAL 均为 0，未降低门禁。见[安全修复验收](docs/verification/security-mysql-runtime-2026-10-02.md)及[空间清理与 CI 维护](docs/verification/maintenance-2026-10-02.md)。
 

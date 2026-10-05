@@ -6,6 +6,8 @@
 
 ## 当前实现
 
+2026-10-05 补充：档案列表条件在查看、编辑、保存与冲突重开之间保留，按页面传递而非 Session 记忆；本机 Java 测试为 118 项、Python 为 32 项，见[本轮验收](acceptance/list-context-2026-10-05.md)。表中 4D.2 数字保留该阶段快照。
+
 | 能力 | 实现位置／验证 |
 | --- | --- |
 | Java 17、Spring Boot、MyBatis、Thymeleaf | pom.xml；标准 Maven 目录 |
