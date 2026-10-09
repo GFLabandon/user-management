@@ -6,8 +6,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import java.nio.file.Path;
+import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.regex.Pattern;
 import io.github.gflabandon.counselor.entity.AuditEvent;
 import io.github.gflabandon.counselor.security.DatabaseUserDetailsService;
 import io.github.gflabandon.counselor.service.AuditService;
@@ -22,6 +24,7 @@ import org.springframework.test.context.*;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.util.HtmlUtils;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -43,6 +46,74 @@ class AuditQueryTests {
     @SuppressWarnings("unchecked")
     private PageResult<AuditEvent> page(MvcResult result) { return (PageResult<AuditEvent>) result.getModelAndView().getModel().get("result"); }
     private AuditQuery query(String actor) { var q = new AuditQuery(); q.setActor(actor); return q; }
+
+    private String shortcut(String path, String type, long id) throws Exception {
+        var source = mvc.perform(get(path).with(admin())).andExpect(status().isOk()).andReturn();
+        var link = Pattern.compile("href=\"([^\"]+)\"[^>]*>查看操作记录</a>")
+                .matcher(source.getResponse().getContentAsString());
+        while (link.find()) {
+            String url = HtmlUtils.htmlUnescape(link.group(1));
+            if (url.equals("/audit?targetType=" + type + "&targetId=" + id)) return url;
+        }
+        throw new AssertionError("Missing audit shortcut for " + type + " " + id + " on " + path);
+    }
+
+    @Test void objectShortcutsOpenOnlyTheirOwnEventsEvenWhenTypesShareAnId() throws Exception {
+        long counselorId = jdbc.queryForObject("SELECT id FROM counselors WHERE employee_no='DEMO-001'", Long.class);
+        long accountId = jdbc.queryForObject("SELECT id FROM system_accounts WHERE username='admin'", Long.class);
+        long departmentId = jdbc.queryForObject("SELECT department_id FROM counselors WHERE id=?", Long.class, counselorId);
+        long otherCounselorId = jdbc.queryForObject("SELECT id FROM counselors WHERE employee_no='DEMO-003'", Long.class);
+        jdbc.update("UPDATE system_accounts SET counselor_id=? WHERE id=?", otherCounselorId, accountId);
+        assertThat(accountId).isNotEqualTo(otherCounselorId);
+        jdbc.update("DELETE FROM audit_events");
+        for (long id : new HashSet<>(List.of(counselorId, accountId, departmentId, otherCounselorId))) {
+            for (String type : List.of("COUNSELOR", "ACCOUNT", "DEPARTMENT")) {
+                for (String outcome : List.of("SUCCESS", "FAILURE", "DENIED")) {
+                    event("shortcut-" + outcome, type, Long.toString(id), outcome, "2026-01-01T12:00:00");
+                }
+            }
+        }
+        long before = jdbc.queryForObject("SELECT COUNT(*) FROM audit_events", Long.class);
+        var paths = List.of("/counselors/" + counselorId, "/accounts", "/departments");
+        var types = List.of("COUNSELOR", "ACCOUNT", "DEPARTMENT");
+        var ids = List.of(counselorId, accountId, departmentId);
+        for (int i = 0; i < paths.size(); i++) {
+            String type = types.get(i), id = ids.get(i).toString();
+            var result = mvc.perform(get(URI.create(shortcut(paths.get(i), type, ids.get(i)))).with(admin()))
+                    .andExpect(status().isOk()).andReturn();
+            assertThat(page(result).total()).isEqualTo(3);
+            assertThat(page(result).items()).allSatisfy(e -> {
+                assertThat(e.getTargetType()).isEqualTo(type);
+                assertThat(e.getTargetId()).isEqualTo(id);
+            }).extracting(AuditEvent::getOutcome).containsExactlyInAnyOrder("SUCCESS", "FAILURE", "DENIED");
+        }
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM audit_events", Long.class)).isEqualTo(before);
+    }
+
+    @Test void shortcutWithoutEventsKeepsTheObjectFilterAndShowsEmptyState() throws Exception {
+        long id = jdbc.queryForObject("SELECT id FROM counselors WHERE employee_no='DEMO-001'", Long.class);
+        jdbc.update("DELETE FROM audit_events WHERE target_type='COUNSELOR' AND target_id=?", Long.toString(id));
+        var result = mvc.perform(get(URI.create(shortcut("/counselors/" + id, "COUNSELOR", id))).with(admin()))
+                .andExpect(status().isOk()).andReturn();
+        assertThat(page(result).total()).isZero();
+        var query = (AuditQuery) result.getModelAndView().getModel().get("auditQuery");
+        assertThat(query.getTargetType()).isEqualTo("COUNSELOR");
+        assertThat(query.getTargetId()).isEqualTo(Long.toString(id));
+        assertThat(result.getResponse().getContentAsString()).contains("没有匹配的操作记录", "清除筛选");
+    }
+
+    @Test void viewersHaveNoShortcutsAndCannotUseAnAdministratorsCopiedLink() throws Exception {
+        long id = jdbc.queryForObject("SELECT id FROM counselors WHERE employee_no='DEMO-001'", Long.class);
+        String url = shortcut("/counselors/" + id, "COUNSELOR", id);
+        for (String path : List.of("/counselors/" + id, "/departments")) {
+            var result = mvc.perform(get(path).with(user(users.loadUserByUsername("viewer"))))
+                    .andExpect(status().isOk()).andReturn();
+            assertThat(result.getResponse().getContentAsString()).doesNotContain("查看操作记录", "href=\"/audit");
+        }
+        mvc.perform(get("/accounts").with(user(users.loadUserByUsername("viewer")))).andExpect(status().isForbidden());
+        mvc.perform(get(URI.create(url)).with(user(users.loadUserByUsername("viewer")))).andExpect(status().isForbidden());
+        mvc.perform(get(URI.create(url))).andExpect(redirectedUrl("/login"));
+    }
 
     @Test void moreThanOneHundredEventsRemainReachableInStableIdOrderWithoutRewritingHistory() throws Exception {
         List<Long> ids = new ArrayList<>();
