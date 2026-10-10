@@ -8,7 +8,7 @@ x-logging: &bounded-logs
 
 services:
   db:
-    image: campus-counselor-mysql:8.4.11-runtime-1
+    image: campus-counselor-mysql:8.4.11-runtime-2
     build: ./docker/mysql
     environment:
       MYSQL_DATABASE: counselor

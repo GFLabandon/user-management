@@ -394,17 +394,19 @@ try:
     assert compose("exec", "-T", "app", "id", "-u").stdout.strip() == "10001"
     passed("non-root app, read-only root filesystem, bounded logs, loopback HTTP and no published database port")
     db_details = json.loads(command(["docker", "inspect", compose("ps", "--quiet", "db").stdout.strip()]).stdout)[0]
-    assert db_details["Config"]["Labels"]["io.counselor.mysql.variant"] == "8.4.11-runtime-1"
+    assert db_details["Config"]["Labels"]["io.counselor.mysql.variant"] == "8.4.11-runtime-2"
     assert compose("exec", "-T", "db", "cat", "/proc/1/comm").stdout.strip() == "mysqld"
     process_status = compose("exec", "-T", "db", "cat", "/proc/1/status").stdout
     assert re.search(r"^Uid:\s+999\s+999\s+999\s+999$", process_status, re.MULTILINE)
     gosu_version = compose("exec", "-T", "db", "gosu", "--version").stdout
-    assert "1.19" in gosu_version and "go1.27.1" in gosu_version
+    assert "1.19" in gosu_version and "go1.27.2" in gosu_version
+    for package in ("openssl", "openssl-libs"):
+        assert compose("exec", "-T", "db", "rpm", "-q", "--qf", "%{VERSION}-%{RELEASE}", package).stdout.strip() == "3.5.8-2.0.1.el9_8"
     assert compose("exec", "-T", "db", "rpm", "-q", "mysql-shell", check=False).returncode == 1
     assert compose("exec", "-T", "db", "test", "!", "-d", "/usr/lib/mysqlsh").returncode == 0
     for binary in ("mysql", "mysqldump", "mysqld"):
         assert "8.4.11" in compose("exec", "-T", "db", binary, "--version").stdout
-    passed("derived MySQL keeps server/client/dump 8.4.11; rebuilt gosu drops PID 1 to mysql UID 999; unused Shell is absent")
+    passed("derived MySQL keeps server/client/dump 8.4.11; patched OpenSSL and Go match; gosu drops PID 1 to mysql UID 999; unused Shell is absent")
     compose("stop", "db")
     health(anon, "liveness", 200)
     health(admin, "liveness", 200)

@@ -30,7 +30,7 @@ def upgrade_fixture(deployment, temporary):
     deployment.compose('up', '-d', '--no-build', '--force-recreate', '--wait', '--wait-timeout', '180', 'db')
     current = deployment.inspect('db')
     assert current['Image'] != old_image
-    assert current['Config']['Labels']['io.counselor.mysql.variant'] == '8.4.11-runtime-1'
+    assert current['Config']['Labels']['io.counselor.mysql.variant'] == '8.4.11-runtime-2'
     assert deployment.metadata() == before
     upgraded = Path(temporary) / 'after-upgrade.sql'
     deployment.dump(upgraded, rows_only=True)

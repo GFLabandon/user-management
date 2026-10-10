@@ -1,6 +1,6 @@
 # MySQL 运行镜像的来源、构建与更新
 
-当前 Compose 使用本项目构建的 `campus-counselor-mysql:8.4.11-runtime-1`。它是官方 MySQL 8.4.11 的小范围派生版本，**不是新的数据库产品或官方发布包**。官方基础镜像、Go 构建镜像、gosu 源码提交及归档摘要均固定在 [Dockerfile](../../docker/mysql/Dockerfile) 中。
+当前 Compose 使用本项目构建的 `campus-counselor-mysql:8.4.11-runtime-2`。它是官方 MySQL 8.4.11 的小范围派生版本，**不是新的数据库产品或官方发布包**。官方基础镜像、Go 构建镜像、gosu 源码提交及归档摘要均固定在 [Dockerfile](../../docker/mysql/Dockerfile) 中。
 
 ## 为什么派生
 
@@ -10,14 +10,18 @@
 
 因此通过 RPM 正常卸载整包 Shell，依赖预检失败即停止构建。卸载后仅在确认残留全为 `.pyc` 字节码和目录时清理缓存；不批量删除未知系统文件。派生版本不提供 MySQL Shell，高级 Shell 管理操作需在单独的受控工具环境中进行。
 
-入口脚本使用 gosu 从 root 降权为 mysql，不能删除。保留 gosu 1.19 的原始源码和依赖版本，用 Go 1.27.1 静态重编译，保留构建信息和许可证；不将 Go 编译工具链带入数据库运行镜像。数据库服务端、客户端、导出工具、配置和入口脚本保持基础版本不变。
+入口脚本使用 gosu 从 root 降权为 mysql，不能删除。保留 gosu 1.19 的原始源码和依赖版本，用 Go 1.27.2 静态重编译，保留构建信息和许可证；不将 Go 编译工具链带入数据库运行镜像。数据库服务端、客户端、导出工具、配置和入口脚本保持基础版本不变。
 
 上游对 gosu 的部分 Go 标准库告警有可达性解释，本项目没有把这当作整体豁免，而是重编译后全量扫描。[官方 MySQL Dockerfile](https://github.com/docker-library/mysql/blob/01f90d87012e46cd174073bba02d64e9fc693ed3/8.4/Dockerfile.oracle)、[gosu 1.19](https://github.com/tianon/gosu/tree/6456aaa0f3c854d199d0f037f068eb97515b7513)、[gosu 安全说明](https://github.com/tianon/gosu/blob/1.19/SECURITY.md)、[Go 官方下载](https://go.dev/dl/)。
+
+## 2026-10-10 补丁更新
+
+`runtime-2` 保持 MySQL 8.4.11、gosu 1.19 源码及原入口，使用 Go 1.27.2 重编译 gosu，并通过 Oracle Linux 软件源安装固定版本 `openssl`／`openssl-libs` `3.5.8-2.0.1.el9_8`。构建与运行验收均检查实际安装版本。此更新处理 10 月 9 日复扫发现的 4 条 HIGH；结果与验证范围见[本轮记录](../verification/security-mysql-runtime-2026-10-10.md)。
 
 ## 构建、扫描和验收
 
 ```sh
-docker build -t campus-counselor-mysql:8.4.11-runtime-1 docker/mysql
+docker build -t campus-counselor-mysql:8.4.11-runtime-2 docker/mysql
 docker build -t campus-counselor-management:local .
 docker build --target migration-verification -t campus-counselor-migrations:local .
 python3 -B -m unittest discover -s scripts/tests -v
@@ -40,6 +44,6 @@ python3 -B scripts/check-security.py
 
 ## 后续维护成本
 
-这是本项目维护的派生构建，需同时跟踪官方 MySQL 基础摘要、Go 工具链和 gosu 源码／依赖。任一变化都要更新固定值，重建、跑完整 MySQL 验收并复扫。上游官方镜像将来能通过同一门禁时，可单独验证回归后撤掉派生层。
+这是本项目维护的派生构建，需同时跟踪官方 MySQL 基础摘要、Oracle Linux OpenSSL 补丁、Go 工具链和 gosu 源码／依赖。任一变化都要更新固定值，重建、跑完整 MySQL 验收并复扫。上游官方镜像将来能通过同一门禁时，可单独验证回归后撤掉派生层。
 
 不通过 `pip install` 覆盖供应商私有 Python，也不通过更换数据库大版本、删扫描元数据或降低门禁解决告警。扫描通过只说明该次扫描范围内无 HIGH／CRITICAL，不等于没有中低危项、未知漏洞或已经适合公网生产运行。具体结果见[安全修复验收](../verification/security-mysql-runtime-2026-10-02.md)。

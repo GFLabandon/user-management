@@ -8,6 +8,10 @@
 
 2026-10-05：档案返回列表、编辑取消、保存及冲突重开现保留原筛选与页码，见[条件保留验收](acceptance/list-context-2026-10-05.md)。
 
+2026-10-09：管理员可从档案、账号和院系直接定位操作记录，见[快捷入口验收](acceptance/audit-shortcuts-2026-10-09.md)。
+
+2026-10-10：MySQL 派生镜像更新 OpenSSL 与 Go 补丁，见[安全修复记录](verification/security-mysql-runtime-2026-10-10.md)。
+
 ## 从这里开始
 
 | 目的 | 文档 |

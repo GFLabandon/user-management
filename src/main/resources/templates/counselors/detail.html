@@ -8,7 +8,9 @@
 <section class="card profile-card"><div class="profile-hero">
 <img class="avatar avatar-large" th:if="${counselor.photoPath}" th:src="${counselor.photoPath}" alt="头像">
 <div><p class="eyebrow" th:text="${counselor.employeeNo}"></p><h1 th:text="${counselor.name}"></h1><p class="muted" th:text="${counselor.departmentName}"></p></div>
-<a sec:authorize="hasRole('ADMIN')" class="button button-primary profile-edit" th:href="@{${listContext.editUrl(counselor.id)}}">编辑档案</a></div>
+<div sec:authorize="hasRole('ADMIN')" class="profile-actions">
+<a class="button button-primary" th:href="@{${listContext.editUrl(counselor.id)}}">编辑档案</a>
+<a class="button button-ghost" th:href="@{/audit(targetType='COUNSELOR',targetId=${counselor.id})}">查看操作记录</a></div></div>
 <dl class="detail-grid"><div><dt>任职状态</dt><dd th:text="${counselor.employmentStatus.label}"></dd></div>
 <div><dt>建立时间</dt><dd th:text="${#temporals.format(counselor.createdAt,'yyyy-MM-dd HH:mm:ss')}"></dd></div>
 <div><dt>更新时间</dt><dd th:text="${#temporals.format(counselor.updatedAt,'yyyy-MM-dd HH:mm:ss')}"></dd></div></dl>
