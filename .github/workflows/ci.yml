@@ -46,7 +46,7 @@ jobs:
           docker compose version
       - name: Build tested application and migration harness
         run: |
-          docker build -t campus-counselor-mysql:8.4.11-runtime-1 docker/mysql
+          docker build -t campus-counselor-mysql:8.4.11-runtime-2 docker/mysql
           docker build -t campus-counselor-management:local .
           docker build --target migration-verification -t campus-counselor-migrations:local .
       - name: Run isolated MySQL acceptance
@@ -70,7 +70,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - run: |
-          docker build -t campus-counselor-mysql:8.4.11-runtime-1 docker/mysql
+          docker build -t campus-counselor-mysql:8.4.11-runtime-2 docker/mysql
           docker build -t campus-counselor-management:local .
       - name: Install pinned scanner with checksum verification
         run: python3 -B scripts/install-trivy.py

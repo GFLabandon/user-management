@@ -10,6 +10,8 @@
 
 2026-10-09：管理员可从档案、账号和院系直接定位操作记录，见[快捷入口验收](acceptance/audit-shortcuts-2026-10-09.md)。
 
+2026-10-10：MySQL 派生镜像更新 OpenSSL 与 Go 补丁，见[安全修复记录](verification/security-mysql-runtime-2026-10-10.md)。
+
 ## 从这里开始
 
 | 目的 | 文档 |

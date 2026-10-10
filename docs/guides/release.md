@@ -11,7 +11,7 @@
 ```sh
 ./mvnw --batch-mode --no-transfer-progress verify
 python3 -B -m unittest discover -s scripts/tests -v
-docker build -t campus-counselor-mysql:8.4.11-runtime-1 docker/mysql
+docker build -t campus-counselor-mysql:8.4.11-runtime-2 docker/mysql
 docker build -t campus-counselor-management:local .
 docker build --target migration-verification -t campus-counselor-migrations:local .
 python3 -B scripts/verify-mysql-ci.py
