@@ -23,4 +23,6 @@ Go 官方漏洞记录：[GO-2026-6609](https://pkg.go.dev/vuln/GO-2026-6609)、[
 
 ## 验证状态
 
-32 项 Python 测试通过；原功能提交已通过 121 项 Java、本地浏览器验证及首次远程 MySQL 验收。补丁版本的镜像构建、完整 MySQL 验收及安全复扫待当前提交 CI 确认。本机 Docker 守护进程未运行，本轮镜像验证在 GitHub Actions 的隔离环境执行。
+补丁提交 `5199082` 的 Java／Python 检查及镜像安全复扫通过：[CI](https://github.com/GFLabandon/user-management/actions/runs/38057017199)、[扫描摘要](security-mysql-runtime-2026-10-10-result.json)。应用与数据库镜像 HIGH／CRITICAL 均为 0，扫描报告确认 gosu 的 Go 版本为 1.27.2。完整 MySQL 运行、迁移、恢复检查和最终提交状态以 [PR #5 Checks](https://github.com/GFLabandon/user-management/pull/5/checks) 为准。
+
+原功能提交已通过 121 项 Java、32 项 Python、本地浏览器验证及首次远程 MySQL 验收。本机 Docker 守护进程未运行，本轮补丁镜像验证在 GitHub Actions 的隔离环境执行。扫描结果仅对应所列镜像 ID 和数据库时间。

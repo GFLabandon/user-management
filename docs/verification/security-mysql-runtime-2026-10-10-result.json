@@ -1,0 +1,36 @@
+{
+  "run": "https://github.com/GFLabandon/user-management/actions/runs/38057017199",
+  "commit": "519908284d63be71068699c0a841292d64abcdd7",
+  "checked_at": "2026-10-10T13:48:36.875848+00:00",
+  "passed": true,
+  "policy": "Fail on every HIGH/CRITICAL finding, including unfixed; no suppressions.",
+  "scanner": {
+    "Version": "0.74.0",
+    "VulnerabilityDB": {
+      "Version": 2,
+      "NextUpdate": "2026-10-11T12:33:35.352381125Z",
+      "UpdatedAt": "2026-10-10T12:33:35.352381306Z",
+      "DownloadedAt": "2026-10-10T13:48:42.42455618Z"
+    },
+    "JavaDB": {
+      "Version": 1,
+      "NextUpdate": "2026-10-13T00:59:51.613822708Z",
+      "UpdatedAt": "2026-10-10T00:59:51.613822988Z",
+      "DownloadedAt": "2026-10-10T13:49:05.557448485Z"
+    }
+  },
+  "images": {
+    "application": {
+      "configured_image": "campus-counselor-management:local",
+      "image_id": "sha256:f41211e990c3cad8a3d3120fa52a6e7331ff0b6b07c1b3df0a39a5cc48867eee",
+      "findings": 70,
+      "blocking": []
+    },
+    "mysql": {
+      "configured_image": "campus-counselor-mysql:8.4.11-runtime-2",
+      "image_id": "sha256:a8d40dc50d92024c8106557dc7d3adaf88c8588eabddf112ee05506f5368d359",
+      "findings": 5,
+      "blocking": []
+    }
+  }
+}
