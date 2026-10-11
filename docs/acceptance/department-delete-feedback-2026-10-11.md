@@ -20,4 +20,4 @@
 
 `verify-compose.py` 新增真实 MySQL／HTTP 场景，验证服务事务回滚后的列表读取、400／409、最新版本、数据保留与两条失败审计。候选提交的完整 CI 结果以对应 PR 为准；本地 HTTP/H2 结果不替代 MySQL 运行、迁移、恢复或安全扫描结果。
 
-本次交付时尚未推送或创建 PR，因此新增 MySQL 场景及本次完整远程 CI 尚未执行；当前通过记录仅包括上述本地检查。
+已推送并创建 [PR #6](https://github.com/GFLabandon/user-management/pull/6)，新增 MySQL 场景与完整远程 CI 已交由该 PR 的检查执行。本文的固定通过记录为上述本地检查；最终远程状态及报告见 PR 检查和说明。
