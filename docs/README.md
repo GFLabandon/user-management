@@ -1,6 +1,6 @@
 # 文档导航
 
-当前基线：2026-10-02，4D.2、5A.1–5A.3、5B 和第 6 阶段已通过 [PR #1](https://github.com/GFLabandon/user-management/pull/1) 合并到 `main`（`97e309d`）。[main CI](https://github.com/GFLabandon/user-management/actions/runs/37022219263) 三项任务全部通过：111 项 Java、32 项 Python、14 组运行、6 组迁移／镜像切换、10 组恢复；应用与派生数据库镜像 HIGH／CRITICAL 均为 0。扫描结果描述当次报告，不代表生产部署或零风险。
+本轮开始时基线：2026-10-10，`main` / `b3299d6`，PR #1–#5 已合并。[合并后 CI](https://github.com/GFLabandon/user-management/actions/runs/38057852897) 的 Java／脚本、MySQL 运行／迁移／恢复及安全扫描三项任务全部通过。PR #5 的 121 项 Java、32 项 Python 与镜像补丁证据见[验收记录](verification/security-mysql-runtime-2026-10-10.md)。扫描结果描述当次报告，不代表生产部署或零风险。
 
 后续维护见[空间清理与 CI 更新](verification/maintenance-2026-10-02.md)；功能演示见[演示路径](guides/phase-5a-demo.md)，原方案及执行记录见[下一阶段实施方案](plans/next-steps-2026-10-01.md)。历史验收文档保留当时分支和结果。
 
@@ -12,6 +12,8 @@
 
 2026-10-10：MySQL 派生镜像更新 OpenSSL 与 Go 补丁，见[安全修复记录](verification/security-mysql-runtime-2026-10-10.md)。
 
+2026-10-11：院系删除失败后显示最新列表与编辑入口，见[验收记录](acceptance/department-delete-feedback-2026-10-11.md)；后续优先级见[本轮方案](plans/next-steps-2026-10-10.md)。
+
 ## 从这里开始
 
 | 目的 | 文档 |
@@ -21,7 +23,7 @@
 | 本机 Docker 资源用途与清理 | [Docker 资源说明](guides/docker-resources.md) |
 | MySQL 派生镜像构建、维护与升级 | [数据库镜像指南](guides/mysql-runtime-image.md) |
 | 三档查询基线、计划与复现 | [查询基线](acceptance/phase-6-query-baseline.md) |
-| 下一轮开发顺序与验收标准 | [下一阶段实施方案](plans/next-steps-2026-10-01.md) |
+| 下一轮开发顺序与验收标准 | [当前实施方案](plans/next-steps-2026-10-10.md)、[上一轮计划与记录](plans/next-steps-2026-10-01.md) |
 | 原始阶段划分与历史计划 | [后续优化方案（2026-09-06）](plans/next-optimization-plan-2026-09-06.md) |
 | 数据库迁移与恢复 | [迁移指南](guides/counselor-migration.md) |
 | 维护窗口备份、校验与空环境恢复 | [备份恢复指南](guides/backup-and-restore.md) |

@@ -83,7 +83,50 @@ class ErrorFeedbackTests {
                 .andExpect(status().isConflict()).andExpect(content().string(org.hamcrest.Matchers.containsString("资料已更新")));
         assertThat(counselors.get(1).getVersion()).isEqualTo(c.getVersion());
         mvc.perform(post("/departments/" + c.getDepartmentId() + "/delete").with(admin()).with(csrf()).param("version", "0"))
-                .andExpect(status().isBadRequest()).andExpect(content().string(org.hamcrest.Matchers.containsString("请使用停用功能")));
+                .andExpect(status().isBadRequest()).andExpect(view().name("departments/list"))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("请使用停用功能")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("href=\"/departments/" + c.getDepartmentId() + "/edit\"")));
         assertThat(departments.get(c.getDepartmentId())).isNotNull();
+    }
+
+    @Test void staleDepartmentDeleteShowsLatestNameAndVersionWithoutDeleting() throws Exception {
+        var form = new DepartmentForm(); form.setName("删除冲突测试院系");
+        int id = departments.save(null, form);
+        form.setName("其他管理员已改名"); departments.save(id, form);
+        var response = mvc.perform(post("/departments/" + id + "/delete").with(admin()).with(csrf()).param("version", "0"))
+                .andExpect(status().isConflict()).andExpect(view().name("departments/list"))
+                .andExpect(content().string(org.hamcrest.Matchers.matchesPattern("(?s).*<form[^>]*action=\"/departments/" + id + "/delete\"[^>]*>(?:(?!</form>).)*name=\"version\" value=\"1\".*")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("href=\"/departments\">重新加载列表")))
+                .andReturn().getResponse();
+        assertThat(response.getContentAsString()).contains("其他管理员已改名", "本次删除未完成", response.getHeader("X-Request-ID"))
+                .doesNotContain("院系已删除", "Exception", "DELETE FROM");
+        assertThat(departments.get(id).getVersion()).isEqualTo(1);
+    }
+
+    @Test void missingDepartmentAndInvalidDeleteVersionKeepErrorStatuses() throws Exception {
+        mvc.perform(post("/departments/999999/delete").with(admin()).with(csrf()).param("version", "0"))
+                .andExpect(status().isNotFound()).andExpect(view().name("error/request"));
+        mvc.perform(post("/departments/1/delete").with(admin()).with(csrf()).param("version", "invalid-private-value"))
+                .andExpect(status().isBadRequest()).andExpect(view().name("error/request"))
+                .andExpect(content().string(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("invalid-private-value"))));
+    }
+
+    @Test void unreferencedDepartmentDeleteStillRedirectsAfterSuccess() throws Exception {
+        var form = new DepartmentForm(); form.setName("允许删除测试院系");
+        int id = departments.save(null, form);
+        mvc.perform(post("/departments/" + id + "/delete").with(admin()).with(csrf()).param("version", "0"))
+                .andExpect(status().is3xxRedirection()).andExpect(redirectedUrl("/departments"))
+                .andExpect(flash().attribute("success", "院系已删除。"));
+        assertThat(departments.all()).noneMatch(d -> d.getId() == id);
+    }
+
+    @Test void departmentDeleteStillRequiresAdministratorAndCsrf() throws Exception {
+        var form = new DepartmentForm(); form.setName("权限保护测试院系");
+        int id = departments.save(null, form);
+        mvc.perform(post("/departments/" + id + "/delete").with(user(users.loadUserByUsername("viewer"))).with(csrf()).param("version", "0"))
+                .andExpect(status().isForbidden());
+        mvc.perform(post("/departments/" + id + "/delete").with(admin()).param("version", "0"))
+                .andExpect(status().isForbidden());
+        assertThat(departments.get(id).getVersion()).isZero();
     }
 }

@@ -64,12 +64,17 @@ public class DepartmentController {
         redirect.addFlashAttribute("success", "院系已保存。"); return "redirect:/departments";
     }
     @PostMapping("/{id}/delete")
-    public String delete(@PathVariable int id, @RequestParam int version, RedirectAttributes redirect) {
+    public String delete(@PathVariable int id, @RequestParam int version, RedirectAttributes redirect,
+                         Model model, HttpServletResponse response) {
         try { service.delete(id, version); redirect.addFlashAttribute("success", "院系已删除。"); }
         catch (BusinessException | DataIntegrityViolationException exception) {
             failure(id, "WRITE_FAILED");
-            if (exception instanceof DataIntegrityViolationException) throw new BusinessException("院系已被引用，请使用停用功能。");
-            throw (BusinessException) exception;
+            if (exception instanceof RecordNotFoundException missing) throw missing;
+            response.setStatus(exception instanceof EditConflictException || exception instanceof DataIntegrityViolationException ? 409 : 400);
+            model.addAttribute("error", exception instanceof DataIntegrityViolationException
+                    ? "院系已被引用，请使用停用功能。" : exception.getMessage());
+            model.addAttribute("deleteFailedId", id);
+            return list(model);
         }
         return "redirect:/departments";
     }

@@ -244,6 +244,25 @@ try:
     assert anon.request(photo)[0] == 302
     assert "容器验收档案" in admin.request("/counselors?keyword=CONTAINER-001")[1].decode()
     passed("real multipart CSRF, counselor create/search and private PNG upload/read")
+    # Exercise rollback and the subsequent list read over real HTTP/MySQL transactions.
+    delete_path = f"/departments/{department}/delete"
+    code, rejected, headers = admin.request(delete_path, {"_csrf": admin.csrf("/departments"), "version": "0"})
+    rejected = rejected.decode()
+    assert code == 400 and "本次删除未完成" in rejected and "请使用停用功能" in rejected
+    assert f'href="/departments/{department}/edit"' in rejected and headers["X-Request-ID"] in rejected
+    assert sql(f"SELECT version FROM departments WHERE id={department}") == "0"
+    assert admin.request(f"/departments/{department}", {
+        "_csrf": admin.csrf(f"/departments/{department}/edit"),
+        "name": "容器验收院系", "active": "true", "version": "0"})[0] == 302
+    code, stale, _ = admin.request(delete_path, {"_csrf": admin.csrf("/departments"), "version": "0"})
+    stale = stale.decode()
+    assert code == 409 and "本次删除未完成" in stale and "重新加载列表" in stale
+    assert re.search(r'<form[^>]*action="' + re.escape(delete_path)
+                     + r'"[^>]*>(?:(?!</form>).)*name="version" value="1"', stale, re.S)
+    assert sql(f"SELECT version FROM departments WHERE id={department}") == "1"
+    assert sql(f"SELECT COUNT(*) FROM audit_events WHERE target_type='DEPARTMENT' AND target_id='{department}' "
+               "AND action='DEPARTMENT_WRITE' AND outcome='FAILURE' AND reason='WRITE_FAILED'") == "2"
+    passed("department delete refusals retain 400/409, latest list and versions, failure audit and referenced data")
     # An old imported image may have multiple active archive references.
     sql(f"INSERT INTO counselors(employee_no,name,department_id,employment_status,photo_path) VALUES ('IMAGE-SHARED','共享图片验收',{department},'ACTIVE','{photo}')")
     shared_id = sql("SELECT id FROM counselors WHERE employee_no='IMAGE-SHARED'")
