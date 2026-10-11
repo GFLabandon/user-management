@@ -5,7 +5,7 @@ Campus Counselor Management
 ![Java 17](https://img.shields.io/badge/Java-17-ED8B00?logo=openjdk&logoColor=white)
 ![Spring Boot 4.0](https://img.shields.io/badge/Spring_Boot-4.0-6DB33F?logo=springboot&logoColor=white)
 ![MyBatis](https://img.shields.io/badge/MyBatis-3-111827)
-![Tests](https://img.shields.io/badge/tests-121_passed-177454)
+![Tests](https://img.shields.io/badge/tests-125_passed-177454)
 
 由 `user-management` 演进而来的辅导员档案管理原型，采用 Java 17、Spring Boot、MyBatis、Thymeleaf 与 Flyway。支持建档、检索、院系维护、状态变更和头像上传。
 
@@ -23,6 +23,7 @@ Campus Counselor Management
 - 版本号检查：过期编辑和停用请求不能覆盖已保存的修改；冲突返回 409，保留输入并提供重新打开最新记录的入口。
 - 中文失败提示覆盖参数、权限、CSRF、页面不存在、上传过大及服务异常；保留 HTTP 状态码与请求编号，密码不回填。
 - 院系新增、改名、停用；已被新档案或旧资料引用的院系禁止删除。
+- 院系删除因引用或版本冲突失败时，在最新列表显示原因及编辑入口，保留失败状态码，方便核对后改为停用。
 - 专用表单对象与字段白名单，数据库主键、照片路径不接受表单直接赋值。
 - 独立账号、bcrypt 密码哈希、管理员／只读权限；账号停用或变更后，旧会话在下一次请求失效。
 - 管理员可按工号／姓名搜索选择关联档案，展示院系、支持取消关联；保留唯一关联与并发修改保护。
@@ -118,6 +119,8 @@ flowchart LR
 
 ## 测试与验收
 
+2026-10-11：院系删除失败反馈通过 125 项 Java、32 项 Python 和临时 H2 的真实 HTTP 恢复路径验证；浏览器确认框控制受限，完整点击／窄屏复验未完成。范围与远程验证状态见[验收记录](docs/acceptance/department-delete-feedback-2026-10-11.md)。
+
 2026-10-09：操作记录快捷入口通过 121 项 Java、32 项 Python 测试及浏览器复验，见[验收记录](docs/acceptance/audit-shortcuts-2026-10-09.md)。
 
 2026-10-05：列表条件保留通过 118 项 Java、32 项 Python 测试与浏览器保存／冲突／多标签页复验；见[验收记录](docs/acceptance/list-context-2026-10-05.md)。远程检查以对应 PR 为准，以下保留历史验收快照。
@@ -164,7 +167,7 @@ python3 -B scripts/check-security.py
 
 ## 项目结构
 
-完整索引见[文档导航](docs/README.md)，后续开发顺序见[优化方案](docs/plans/next-optimization-plan-2026-09-06.md)。
+完整索引见[文档导航](docs/README.md)，后续开发顺序见[当前实施方案](docs/plans/next-steps-2026-10-10.md)。
 
 ```text
 src/main/java/
